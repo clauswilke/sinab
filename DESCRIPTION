@@ -1,13 +1,18 @@
 Package: gridtext.rewrite
-Title: What the Package Does (One Line, Title Case)
-Version: 0.0.0.9000
+Title: Improved Text Rendering Support for 'Grid' Graphics
+Version: 0.5.0.9000
 Authors@R: 
-    person(given = "First",
-           family = "Last",
-           role = c("aut", "cre"),
-           email = "first.last@example.com",
-           comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
-License: What license it uses
+    person(
+      given = "Claus O.",
+      family = "Wilke",
+      role = c("aut", "cre"),
+      email = "wilke@austin.utexas.edu",
+      comment = c(ORCID = "0000-0002-7470-9261")
+    )
+Description: Provides support for rendering of formatted text using 'grid' graphics. Text can be
+    formatted via a minimal subset of 'Markdown', 'HTML', and inline 'CSS' directives, and it can be
+    rendered both with and without word wrap.
+License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
+RoxygenNote: 7.1.0

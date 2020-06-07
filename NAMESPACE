@@ -2,5 +2,7 @@
 
 export(add)
 export(named_list)
+export(random_unif)
 useDynLib(grdtext,add_)
 useDynLib(grdtext,named_list_)
+useDynLib(grdtext,random_unif_)

@@ -22,6 +22,45 @@ SEXP named_list_(SEXP x_, SEXP y_) {
   return res;
 }
 
+
+
+SEXP random_unif_(SEXP n, SEXP min, SEXP max) {
+  SEXP stats;
+  PROTECT(
+    stats = Rf_eval(
+      Rf_lang2(
+        Rf_install("getNamespace"),
+        Rf_ScalarString(Rf_mkChar("stats"))
+      ),
+      R_GlobalEnv
+    )
+  );
+  
+  SEXP r_call;
+  PROTECT(r_call = Rf_allocVector(LANGSXP, 4)); 
+  SETCAR(
+    r_call,
+    Rf_findFun(Rf_install("runif"), stats)
+  );  
+  
+  SETCADR(r_call, n);
+  SET_TAG(CDR(r_call), Rf_install("n"));
+  
+  SETCADDR(r_call, min);
+  SET_TAG(CDDR(r_call), Rf_install("min"));
+  
+  SETCADDDR(r_call, max);
+  SET_TAG(CDR(CDDR(r_call)), Rf_install("max"));
+  
+  SEXP randoms;
+  PROTECT(
+    randoms = Rf_eval(r_call, stats)
+  );  
+  
+  UNPROTECT(3);
+  return(randoms);
+}
+
 /* Move eventually to grdtext-init.c */
 
 #include <R_ext/Rdynload.h>
@@ -29,4 +68,5 @@ SEXP named_list_(SEXP x_, SEXP y_) {
 void R_init_gridtext(DllInfo *info) {
   R_RegisterCCallable("grdtext", "add", (DL_FUNC) &add_);
   R_RegisterCCallable("grdtext", "named_list", (DL_FUNC) &named_list_);
+  R_RegisterCCallable("grdtext", "random_unif", (DL_FUNC) &random_unif_);
 }

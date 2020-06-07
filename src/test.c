@@ -12,10 +12,10 @@ SEXP test_(SEXP x_, SEXP y_) {
   return Rf_ScalarReal(sum);
 }
 
-/* Move eventually to gridtext.rewrite-init.c */
+/* Move eventually to grdtext-init.c */
 
 #include <R_ext/Rdynload.h>
 
-void R_init_gridtext.rewrite(DllInfo *info) {
-  R_RegisterCCallable("gridtext.rewrite", "test",  (DL_FUNC) &test_);
+void R_init_gridtext(DllInfo *info) {
+  R_RegisterCCallable("grdtext", "test", (DL_FUNC) &test_);
 }

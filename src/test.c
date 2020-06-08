@@ -61,12 +61,3 @@ SEXP random_unif_(SEXP n, SEXP min, SEXP max) {
   return(randoms);
 }
 
-/* Move eventually to grdtext-init.c */
-
-#include <R_ext/Rdynload.h>
-
-void R_init_gridtext(DllInfo *info) {
-  R_RegisterCCallable("grdtext", "add", (DL_FUNC) &add_);
-  R_RegisterCCallable("grdtext", "named_list", (DL_FUNC) &named_list_);
-  R_RegisterCCallable("grdtext", "random_unif", (DL_FUNC) &random_unif_);
-}

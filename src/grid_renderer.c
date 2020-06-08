@@ -34,6 +34,10 @@ SEXP gr_release(GR_Object* gro) {
   
   R_ReleaseObject(grobs_old);
   Free(gro);
+  
+  /* set class to "gList" */
+  setAttrib(grobs_new, R_ClassSymbol, mkString("gList"));
+    
   UNPROTECT(1);
   
   return grobs_new;

@@ -20,16 +20,18 @@ typedef struct {
  * from R_ext/GraphicsEngine.h.
  */
 
+#define STRING_BUFFER_SIZE 201 /* 201 is number used by R */
+
 typedef struct {
-  char color[40];        /* Drawing color: lines, text, etc. */
-  char fill[40];         /* Fill color */
+  char color[STRING_BUFFER_SIZE];        /* Drawing color: lines, text, etc. */
+  char fill[STRING_BUFFER_SIZE];         /* Fill color */
   double fontsize;       /* Font size in points (R_GE_gcontext.ps) */
   double lineheight;     /* Line height (in multiples of fontsize) */
   int fontface;          /* Font face:
                           *  plain = 1, bold = 2,
                           *  italic = 3, bold italic = 4 
                           */
-  char fontfamily[201];  /* Font family */
+  char fontfamily[STRING_BUFFER_SIZE];  /* Font family */
 } GR_GContext;
 
 

@@ -1,7 +1,7 @@
 #include <R.h>
 #include <Rinternals.h>
 
-typedef struct GRO {
+typedef struct {
   SEXP grobs;
   R_xlen_t size;
   R_xlen_t capacity;
@@ -25,8 +25,9 @@ SEXP gr_release(GR_Object* gro) {
   /* In general, the capacity is larger than the current size
    * of the list, so we copy the relevant part into a new list.
    */
-  SEXP grobs_old = gro->grobs;
-  SEXP grobs_new = PROTECT(allocVector(VECSXP, gro->size));
+  SEXP grobs_old, grobs_new, klass;
+  grobs_old = gro->grobs;
+  PROTECT(grobs_new = allocVector(VECSXP, gro->size));
   
   for (R_xlen_t i = 0; i < gro->size; i++) {
     SET_VECTOR_ELT(grobs_new, i, VECTOR_ELT(grobs_old, i));
@@ -36,10 +37,10 @@ SEXP gr_release(GR_Object* gro) {
   Free(gro);
   
   /* set class to "gList" */
-  setAttrib(grobs_new, R_ClassSymbol, mkString("gList"));
-    
-  UNPROTECT(1);
-  
+  PROTECT(klass = mkString("gList"));
+  setAttrib(grobs_new, R_ClassSymbol, klass);
+  UNPROTECT(2);
+
   return grobs_new;
 }
 
@@ -48,9 +49,10 @@ void gr_grow_capacity(GR_Object* gro) {
   /* Whenever we're running out of space, we grow the
    * capacity by doubling the grobs vector size
    */
+  SEXP grobs_old, grobs_new;
   R_xlen_t cap_new = 2*gro->capacity;
-  SEXP grobs_old = gro->grobs;
-  SEXP grobs_new = PROTECT(allocVector(VECSXP, cap_new));
+  grobs_old = gro->grobs;
+  PROTECT(grobs_new = allocVector(VECSXP, cap_new));
   
   /* We only need to copy to size, not to capacity */
   for (R_xlen_t i = 0; i < gro->size; i++) {

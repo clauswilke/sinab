@@ -1,12 +1,4 @@
-#include <R.h>
-#include <Rinternals.h>
-#include <R_ext/GraphicsEngine.h>
-
-typedef struct {
-  SEXP grobs;
-  R_xlen_t size;
-  R_xlen_t capacity;
-} GR_Object;
+#include "grid_renderer.h"
 
 /* Create a grid renderer object. Must be deleted with gr_release().*/
 GR_Object* gr_create() {
@@ -106,7 +98,10 @@ SEXP gr_string_metrics() {
   return out;
 }
 
-SEXP test_(SEXP n_) {
+
+/* Test routines */
+
+SEXP test_gr_create_release(SEXP n_) {
   int n = asInteger(n_);
   
   GR_Object* gro = gr_create();
@@ -118,5 +113,3 @@ SEXP test_(SEXP n_) {
     
   return gr_release(gro);
 }
-
-

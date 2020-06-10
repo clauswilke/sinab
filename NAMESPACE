@@ -3,5 +3,4 @@
 export(add)
 export(named_list)
 export(random_unif)
-export(test)
 useDynLib(grdtext, .registration = TRUE)

@@ -4,7 +4,18 @@ test_that("gpar_empty()", {
   expect_identical(x, y)
 })
 
-test_that("gpar_empty()", {
+test_that("gpar_gcontext()", {
+  x <- .Call(test_gpar_gcontext)
+  y <- grid::gpar(
+    col = "red", fill = "#F0F0F0F0",
+    fontfamily = "Helvetica", fontface = 1L,
+    fontsize = 12, lineheight = 1.2
+  )
+  expect_identical(x, y)
+})
+
+
+test_that("text_grob()", {
   label = "hello"
   x <- 2
   y <- 5

@@ -1,5 +1,6 @@
 #include <R.h>
 #include <Rinternals.h>
+#include <R_ext/GraphicsEngine.h>
 
 typedef struct {
   SEXP grobs;
@@ -25,7 +26,7 @@ SEXP gr_release(GR_Object* gro) {
   /* In general, the capacity is larger than the current size
    * of the list, so we copy the relevant part into a new list.
    */
-  SEXP grobs_old, grobs_new, klass;
+  SEXP grobs_old, grobs_new, cl;
   grobs_old = gro->grobs;
   PROTECT(grobs_new = allocVector(VECSXP, gro->size));
   
@@ -37,8 +38,8 @@ SEXP gr_release(GR_Object* gro) {
   Free(gro);
   
   /* set class to "gList" */
-  PROTECT(klass = mkString("gList"));
-  setAttrib(grobs_new, R_ClassSymbol, klass);
+  PROTECT(cl = mkString("gList"));
+  classgets(grobs_new, cl);
   UNPROTECT(2);
 
   return grobs_new;
@@ -79,6 +80,31 @@ void gr_add_SEXP(GR_Object* gro, SEXP s) {
   gro->size += 1;
 }
 
+SEXP gr_string_metrics() {
+  const char* label = "Hello!";
+  
+  pGEDevDesc dev = GEcurrentDevice();
+  R_GE_gcontext gc = {
+    .fontfamily = "Helvetica",
+    .fontface = 0,
+    .ps = 12,
+    .cex = 1
+  };
+  double width = 0, ascent = 0, descent = 0;
+    
+  GEStrMetric(label, CE_UTF8, &gc,
+              &ascent, &descent, &width, dev);
+  
+  GEUnit u = GE_INCHES;
+  double w, a, d; 
+  w = GEfromDeviceWidth(width, u, dev);
+  a = GEfromDeviceWidth(ascent, u, dev);
+  d = GEfromDeviceWidth(descent, u, dev);
+  //Rprintf("width: %g, ascent: %g, descent: %g\n", w, a, d);
+    
+  SEXP out = ScalarReal(w);
+  return out;
+}
 
 SEXP test_(SEXP n_) {
   int n = asInteger(n_);

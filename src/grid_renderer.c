@@ -72,6 +72,25 @@ void gr_add_SEXP(GR_Object* gro, SEXP s) {
   gro->size += 1;
 }
 
+void gr_draw_text(GR_Object* gro, const char* label, double x, double y, const GR_GContext *gc) {
+  SEXP slabel, sx, sy, sxu, syu, hjust, vjust, gp, grob;
+  
+  PROTECT(slabel = mkString(label));
+  PROTECT(sx = ScalarReal(x));
+  PROTECT(sxu = unit_in(sx));
+  PROTECT(sy = ScalarReal(y));
+  PROTECT(syu = unit_in(sy));
+  PROTECT(hjust = ScalarReal(0));
+  PROTECT(vjust = ScalarReal(0));
+  PROTECT(gp = gpar_gcontext(gc));
+  
+  PROTECT(grob = text_grob(slabel, sxu, syu, hjust, vjust, gp));
+  
+  gr_add_SEXP(gro, grob);
+  
+  UNPROTECT(9);
+}
+
 SEXP gr_string_metrics() {
   const char* label = "Hello!";
   
@@ -98,6 +117,15 @@ SEXP gr_string_metrics() {
   return out;
 }
 
+/* write graphics context defaults into gc object */
+void gr_gcontext_defaults(GR_Object* gro, GR_GContext* gc) {
+  strcpy(gc->color, "black");
+  strcpy(gc->fill, "black");
+  strcpy(gc->fontfamily, "");
+  gc->fontface = 1;
+  gc->fontsize = 12;
+  gc->lineheight = 1.2;
+}
 
 /* Test routines */
 
@@ -107,9 +135,24 @@ SEXP test_gr_create_release(SEXP n_) {
   GR_Object* gro = gr_create();
   
   for (int i = 0; i<n; i++) {
-    SEXP s = mkString("test");
+    SEXP s;
+    PROTECT(s = mkString("test"));
     gr_add_SEXP(gro, s);
+    UNPROTECT(1);
   }
     
+  return gr_release(gro);
+}
+
+SEXP test_gr_draw_text() {
+  GR_Object* gro = gr_create();
+  
+  GR_GContext gc;
+  gr_gcontext_defaults(gro, &gc); /* initialize gc object */
+  gr_draw_text(gro, "Hello", .5, 2, &gc);
+  
+  strcpy(gc.color, "blue");
+  gr_draw_text(gro, "World", .95, 2, &gc);
+  
   return gr_release(gro);
 }

@@ -93,7 +93,7 @@ SEXP gpar_empty() {
 
 /* Call grid::gpar() with GR_GContext object */
 
-SEXP gpar_gcontext(GR_GContext *gc) {
+SEXP gpar_gcontext(const GR_GContext *gc) {
   SEXP out, grid, fun, call, s;
   SEXP col, fill, fontfamily, fontface, fontsize, lineheight;
   

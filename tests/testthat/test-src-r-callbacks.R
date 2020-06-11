@@ -14,6 +14,11 @@ test_that("gpar_gcontext()", {
   expect_identical(x, y)
 })
 
+test_that("unit_in()", {
+  x <- .Call(unit_in, 4)
+  y <- grid::unit(4, "inches")
+  expect_identical(x, y)
+})
 
 test_that("text_grob()", {
   label = "hello"

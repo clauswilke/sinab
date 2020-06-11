@@ -52,6 +52,31 @@ SEXP text_grob(SEXP label, SEXP x, SEXP y, SEXP hjust, SEXP vjust, SEXP gp) {
 }
 
 
+/* Call grid::unit(x, "inches") */
+SEXP unit_in(SEXP x) {
+  SEXP out, grid, fun, call, s, unit;
+  
+  PROTECT(grid = get_namespace("grid"));
+  PROTECT(fun = findFun(install("unit"), grid));
+  
+  PROTECT(call = allocVector(LANGSXP, 3)); 
+  SETCAR(call, fun);  
+  
+  s = CDR(call);
+  SETCAR(s, x);
+
+  PROTECT(unit = mkString("inches"));
+  s = CDR(s);
+  SETCAR(s, unit);
+  SET_TAG(s, install("units"));
+
+  out = eval(call, R_GlobalEnv);
+  
+  UNPROTECT(4);
+  return out;
+}
+
+
 /* Call grid::gpar() without any arguments */
 SEXP gpar_empty() {
   SEXP out, grid, fun, call;

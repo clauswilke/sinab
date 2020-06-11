@@ -48,6 +48,6 @@ extern SEXP test_gpar_gcontext();
 extern SEXP text_grob(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP gpar_empty();
 extern SEXP gpar_gcontext(GR_GContext *);
-
+extern SEXP unit_in(SEXP);
 
 #endif

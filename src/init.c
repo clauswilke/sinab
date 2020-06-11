@@ -18,6 +18,7 @@ static const R_CallMethodDef CallEntries[] = {
   {"test_gr_create_release", (DL_FUNC) &test_gr_create_release, 1},
   {"gpar_empty", (DL_FUNC) &gpar_empty, 0},
   {"text_grob", (DL_FUNC) &text_grob, 6},
+  {"unit_in", (DL_FUNC) &unit_in, 1},
   {"test_gpar_gcontext", (DL_FUNC) &test_gpar_gcontext, 0},
   {NULL, NULL, 0}
 };

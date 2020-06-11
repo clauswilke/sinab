@@ -91,30 +91,32 @@ void gr_draw_text(GR_Object* gro, const char* label, double x, double y, const G
   UNPROTECT(9);
 }
 
-SEXP gr_string_metrics() {
-  const char* label = "Hello!";
-  
+/* Calls GEStrMetric() and returns results in 
+ * variables ascent, descent, width. These values are returned
+ * in inches.
+ */
+
+void gr_string_metrics(GR_Object* gro, const char* label, const GR_GContext *gc,
+                       double *ascent, double *descent, double *width) {
   pGEDevDesc dev = GEcurrentDevice();
-  R_GE_gcontext gc = {
-    .fontfamily = "Helvetica",
-    .fontface = 0,
-    .ps = 12,
-    .cex = 1
-  };
-  double width = 0, ascent = 0, descent = 0;
-    
-  GEStrMetric(label, CE_UTF8, &gc,
-              &ascent, &descent, &width, dev);
   
-  GEUnit u = GE_INCHES;
-  double w, a, d; 
-  w = GEfromDeviceWidth(width, u, dev);
-  a = GEfromDeviceWidth(ascent, u, dev);
-  d = GEfromDeviceWidth(descent, u, dev);
-  //Rprintf("width: %g, ascent: %g, descent: %g\n", w, a, d);
+  /* set up R graphics context from grid renderer graphics context */
+  R_GE_gcontext R_gc = {
+     .cex = 1
+  };
+  strcpy(R_gc.fontfamily, gc->fontfamily);
+  R_gc.fontface = gc->fontface;
+  R_gc.ps = gc->fontsize;
     
-  SEXP out = ScalarReal(w);
-  return out;
+  double a, d, w; 
+  GEStrMetric(label, CE_UTF8, &R_gc,
+              &a, &d, &w, dev);
+  
+  /* Convert from device units to inches */
+  GEUnit u = GE_INCHES;
+  *width = GEfromDeviceWidth(w, u, dev);
+  *ascent = GEfromDeviceWidth(a, u, dev);
+  *descent = GEfromDeviceWidth(d, u, dev);
 }
 
 /* write graphics context defaults into gc object */
@@ -149,10 +151,30 @@ SEXP test_gr_draw_text() {
   
   GR_GContext gc;
   gr_gcontext_defaults(gro, &gc); /* initialize gc object */
-  gr_draw_text(gro, "Hello", .5, 2, &gc);
+
+  double a, d, w_word, w_space, x;
+  /* get width of a space */
+  gr_string_metrics(gro, " ", &gc, &a, &d, &w_space);
+
+  /* draw first word */
+  x = 0.5;
+  gr_draw_text(gro, "Hello", x, 2, &gc);
   
+  /* advance x */
+  gr_string_metrics(gro, "Hello", &gc, &a, &d, &w_word);
+  x = x + w_word + w_space;
+  
+  /* draw second word */
   strcpy(gc.color, "blue");
-  gr_draw_text(gro, "World", .95, 2, &gc);
+  gr_draw_text(gro, "World", x, 2, &gc);
+  
+  /* advance x */
+  gr_string_metrics(gro, "World", &gc, &a, &d, &w_word);
+  x = x + w_word + w_space;
+  
+  /* draw remainder */
+  strcpy(gc.color, "red");
+  gr_draw_text(gro, "in red!", x, 2, &gc);
   
   return gr_release(gro);
 }

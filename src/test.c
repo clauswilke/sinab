@@ -6,9 +6,13 @@
 #include "mdlayout/mdlayout.h"
 
 SEXP test_rust() {
-  SEXP s = Rf_ScalarString(Rf_mkCharCE(string_from_rust(), CE_UTF8));
+  char *s = string_from_rust();
+  SEXP rs = PROTECT(Rf_mkCharCE(s, CE_UTF8)); 
+  free_rust_cstring(s); /* make sure the raw string we were given is properly deallocated */
+  SEXP out = Rf_ScalarString(rs);
+  UNPROTECT(1);
 
-  return s;
+  return out;
 }
 
 

@@ -1,0 +1,13 @@
+LIBDIR = mdlayout/target/release
+STATLIB = $(LIBDIR)/libmdlayout.a
+PKG_LIBS = -L$(LIBDIR) -lmdlayout
+
+all: clean
+
+$(SHLIB): $(STATLIB)
+
+$(STATLIB):
+	cargo build --release --manifest-path=mdlayout/Cargo.toml
+
+clean:
+	rm -Rf $(SHLIB) $(STATLIB) $(OBJECTS) mdlayout/target

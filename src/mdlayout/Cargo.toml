@@ -1,0 +1,10 @@
+[package]
+name = "mdlayout"
+version = "0.1.0"
+authors = ["Claus Wilke <wilke@austin.utexas.edu>"]
+edition = "2018"
+
+[lib]
+crate-type = ["staticlib"]
+
+[dependencies]

@@ -1,8 +1,5 @@
 // Modules are other .rs source files
-mod hello;
-
-// Export functions called by R
-pub use hello::string_from_rust;
+mod md;
 
 #[cfg(test)]
 mod tests {

@@ -5,17 +5,6 @@
 // Import C headers for rust API
 #include "mdlayout/mdlayout.h"
 
-SEXP test_rust() {
-  char *s = string_from_rust();
-  SEXP rs = PROTECT(Rf_mkCharCE(s, CE_UTF8)); 
-  free_rust_cstring(s); /* make sure the raw string we were given is properly deallocated */
-  SEXP out = Rf_ScalarString(rs);
-  UNPROTECT(1);
-
-  return out;
-}
-
-
 SEXP named_list_(SEXP x_, SEXP y_) {
   /* Construct named result list from variables containing the results */
   const char *names[] = {"x", "y", ""};                   /* note the null string */

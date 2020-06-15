@@ -9,3 +9,4 @@ crate-type = ["staticlib"]
 
 [dependencies]
 # libc = "*" # not actually currently needed, so leave out
+pulldown-cmark = { version = "0.7", default-features = false, features = ["simd"] }

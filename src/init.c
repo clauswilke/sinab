@@ -9,8 +9,11 @@
 extern SEXP test_rust(); 
 extern SEXP named_list_(SEXP, SEXP);
 
+/* markdown.c */
+extern SEXP C_md_to_html(SEXP);
+
 static const R_CallMethodDef CallEntries[] = {
-  {"test_rust", (DL_FUNC) &test_rust, 0},
+  {"C_md_to_html", (DL_FUNC) &C_md_to_html, 1},
   {"named_list_", (DL_FUNC) &named_list_, 2},
   {"gr_string_metrics", (DL_FUNC) &gr_string_metrics, 0},
   {"test_gr_create_release", (DL_FUNC) &test_gr_create_release, 1},

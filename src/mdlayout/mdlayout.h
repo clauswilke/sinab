@@ -2,7 +2,7 @@
 extern "C" {
 #endif
 
-    extern char * string_from_rust();
+    extern char* md_to_html(const char*);
     extern void free_rust_cstring(char *); /* call to deallocate char* returned from rust */
 
 #ifdef __cplusplus

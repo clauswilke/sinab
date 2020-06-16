@@ -1,5 +1,9 @@
-#ifndef GRID_RENDERER_H
-#define GRID_RENDERER_H 
+#ifndef RENDERER_H
+#define RENDERER_H 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include <R.h>
 #include <Rinternals.h>
@@ -16,7 +20,7 @@ typedef struct {
 } GR_Object;
 
 /* 
- * Grid renderer graphics context. Similar to R_GE_gcontext
+ * Graphics context. Similar to R_GE_gcontext
  * from R_ext/GraphicsEngine.h.
  */
 
@@ -32,7 +36,7 @@ typedef struct {
                           *  italic = 3, bold italic = 4 
                           */
   char fontfamily[STRING_BUFFER_SIZE];  /* Font family */
-} GR_GContext;
+} GContext;
 
 
 /*
@@ -42,19 +46,34 @@ typedef struct {
 /* grid_renderer.c */
 extern GR_Object* gr_new();
 extern SEXP gr_release(GR_Object*); 
-extern void gr_gcontext_defaults(GR_Object*, GR_GContext*);
-extern void gr_draw_text(GR_Object*, const char* label, double x, double y, const GR_GContext *);
-extern void gr_string_metrics(GR_Object*, const char* label, const GR_GContext *,
+extern void gr_draw_text(GR_Object*, const char* label, double x, double y, const GContext *);
+extern void gr_string_metrics(GR_Object*, const char* label, const GContext *,
                               double *ascent, double *descent, double *width);
+
 extern SEXP test_gr_new_release(SEXP);
 extern SEXP test_gr_draw_text();
 extern SEXP test_gpar_gcontext();
-  
+
+
+/* gcontext.c */
+
+extern GContext* gcontext_new();
+extern GContext* gcontext_copy(GContext*);
+extern void gcontext_delete(GContext*);
+extern void gcontext_set_color(GContext*, const char*);
+extern const char* gcontext_color(GContext*);
+extern void gcontext_set_fontfamily(GContext*, const char*);
+extern const char* gcontext_fontfamily(GContext*);
+
 
 /* r-callbacks.c */
 extern SEXP text_grob(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP gpar_empty();
-extern SEXP gpar_gcontext(const GR_GContext *);
+extern SEXP gpar_gcontext(const GContext *);
 extern SEXP unit_in(SEXP);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

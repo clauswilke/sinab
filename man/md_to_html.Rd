@@ -7,10 +7,15 @@
 md_to_html(text)
 }
 \arguments{
-\item{text}{Character string}
+\item{text}{Character vector. If of length > 1, each string is
+separately converted.}
+}
+\value{
+Character vector of html fragments.
 }
 \description{
-Convert a markdown string into an html string.
+Convert a markdown string into an html string. The markdown conversion
+adheres to the commonmark standard with tables extension.
 }
 \references{
 https://commonmark.org/

@@ -1,4 +1,4 @@
-#include "grid_renderer.h"
+#include "renderer.h"
 
 /* Create a grid renderer object. Must be deleted with gr_release().*/
 GR_Object* gr_new() {
@@ -72,7 +72,7 @@ void gr_add_SEXP(GR_Object* gro, SEXP s) {
   gro->size += 1;
 }
 
-void gr_draw_text(GR_Object* gro, const char* label, double x, double y, const GR_GContext *gc) {
+void gr_draw_text(GR_Object* gro, const char* label, double x, double y, const GContext *gc) {
   SEXP slabel, sx, sy, sxu, syu, hjust, vjust, gp, grob;
   
   PROTECT(slabel = mkString(label));
@@ -96,7 +96,7 @@ void gr_draw_text(GR_Object* gro, const char* label, double x, double y, const G
  * in inches.
  */
 
-void gr_string_metrics(GR_Object* gro, const char* label, const GR_GContext *gc,
+void gr_string_metrics(GR_Object* gro, const char* label, const GContext *gc,
                        double *ascent, double *descent, double *width) {
   pGEDevDesc dev = GEcurrentDevice();
   
@@ -119,46 +119,6 @@ void gr_string_metrics(GR_Object* gro, const char* label, const GR_GContext *gc,
   *descent = GEfromDeviceWidth(d, u, dev);
 }
 
-/* create a new graphics context object */
-GR_GContext* gr_gc_new() {
-  GR_GContext* gc = (GR_GContext*) Calloc(1, GR_GContext);
-
-  strcpy(gc->color, "black");
-  strcpy(gc->fill, "black");
-  strcpy(gc->fontfamily, "");
-  gc->fontface = 1;
-  gc->fontsize = 12;
-  gc->lineheight = 1.2;
-  return gc;
-}
-
-/* create a new graphics context object via copying */
-GR_GContext* gr_gc_copy(GR_GContext* source) {
-  GR_GContext* gc = (GR_GContext*) Calloc(1, GR_GContext);
-  
-  strcpy(gc->color, source->color);
-  strcpy(gc->fill, source->fill);
-  strcpy(gc->fontfamily, source->fontfamily);
-  gc->fontface = source->fontface;
-  gc->fontsize = source->fontsize;
-  gc->lineheight = source->lineheight;
-  return gc;
-}
-
-/* delete a graphics context object */
-void gr_gc_delete(GR_GContext* gc) {
-  Free(gc);
-}
- 
-/* setters/accessors */
-void gr_gc_set_color(GR_GContext* gc, const char* color) {
-  strcpy(gc->color, color);
-}
-
-void gr_gc_set_fontfamily(GR_GContext* gc, const char* fontfamily) {
-  strcpy(gc->fontfamily, fontfamily);
-}
-
   
 /* Test routines */
 
@@ -179,7 +139,7 @@ SEXP test_gr_new_release(SEXP n_) {
 
 SEXP test_gr_draw_text() {
   GR_Object* gro = gr_new();
-  GR_GContext* gc = gr_gc_new();
+  GContext* gc = gcontext_new();
 
   double a, d, w_word, w_space, x;
   /* get width of a space */
@@ -194,9 +154,9 @@ SEXP test_gr_draw_text() {
   x = x + w_word + w_space;
   
   /* draw second word */
-  GR_GContext* gc2 = gr_gc_copy(gc);
-  gr_gc_set_color(gc2, "blue");
-  gr_gc_set_fontfamily(gc2, "Times");
+  GContext* gc2 = gcontext_copy(gc);
+  gcontext_set_color(gc2, "blue");
+  gcontext_set_fontfamily(gc2, "Times");
   gr_draw_text(gro, "World", x, 2, gc2);
   
   /* advance x */
@@ -204,11 +164,11 @@ SEXP test_gr_draw_text() {
   x = x + w_word + w_space;
   
   /* draw remainder */
-  gr_gc_set_color(gc, "red");
+  gcontext_set_color(gc, "red");
   gr_draw_text(gro, "in red!", x, 2, gc);
   
   /* delete graphics context */
-  gr_gc_delete(gc);
-  gr_gc_delete(gc2);
+  gcontext_delete(gc);
+  gcontext_delete(gc2);
   return gr_release(gro);
 }

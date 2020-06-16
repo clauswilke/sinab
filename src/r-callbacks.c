@@ -1,4 +1,4 @@
-#include "grid_renderer.h"
+#include "renderer.h"
 
 SEXP get_namespace(const char* namesp) {
   SEXP out, call, namesp_sexp;
@@ -93,7 +93,7 @@ SEXP gpar_empty() {
 
 /* Call grid::gpar() with GR_GContext object */
 
-SEXP gpar_gcontext(const GR_GContext *gc) {
+SEXP gpar_gcontext(const GContext *gc) {
   SEXP out, grid, fun, call, s;
   SEXP col, fill, fontfamily, fontface, fontsize, lineheight;
   
@@ -144,7 +144,7 @@ SEXP gpar_gcontext(const GR_GContext *gc) {
 /* Test routines */
 
 SEXP test_gpar_gcontext() {
-  GR_GContext gc = {
+  GContext gc = {
     .color = "red",
     .fill = "#F0F0F0F0",
     .fontfamily = "Helvetica",

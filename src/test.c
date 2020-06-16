@@ -5,6 +5,12 @@
 // Import C headers for rust API
 #include "mdlayout/mdlayout.h"
 
+SEXP test_rust() {
+  test_renderer();
+  
+  return R_NilValue;
+}
+
 SEXP named_list_(SEXP x_, SEXP y_) {
   /* Construct named result list from variables containing the results */
   const char *names[] = {"x", "y", ""};                   /* note the null string */

@@ -1,5 +1,6 @@
 // Modules are other .rs source files
-mod md;
+mod markdown;
+mod renderer;
 
 #[cfg(test)]
 mod tests {

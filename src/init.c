@@ -17,7 +17,7 @@ static const R_CallMethodDef CallEntries[] = {
   {"test_rust", (DL_FUNC) &test_rust, 0},
   {"named_list_", (DL_FUNC) &named_list_, 2},
   {"gr_string_metrics", (DL_FUNC) &gr_string_metrics, 0},
-  {"test_gr_create_release", (DL_FUNC) &test_gr_create_release, 1},
+  {"test_gr_new_release", (DL_FUNC) &test_gr_new_release, 1},
   {"test_gr_draw_text", (DL_FUNC) &test_gr_draw_text, 0},
   {"gpar_empty", (DL_FUNC) &gpar_empty, 0},
   {"text_grob", (DL_FUNC) &text_grob, 6},

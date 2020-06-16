@@ -40,13 +40,13 @@ typedef struct {
  */
 
 /* grid_renderer.c */
-extern GR_Object* gr_create();
+extern GR_Object* gr_new();
 extern SEXP gr_release(GR_Object*); 
 extern void gr_gcontext_defaults(GR_Object*, GR_GContext*);
 extern void gr_draw_text(GR_Object*, const char* label, double x, double y, const GR_GContext *);
 extern void gr_string_metrics(GR_Object*, const char* label, const GR_GContext *,
                               double *ascent, double *descent, double *width);
-extern SEXP test_gr_create_release(SEXP);
+extern SEXP test_gr_new_release(SEXP);
 extern SEXP test_gr_draw_text();
 extern SEXP test_gpar_gcontext();
   

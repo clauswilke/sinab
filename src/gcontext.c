@@ -42,6 +42,14 @@ const char* gcontext_color(GContext* gc) {
   return gc->color;
 }
 
+void gcontext_set_fill(GContext* gc, const char* color) {
+  strcpy(gc->fill, color);
+}
+
+const char* gcontext_fill(GContext* gc) {
+  return gc->fill;
+}
+
 void gcontext_set_fontfamily(GContext* gc, const char* fontfamily) {
   strcpy(gc->fontfamily, fontfamily);
 }
@@ -49,3 +57,20 @@ void gcontext_set_fontfamily(GContext* gc, const char* fontfamily) {
 const char* gcontext_fontfamily(GContext* gc) {
   return gc->fontfamily;
 }
+
+void gcontext_set_fontface(GContext* gc, int fontface) {
+  gc->fontface = fontface;
+}
+
+int gcontext_fontface(GContext* gc) {
+  return gc->fontface;
+}
+
+void gcontext_set_fontsize(GContext* gc, double fontsize) {
+  gc->fontface = fontsize;
+}
+
+double gcontext_fontsize(GContext* gc) {
+  return gc->fontsize;
+}
+

@@ -17,19 +17,29 @@ context("graphics context") {
     gcontext_delete(gc);
   }
   
-  test_that("setters/getters work") {
+  test_that("setters/getters and copying work") {
     GContext* gc = gcontext_new();
     
     gcontext_set_color(gc, "blue");
     expect_true(strcmp(gcontext_color(gc), "blue") == 0);
-    /*
-    gcontext_set_fill(gc, color);
-    expect_true(strcmp(gcontext_fill(gc), color));
-    */
-    gcontext_set_fontfamily(gc, "Times New Roman");
-    expect_true(strcmp(gcontext_color(gc), "Times New Roman"));
+    
+    gcontext_set_fill(gc, "red");
+    expect_true(strcmp(gcontext_fill(gc), "red") == 0);
 
+    gcontext_set_fontfamily(gc, "Times New Roman");
+    expect_true(strcmp(gcontext_fontfamily(gc), "Times New Roman") == 0);
+
+    gcontext_set_fontface(gc, 3);
+    expect_true(gcontext_fontface(gc) == 3);
+    
+    GContext* gc2 = gcontext_copy(gc);
+    expect_true(strcmp(gcontext_color(gc2), "blue") == 0);
+    expect_true(strcmp(gcontext_fill(gc2), "red") == 0);
+    expect_true(strcmp(gcontext_fontfamily(gc2), "Times New Roman") == 0);
+    expect_true(gcontext_fontface(gc2) == 3);
+    
     gcontext_delete(gc);
+    gcontext_delete(gc2);
   }
   
 }

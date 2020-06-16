@@ -62,9 +62,14 @@ extern GContext* gcontext_copy(GContext*);
 extern void gcontext_delete(GContext*);
 extern void gcontext_set_color(GContext*, const char*);
 extern const char* gcontext_color(GContext*);
+extern void gcontext_set_fill(GContext*, const char*);
+extern const char* gcontext_fill(GContext*);
 extern void gcontext_set_fontfamily(GContext*, const char*);
 extern const char* gcontext_fontfamily(GContext*);
-
+extern void gcontext_set_fontface(GContext*, int);
+extern int gcontext_fontface(GContext*);
+extern void gcontext_set_fontsize(GContext*, double);
+extern double gcontext_fontsize(GContext*);
 
 /* r-callbacks.c */
 extern SEXP text_grob(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);

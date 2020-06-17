@@ -1,10 +1,16 @@
 #include "renderer.h"
 
+/* If defined, print out debug messages */
+/* #define DEBUG_MSG */
+
 /* GContext is similar to R_GE_gcontext from R_ext/GraphicsEngine.h */
 
 /* create a new graphics context object */
 GContext* gcontext_new() {
-  //Rprintf("gcontext_new() called.\n");
+#ifdef DEBUG_MSG
+  Rprintf("gcontext_new() called.\n");
+#endif
+  
   GContext* gc = (GContext*) Calloc(1, GContext);
 
   strcpy(gc->color, "black");
@@ -18,6 +24,10 @@ GContext* gcontext_new() {
 
 /* create a new graphics context object via copying */
 GContext* gcontext_copy(GContext* source) {
+#ifdef DEBUG_MSG
+  Rprintf("gcontext_copy() called.\n");
+#endif
+  
   GContext* gc = (GContext*) Calloc(1, GContext);
   
   strcpy(gc->color, source->color);
@@ -31,7 +41,10 @@ GContext* gcontext_copy(GContext* source) {
 
 /* delete a graphics context object */
 void gcontext_delete(GContext* gc) {
-  //Rprintf("gcontext_delete() called.\n");
+#ifdef DEBUG_MSG
+  Rprintf("gcontext_delete() called.\n");
+#endif
+  
   Free(gc);
 }
  

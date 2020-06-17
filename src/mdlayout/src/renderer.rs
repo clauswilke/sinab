@@ -45,7 +45,7 @@ impl GContext {
         let ccolor = CString::new(color).unwrap();
         unsafe { gcontext_set_color(self.gc_ptr, ccolor.as_ptr()); }
     }
-    pub fn set_fontface(&mut self, fontface: &Fontface) {
+    pub fn set_fontface(&mut self, fontface: Fontface) {
         let cface:c_int = match fontface {
             Fontface::Plain => 1,
             Fontface::Bold=> 2,
@@ -126,19 +126,21 @@ pub extern "C" fn test_renderer(gro_ptr: *mut CGRObject) {
     let mut m = gro.string_metrics(" ", &gc);
     let w_space = m.width;
     let mut x = 0.2;
-    gro.draw_text("These", x, 2.0, &gc);
+    let y = 2.0;
+    gro.draw_text("These", x, y, &gc);
     m = gro.string_metrics("These", &gc);
     x += w_space + m.width;
     let mut gc2 = gc.copy();
     gc2.set_color("red");
-    gc2.set_fontface(&Fontface::Bold);
-    gro.draw_text("grobs", x, 2.0, &gc2);
+    gc2.set_fontface(Fontface::Bold);
+    gro.draw_text("grobs", x, y, &gc2);
     m = gro.string_metrics("grobs", &gc2);
     x += w_space + m.width;
-    gro.draw_text("were made", x, 2.0, &gc);
+    gro.draw_text("were made", x, y, &gc);
     m = gro.string_metrics("were made", &gc);
     x += w_space + m.width;
     gc2.set_color("blue");
-    gc2.set_fontface(&Fontface::Italics);
-    gro.draw_text("in rust.", x, 2.0, &gc2);
+    gc2.set_fontface(Fontface::Italics);
+    gro.draw_text("in rust.", x, y, &gc2);
 }
+

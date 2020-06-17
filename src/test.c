@@ -4,8 +4,8 @@
 // Import C headers for rust API
 #include "mdlayout/mdlayout.h"
 
-SEXP test_rust() {
+SEXP C_test_rust() {
   test_renderer();
-  
+
   return R_NilValue;
 }

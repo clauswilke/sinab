@@ -10,7 +10,7 @@ $(STATLIB):
 	cargo build --release --manifest-path=mdlayout/Cargo.toml
 
 C_clean:
-	rm -Rf $(SHLIB) $(STATLIB) $(OBJECTS)
+	rm -Rf $(SHLIB) $(STATLIB) #$(OBJECTS)
 
 clean:
 	rm -Rf $(SHLIB) $(STATLIB) $(OBJECTS) mdlayout/target

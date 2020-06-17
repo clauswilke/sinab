@@ -1,2 +1,2 @@
 #' @export
-named_list <- function(x, y) .Call(named_list_, x, y)
+test_rust <- function() .Call(C_test_rust)

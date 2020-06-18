@@ -64,16 +64,16 @@ impl Drop for GContext {
 }
 
 #[repr(C)]
-pub struct CGRObject { _private: [u8; 0] }
+pub struct CRenderDevice { _private: [u8; 0] }
 
 extern {
-    fn gr_draw_text(gro_ptr: *mut CGRObject, label: *const c_char, x: c_double, y: c_double, gc: *const CGContext);
-    fn gr_string_metrics(gro_ptr: *mut CGRObject, label: *const c_char, gc: *const CGContext, ascent: &mut c_double, descent: &mut c_double, width: &mut c_double);
+    fn rdev_draw_text(rdev_ptr: *mut CRenderDevice, label: *const c_char, x: c_double, y: c_double, gc: *const CGContext);
+    fn rdev_string_metrics(rdev_ptr: *mut CRenderDevice, label: *const c_char, gc: *const CGContext, ascent: &mut c_double, descent: &mut c_double, width: &mut c_double);
 }
 
 #[repr(C)]
-pub struct GRObject {
-    gro_ptr: *mut CGRObject,
+pub struct RenderDevice {
+    rdev_ptr: *mut CRenderDevice,
 }
 
 #[allow(dead_code)]
@@ -83,10 +83,10 @@ pub struct StringMetrics {
     width: f64
 }
 
-impl GRObject {
-    pub fn new(gro_ptr: *mut CGRObject) -> Self {
+impl RenderDevice {
+    pub fn new(rdev_ptr: *mut CRenderDevice) -> Self {
         Self {
-            gro_ptr
+            rdev_ptr
         }
     }
 
@@ -96,7 +96,7 @@ impl GRObject {
         let cy = y as c_double;
 
         unsafe {
-            gr_draw_text(self.gro_ptr, clabel.as_ptr(), cx, cy, gc.as_ptr());
+            rdev_draw_text(self.rdev_ptr, clabel.as_ptr(), cx, cy, gc.as_ptr());
         }
     }
 
@@ -107,7 +107,7 @@ impl GRObject {
         let mut cwidth: c_double = 0.0;
 
         unsafe {
-            gr_string_metrics(self.gro_ptr, clabel.as_ptr(), gc.as_ptr(), &mut cascent, &mut cdescent, &mut cwidth);
+            rdev_string_metrics(self.rdev_ptr, clabel.as_ptr(), gc.as_ptr(), &mut cascent, &mut cdescent, &mut cwidth);
         }
 
         StringMetrics {
@@ -120,27 +120,27 @@ impl GRObject {
 
 
 #[no_mangle]
-pub extern "C" fn test_renderer(gro_ptr: *mut CGRObject) {
-    let mut gro = GRObject::new(gro_ptr);
+pub extern "C" fn test_renderer(rdev_ptr: *mut CRenderDevice) {
+    let mut rdev = RenderDevice::new(rdev_ptr);
     let gc = GContext::new();
-    let mut m = gro.string_metrics(" ", &gc);
+    let mut m = rdev.string_metrics(" ", &gc);
     let w_space = m.width;
     let mut x = 0.2;
-    let y = 2.0;
-    gro.draw_text("These", x, y, &gc);
-    m = gro.string_metrics("These", &gc);
+    let y = 0.5;
+    rdev.draw_text("These", x, y, &gc);
+    m = rdev.string_metrics("These", &gc);
     x += w_space + m.width;
     let mut gc2 = gc.copy();
     gc2.set_color("red");
     gc2.set_fontface(Fontface::Bold);
-    gro.draw_text("grobs", x, y, &gc2);
-    m = gro.string_metrics("grobs", &gc2);
+    rdev.draw_text("grobs", x, y, &gc2);
+    m = rdev.string_metrics("grobs", &gc2);
     x += w_space + m.width;
-    gro.draw_text("were made", x, y, &gc);
-    m = gro.string_metrics("were made", &gc);
+    rdev.draw_text("were made", x, y, &gc);
+    m = rdev.string_metrics("were made", &gc);
     x += w_space + m.width;
     gc2.set_color("blue");
     gc2.set_fontface(Fontface::Italics);
-    gro.draw_text("in rust.", x, y, &gc2);
+    rdev.draw_text("in rust.", x, y, &gc2);
 }
 

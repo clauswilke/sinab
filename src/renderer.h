@@ -14,10 +14,11 @@ extern "C" {
  */
 
 typedef struct {
-  SEXP grobs;
-  R_xlen_t size;
-  R_xlen_t capacity;
-} GR_Object;
+  SEXP grobs;         /* vector holding the rendered grobs */
+  R_xlen_t size;      /* current number of rendered grobs */
+  R_xlen_t capacity;  /* capacity of the grobs vector; always >= size */
+  double y0;          /* y reference value, used to invert coordinate system */
+} RenderDevice;
 
 /* 
  * Graphics context. Similar to R_GE_gcontext
@@ -43,15 +44,16 @@ typedef struct {
  * Function declarations
  */
 
-/* grid_renderer.c */
-extern GR_Object* gr_new();
-extern SEXP gr_release(GR_Object*); 
-extern void gr_draw_text(GR_Object*, const char* label, double x, double y, const GContext *);
-extern void gr_string_metrics(GR_Object*, const char* label, const GContext *,
-                              double *ascent, double *descent, double *width);
+/* render_device.c */
+extern RenderDevice* rdev_new(double y0);
+extern SEXP rdev_release(RenderDevice*); 
+extern void rdev_draw_text(RenderDevice*, const char* label, double x, double y, const GContext *);
+extern void rdev_string_metrics(RenderDevice*, const char* label, const GContext *,
+                                double *ascent, double *descent, double *width);
+double rdev_device_height();
 
-extern SEXP test_gr_new_release(SEXP);
-extern SEXP test_gr_draw_text();
+extern SEXP test_rdev_new_release(SEXP);
+extern SEXP test_rdev_draw_text();
 extern SEXP test_gpar_gcontext();
 
 

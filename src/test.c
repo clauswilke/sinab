@@ -7,7 +7,8 @@
 #include "mdlayout/mdlayout.h"
 
 SEXP C_grobs_from_rust() {
-  GR_Object* gro = gr_new();
-  test_renderer(gro);
-  return gr_release(gro);
+  double ymax = rdev_device_height();
+  RenderDevice* rdev = rdev_new(ymax);
+  test_renderer(rdev);
+  return rdev_release(rdev);
 }

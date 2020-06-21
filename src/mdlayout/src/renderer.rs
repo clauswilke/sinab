@@ -78,9 +78,9 @@ pub struct RenderDevice {
 
 #[allow(dead_code)]
 pub struct StringMetrics {
-    ascent: f64,
-    descent: f64,
-    width: f64
+    pub ascent: f64,
+    pub descent: f64,
+    pub width: f64,
 }
 
 impl RenderDevice {
@@ -116,31 +116,5 @@ impl RenderDevice {
             width: cwidth as f64
         }
     }
-}
-
-
-#[no_mangle]
-pub extern "C" fn test_renderer(rdev_ptr: *mut CRenderDevice) {
-    let mut rdev = RenderDevice::new(rdev_ptr);
-    let gc = GContext::new();
-    let mut m = rdev.string_metrics(" ", &gc);
-    let w_space = m.width;
-    let mut x = 0.2;
-    let y = 0.5;
-    rdev.draw_text("These", x, y, &gc);
-    m = rdev.string_metrics("These", &gc);
-    x += w_space + m.width;
-    let mut gc2 = gc.copy();
-    gc2.set_color("red");
-    gc2.set_fontface(Fontface::Bold);
-    rdev.draw_text("grobs", x, y, &gc2);
-    m = rdev.string_metrics("grobs", &gc2);
-    x += w_space + m.width;
-    rdev.draw_text("were made", x, y, &gc);
-    m = rdev.string_metrics("were made", &gc);
-    x += w_space + m.width;
-    gc2.set_color("blue");
-    gc2.set_fontface(Fontface::Italics);
-    rdev.draw_text("in rust.", x, y, &gc2);
 }
 

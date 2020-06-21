@@ -1,11 +1,4 @@
 // Modules are other .rs source files
 mod markdown;
 mod renderer;
-
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn it_works() {
-        assert_eq!(2 + 2, 4);
-    }
-}
+mod test;

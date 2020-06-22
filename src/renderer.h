@@ -53,14 +53,13 @@ extern void rdev_string_metrics(RenderDevice*, const char* label, const GContext
 double rdev_device_height();
 
 extern SEXP test_rdev_new_release(SEXP);
-extern SEXP test_rdev_draw_text();
 extern SEXP test_gpar_gcontext();
 
 
 /* gcontext.c */
 
 extern GContext* gcontext_new();
-extern GContext* gcontext_copy(GContext*);
+extern GContext* gcontext_clone(GContext*);
 extern void gcontext_delete(GContext*);
 extern void gcontext_set_color(GContext*, const char*);
 extern const char* gcontext_color(GContext*);

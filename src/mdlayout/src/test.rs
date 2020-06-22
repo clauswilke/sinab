@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use super::renderer::*;
 use std::str;
 
@@ -70,7 +72,7 @@ fn string_manip(input: &str, rdev: &mut RenderDevice) {
     }
 }
 
-/*
+
 fn make_grobs(rdev: &mut RenderDevice) {
     let gc = GContext::new();
     let mut m = rdev.string_metrics(" ", &gc);
@@ -80,7 +82,7 @@ fn make_grobs(rdev: &mut RenderDevice) {
     rdev.draw_text("These", x, y, &gc);
     m = rdev.string_metrics("These", &gc);
     x += w_space + m.width;
-    let mut gc2 = gc.copy();
+    let mut gc2 = gc.clone();
     gc2.set_color("red");
     gc2.set_fontface(Fontface::Bold);
     rdev.draw_text("grobs", x, y, &gc2);
@@ -93,9 +95,8 @@ fn make_grobs(rdev: &mut RenderDevice) {
     gc2.set_fontface(Fontface::Italics);
     rdev.draw_text("in rust.", x, y, &gc2);
 }
-*/
 
-/*
+
 fn test_gc() {
     let mut gc = GContext::new();
 
@@ -111,15 +112,14 @@ fn test_gc() {
     println!("fontsize: {}", gc.fontsize());
     println!("lineheight: {}", gc.lineheight());
 }
-*/
 
 #[no_mangle]
 pub extern "C" fn test_renderer(rdev_ptr: *mut C_RenderDevice) {
     let mut rdev = RenderDevice::new(rdev_ptr);
-    //make_grobs(&mut rdev);
+    make_grobs(&mut rdev);
     //test_gc();
 
-    string_manip("This is a test.\n And some more.", &mut rdev)
+    //string_manip("This is a test.\n And some more.", &mut rdev)
 }
 
 

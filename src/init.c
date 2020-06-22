@@ -19,7 +19,6 @@ static const R_CallMethodDef CallEntries[] = {
   {"C_grobs_from_rust", (DL_FUNC) &C_grobs_from_rust, 0},
   {"rdev_string_metrics", (DL_FUNC) &rdev_string_metrics, 0},
   {"test_rdev_new_release", (DL_FUNC) &test_rdev_new_release, 1},
-  {"test_rdev_draw_text", (DL_FUNC) &test_rdev_draw_text, 0},
   {"gpar_empty", (DL_FUNC) &gpar_empty, 0},
   {"text_grob", (DL_FUNC) &text_grob, 6},
   {"unit_in", (DL_FUNC) &unit_in, 1},

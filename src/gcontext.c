@@ -23,9 +23,9 @@ GContext* gcontext_new() {
 }
 
 /* create a new graphics context object via copying */
-GContext* gcontext_copy(GContext* source) {
+GContext* gcontext_clone(GContext* source) {
 #ifdef DEBUG_MSG
-  Rprintf("gcontext_copy() called.\n");
+  Rprintf("gcontext_clone() called.\n");
 #endif
   
   GContext* gc = (GContext*) Calloc(1, GContext);

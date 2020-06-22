@@ -11,7 +11,7 @@ pub struct C_GContext { _private: [u8; 0] }
 extern {
     // construction and deletion
     fn gcontext_new() -> *mut C_GContext;
-    fn gcontext_copy(gc: *mut C_GContext) -> *mut C_GContext;
+    fn gcontext_clone(gc: *mut C_GContext) -> *mut C_GContext;
     fn gcontext_delete(gc: *mut C_GContext);
 
     // setters
@@ -37,6 +37,7 @@ pub struct GContext {
 }
 
 #[allow(dead_code)]
+#[derive(Copy, Clone, PartialEq)]
 pub enum Fontface {
     Plain,
     Bold,
@@ -60,11 +61,6 @@ impl GContext {
     pub fn new() -> Self {
         Self {
             gc_ptr: unsafe { gcontext_new() }
-        }
-    }
-    pub fn copy(&self) -> GContext {
-        Self {
-            gc_ptr: unsafe { gcontext_copy(self.gc_ptr) }
         }
     }
     pub fn as_ptr(&self) -> *const C_GContext {
@@ -148,6 +144,15 @@ impl GContext {
     }
 }
 
+impl Clone for GContext {
+    fn clone(&self) -> Self {
+        Self {
+            gc_ptr: unsafe { gcontext_clone(self.gc_ptr) }
+        }
+    }
+}
+
+
 impl Drop for GContext {
     fn drop(&mut self) {
         unsafe { gcontext_delete(self.gc_ptr); }
@@ -168,6 +173,7 @@ pub struct RenderDevice {
 }
 
 #[allow(dead_code)]
+#[derive(Copy, Clone)]
 pub struct StringMetrics {
     pub ascent: f64,
     pub descent: f64,
@@ -175,6 +181,7 @@ pub struct StringMetrics {
 }
 
 #[allow(dead_code)]
+#[derive(Copy, Clone)]
 pub struct FontMetrics {
     pub fontsize: f64,    // fontsize, in pt
     pub lineheight: f64,  // height of line in multiples of fontsize

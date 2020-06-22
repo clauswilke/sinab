@@ -14,9 +14,7 @@ struct InlineBox<'a> {
 
 fn string_manip(input: &str, rdev: &mut RenderDevice) {
     let gc = GContext::new();
-    let m = rdev.string_metrics(" ", &gc);
-    let w_space = m.width;
-
+    let fm = rdev.font_metrics(&gc);
     let mut inline_boxes: Vec<InlineBox> = Vec::new();
 
     for line in input.lines() {
@@ -25,15 +23,14 @@ fn string_manip(input: &str, rdev: &mut RenderDevice) {
             if word.len() > 0 {
                 // push word, then space
                 let m = rdev.string_metrics(word, &gc);
-                let space = m.width;
                 let b = InlineBox {
                     content: InlineBoxContent::Text(word),
-                    width: space,
+                    width: m.width,
                 };
                 inline_boxes.push(b);
                 let b = InlineBox {
                     content: InlineBoxContent::Space,
-                    width: w_space,
+                    width: fm.space_width,
                 };
                 inline_boxes.push(b);
             }
@@ -53,7 +50,7 @@ fn string_manip(input: &str, rdev: &mut RenderDevice) {
 
     let x0 = 0.2;
     let y0 = 0.5;
-    let lineheight = 0.5;
+    let linespacing = fm.linespacing;
     let mut x = 0.0;
     let mut y = 0.0;
     for b in inline_boxes {
@@ -63,7 +60,7 @@ fn string_manip(input: &str, rdev: &mut RenderDevice) {
             },
             InlineBoxContent::Linebreak=> {
                 x = 0.0;
-                y += lineheight;
+                y += linespacing;
             },
             InlineBoxContent::Text(word) => {
                 rdev.draw_text(word, x0 + x, y0 + y, &gc);
@@ -98,10 +95,29 @@ fn make_grobs(rdev: &mut RenderDevice) {
 }
 */
 
+/*
+fn test_gc() {
+    let mut gc = GContext::new();
+
+    gc.set_color("blue");
+    gc.set_fontfamily("Times New Roman");
+    gc.set_fontface(Fontface::BoldItalics);
+    gc.set_lineheight(2.10);
+
+    println!("color: {}", gc.color());
+    println!("fill: {}", gc.fill());
+    println!("fontfamily: {}", gc.fontfamily());
+    println!("fontface: {}", gc.fontface());
+    println!("fontsize: {}", gc.fontsize());
+    println!("lineheight: {}", gc.lineheight());
+}
+*/
+
 #[no_mangle]
 pub extern "C" fn test_renderer(rdev_ptr: *mut C_RenderDevice) {
     let mut rdev = RenderDevice::new(rdev_ptr);
     //make_grobs(&mut rdev);
+    //test_gc();
 
     string_manip("This is a test.\n And some more.", &mut rdev)
 }

@@ -72,6 +72,8 @@ extern void gcontext_set_fontface(GContext*, int);
 extern int gcontext_fontface(GContext*);
 extern void gcontext_set_fontsize(GContext*, double);
 extern double gcontext_fontsize(GContext*);
+extern void gcontext_set_lineheight(GContext*, double);
+extern double gcontext_lineheight(GContext*);
 
 /* r-callbacks.c */
 extern SEXP text_grob(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);

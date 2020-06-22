@@ -32,11 +32,15 @@ context("graphics context") {
     gcontext_set_fontface(gc, 3);
     expect_true(gcontext_fontface(gc) == 3);
     
+    gcontext_set_lineheight(gc, 1.3);
+    expect_true(gcontext_lineheight(gc) == 1.3);
+    
     GContext* gc2 = gcontext_copy(gc);
     expect_true(strcmp(gcontext_color(gc2), "blue") == 0);
     expect_true(strcmp(gcontext_fill(gc2), "red") == 0);
     expect_true(strcmp(gcontext_fontfamily(gc2), "Times New Roman") == 0);
     expect_true(gcontext_fontface(gc2) == 3);
+    expect_true(gcontext_lineheight(gc2) == 1.3);
     
     gcontext_delete(gc);
     gcontext_delete(gc2);

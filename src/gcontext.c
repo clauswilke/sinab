@@ -89,3 +89,11 @@ double gcontext_fontsize(GContext* gc) {
   return gc->fontsize;
 }
 
+void gcontext_set_lineheight(GContext* gc, double lineheight) {
+  gc->lineheight = lineheight;
+}
+
+double gcontext_lineheight(GContext* gc) {
+  return gc->lineheight;
+}
+

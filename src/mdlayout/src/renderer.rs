@@ -2,17 +2,33 @@
 extern crate libc;
 
 use libc::{c_char, c_double, c_int};
-use std::ffi::{CString};
+use std::ffi::{CString, CStr};
+use std::fmt;
 
 #[repr(C)]
 pub struct C_GContext { _private: [u8; 0] }
 
 extern {
+    // construction and deletion
     fn gcontext_new() -> *mut C_GContext;
     fn gcontext_copy(gc: *mut C_GContext) -> *mut C_GContext;
     fn gcontext_delete(gc: *mut C_GContext);
+
+    // setters
     fn gcontext_set_color(gc: *mut C_GContext, color: *const c_char);
+    fn gcontext_set_fill(gc: *mut C_GContext, color: *const c_char);
+    fn gcontext_set_fontfamily(gc: *mut C_GContext, color: *const c_char);
     fn gcontext_set_fontface(gc: *mut C_GContext, fontface: c_int);
+    fn gcontext_set_fontsize(gc: *mut C_GContext, fontface: c_double);
+    fn gcontext_set_lineheight(gc: *mut C_GContext, fontface: c_double);
+
+    // getters
+    fn gcontext_color(gc: *mut C_GContext) -> *const c_char;
+    fn gcontext_fill(gc: *mut C_GContext) -> *const c_char;
+    fn gcontext_fontfamily(gc: *mut C_GContext) -> *const c_char;
+    fn gcontext_fontface(gc: *mut C_GContext) -> c_int;
+    fn gcontext_fontsize(gc: *mut C_GContext) -> c_double;
+    fn gcontext_lineheight(gc: *mut C_GContext) -> c_double;
 }
 
 #[repr(C)]
@@ -28,6 +44,18 @@ pub enum Fontface {
     BoldItalics,
 }
 
+impl fmt::Display for Fontface {
+    fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
+        match *self {
+            Fontface::Plain => f.write_str("Plain"),
+            Fontface::Bold => f.write_str("Bold"),
+            Fontface::Italics => f.write_str("Italics"),
+            Fontface::BoldItalics => f.write_str("BoldItalics"),
+        }
+    }
+}
+
+
 impl GContext {
     pub fn new() -> Self {
         Self {
@@ -42,9 +70,19 @@ impl GContext {
     pub fn as_ptr(&self) -> *const C_GContext {
         self.gc_ptr
     }
+
+    // setters
     pub fn set_color(&mut self, color: &str) {
         let ccolor = CString::new(color).unwrap();
         unsafe { gcontext_set_color(self.gc_ptr, ccolor.as_ptr()); }
+    }
+    pub fn set_fill(&mut self, color: &str) {
+        let ccolor = CString::new(color).unwrap();
+        unsafe { gcontext_set_fill(self.gc_ptr, ccolor.as_ptr()); }
+    }
+    pub fn set_fontfamily(&mut self, fontfamily: &str) {
+        let cfontfamily = CString::new(fontfamily).unwrap();
+        unsafe { gcontext_set_fontfamily(self.gc_ptr, cfontfamily.as_ptr()); }
     }
     pub fn set_fontface(&mut self, fontface: Fontface) {
         let cface:c_int = match fontface {
@@ -55,7 +93,59 @@ impl GContext {
         };
         unsafe { gcontext_set_fontface(self.gc_ptr, cface); }
     }
+    pub fn set_fontsize(&mut self, fontsize: f64) {
+        unsafe { gcontext_set_fontsize(self.gc_ptr, fontsize as c_double); }
+    }
+    pub fn set_lineheight(&mut self, lineheight: f64) {
+        unsafe { gcontext_set_lineheight(self.gc_ptr, lineheight as c_double); }
+    }
 
+    // getters
+    pub fn color(&self) -> &str {
+        let c_str = unsafe {
+            CStr::from_ptr(gcontext_color(self.gc_ptr))
+        };
+        c_str.to_str().unwrap()
+    }
+    pub fn fill(&self) -> &str {
+        let c_str = unsafe {
+            CStr::from_ptr(gcontext_fill(self.gc_ptr))
+        };
+        c_str.to_str().unwrap()
+    }
+    pub fn fontfamily(&self) -> &str {
+        let c_str = unsafe {
+            CStr::from_ptr(gcontext_fontfamily(self.gc_ptr))
+        };
+        c_str.to_str().unwrap()
+    }
+    pub fn fontface(&self) -> Fontface {
+        let cface:c_int = unsafe {
+            gcontext_fontface(self.gc_ptr)
+        };
+
+        match cface {
+            1 => Fontface::Plain,
+            2 => Fontface::Bold,
+            3 => Fontface::Italics,
+            4 => Fontface::BoldItalics,
+            _ => Fontface::Plain, // interpret unknown fontfaces as Plain
+        }
+    }
+    pub fn fontsize(&self) -> f64 {
+        let csize:c_double = unsafe {
+            gcontext_fontsize(self.gc_ptr)
+        };
+
+        csize as f64
+    }
+    pub fn lineheight(&self) -> f64 {
+        let cheight:c_double = unsafe {
+            gcontext_lineheight(self.gc_ptr)
+        };
+
+        cheight as f64
+    }
 }
 
 impl Drop for GContext {
@@ -82,6 +172,16 @@ pub struct StringMetrics {
     pub ascent: f64,
     pub descent: f64,
     pub width: f64,
+}
+
+#[allow(dead_code)]
+pub struct FontMetrics {
+    pub fontsize: f64,    // fontsize, in pt
+    pub lineheight: f64,  // height of line in multiples of fontsize
+    pub linespacing: f64, // distance from baseline to baseline for the current font
+    pub lineascent: f64,  // height from baseline for the current font
+    pub linedescent: f64, // depth below baseline for the current font
+    pub space_width: f64, // width of a space
 }
 
 impl RenderDevice {
@@ -115,6 +215,24 @@ impl RenderDevice {
             ascent: cascent as f64,
             descent: cdescent as f64,
             width: cwidth as f64
+        }
+    }
+
+    pub fn font_metrics(&mut self, gc: &GContext) -> FontMetrics {
+        let m1 = self.string_metrics("gjpqyQ", gc);
+        let m2 = self.string_metrics(" ", gc);
+
+        let fontsize = gc.fontsize();
+        let lineheight = gc.lineheight();
+        let linespacing = fontsize * lineheight / 72.0; // divide by 72 to convert to in
+
+        FontMetrics {
+            fontsize: fontsize,
+            lineheight: lineheight,
+            linespacing: linespacing,
+            lineascent: linespacing - m1.descent,
+            linedescent: m1.descent,
+            space_width: m2.width,
         }
     }
 }

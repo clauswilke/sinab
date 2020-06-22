@@ -2,6 +2,8 @@
 
 use super::renderer::*;
 use std::str;
+use std::rc::Rc;
+use std::ops::Deref;
 
 pub enum InlineBoxContent<'a> {
     Space,
@@ -12,27 +14,41 @@ pub enum InlineBoxContent<'a> {
 struct InlineBox<'a> {
     pub content: InlineBoxContent<'a>,
     pub width: f64,
+    pub gc: Rc<GContext>,
 }
 
 fn string_manip(input: &str, rdev: &mut RenderDevice) {
-    let gc = GContext::new();
+    let gc = Rc::new(GContext::new());
     let fm = rdev.font_metrics(&gc);
     let mut inline_boxes: Vec<InlineBox> = Vec::new();
 
+    let mut i = 0;
     for line in input.lines() {
         for word in line.split(" ") {
+            i += 1;
             // words of length 0 arise from repeated spaces
             if word.len() > 0 {
+                let mut gc_new = gc.clone();
+                if i == 3 {
+                    let mut gc_tmp = gc.deref().clone();
+                    gc_tmp.set_color("red");
+                    gc_tmp.set_fontsize(34.0);
+                    gc_tmp.set_fontface(Fontface::Italics);
+                    gc_new = Rc::new(gc_tmp);
+                }
+
                 // push word, then space
-                let m = rdev.string_metrics(word, &gc);
+                let m = rdev.string_metrics(word, &gc_new);
                 let b = InlineBox {
                     content: InlineBoxContent::Text(word),
                     width: m.width,
+                    gc: gc_new,
                 };
                 inline_boxes.push(b);
                 let b = InlineBox {
                     content: InlineBoxContent::Space,
                     width: fm.space_width,
+                    gc: gc.clone(),
                 };
                 inline_boxes.push(b);
             }
@@ -46,6 +62,7 @@ fn string_manip(input: &str, rdev: &mut RenderDevice) {
         let b = InlineBox {
             content: InlineBoxContent::Linebreak,
             width: 0.0,
+            gc: gc.clone(),
         };
         inline_boxes.push(b);
     }
@@ -65,7 +82,7 @@ fn string_manip(input: &str, rdev: &mut RenderDevice) {
                 y += linespacing;
             },
             InlineBoxContent::Text(word) => {
-                rdev.draw_text(word, x0 + x, y0 + y, &gc);
+                rdev.draw_text(word, x0 + x, y0 + y, &b.gc);
                 x += b.width;
             }
         }
@@ -116,10 +133,10 @@ fn test_gc() {
 #[no_mangle]
 pub extern "C" fn test_renderer(rdev_ptr: *mut C_RenderDevice) {
     let mut rdev = RenderDevice::new(rdev_ptr);
-    make_grobs(&mut rdev);
+    //make_grobs(&mut rdev);
     //test_gc();
 
-    //string_manip("This is a test.\n And some more.", &mut rdev)
+    string_manip("This is one nice test.\n And some more.", &mut rdev)
 }
 
 

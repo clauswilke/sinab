@@ -82,7 +82,7 @@ int gcontext_fontface(GContext* gc) {
 }
 
 void gcontext_set_fontsize(GContext* gc, double fontsize) {
-  gc->fontface = fontsize;
+  gc->fontsize = fontsize;
 }
 
 double gcontext_fontsize(GContext* gc) {

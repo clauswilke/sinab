@@ -19,8 +19,8 @@ extern {
     fn gcontext_set_fill(gc: *mut C_GContext, color: *const c_char);
     fn gcontext_set_fontfamily(gc: *mut C_GContext, color: *const c_char);
     fn gcontext_set_fontface(gc: *mut C_GContext, fontface: c_int);
-    fn gcontext_set_fontsize(gc: *mut C_GContext, fontface: c_double);
-    fn gcontext_set_lineheight(gc: *mut C_GContext, fontface: c_double);
+    fn gcontext_set_fontsize(gc: *mut C_GContext, fontsize: c_double);
+    fn gcontext_set_lineheight(gc: *mut C_GContext, lineheight: c_double);
 
     // getters
     fn gcontext_color(gc: *mut C_GContext) -> *const c_char;

@@ -1,22 +1,23 @@
+#![allow(dead_code)]
 extern crate libc;
 
 use libc::{c_char, c_double, c_int};
 use std::ffi::{CString};
 
 #[repr(C)]
-pub struct CGContext { _private: [u8; 0] }
+pub struct C_GContext { _private: [u8; 0] }
 
 extern {
-    fn gcontext_new() -> *mut CGContext;
-    fn gcontext_copy(gc: *mut CGContext) -> *mut CGContext;
-    fn gcontext_delete(gc: *mut CGContext);
-    fn gcontext_set_color(gc: *mut CGContext, color: *const c_char);
-    fn gcontext_set_fontface(gc: *mut CGContext, fontface: c_int);
+    fn gcontext_new() -> *mut C_GContext;
+    fn gcontext_copy(gc: *mut C_GContext) -> *mut C_GContext;
+    fn gcontext_delete(gc: *mut C_GContext);
+    fn gcontext_set_color(gc: *mut C_GContext, color: *const c_char);
+    fn gcontext_set_fontface(gc: *mut C_GContext, fontface: c_int);
 }
 
 #[repr(C)]
 pub struct GContext {
-    gc_ptr: *mut CGContext,
+    gc_ptr: *mut C_GContext,
 }
 
 #[allow(dead_code)]
@@ -38,7 +39,7 @@ impl GContext {
             gc_ptr: unsafe { gcontext_copy(self.gc_ptr) }
         }
     }
-    pub fn as_ptr(&self) -> *const CGContext {
+    pub fn as_ptr(&self) -> *const C_GContext {
         self.gc_ptr
     }
     pub fn set_color(&mut self, color: &str) {
@@ -64,16 +65,16 @@ impl Drop for GContext {
 }
 
 #[repr(C)]
-pub struct CRenderDevice { _private: [u8; 0] }
+pub struct C_RenderDevice { _private: [u8; 0] }
 
 extern {
-    fn rdev_draw_text(rdev_ptr: *mut CRenderDevice, label: *const c_char, x: c_double, y: c_double, gc: *const CGContext);
-    fn rdev_string_metrics(rdev_ptr: *mut CRenderDevice, label: *const c_char, gc: *const CGContext, ascent: &mut c_double, descent: &mut c_double, width: &mut c_double);
+    fn rdev_draw_text(rdev_ptr: *mut C_RenderDevice, label: *const c_char, x: c_double, y: c_double, gc: *const C_GContext);
+    fn rdev_string_metrics(rdev_ptr: *mut C_RenderDevice, label: *const c_char, gc: *const C_GContext, ascent: &mut c_double, descent: &mut c_double, width: &mut c_double);
 }
 
 #[repr(C)]
 pub struct RenderDevice {
-    rdev_ptr: *mut CRenderDevice,
+    rdev_ptr: *mut C_RenderDevice,
 }
 
 #[allow(dead_code)]
@@ -84,7 +85,7 @@ pub struct StringMetrics {
 }
 
 impl RenderDevice {
-    pub fn new(rdev_ptr: *mut CRenderDevice) -> Self {
+    pub fn new(rdev_ptr: *mut C_RenderDevice) -> Self {
         Self {
             rdev_ptr
         }

@@ -1,6 +1,8 @@
 #![allow(dead_code)]
 
 use super::renderer::*;
+use super::c_helper::*;
+use super::markdown::md_to_html;
 use std::str;
 use std::rc::Rc;
 use std::ops::Deref;
@@ -131,12 +133,14 @@ fn test_gc() {
 }
 
 #[no_mangle]
-pub extern "C" fn test_renderer(rdev_ptr: *mut C_RenderDevice) {
+pub extern "C" fn mdl_test_renderer(rdev_ptr: *mut C_RenderDevice, text: *const c_char) {
     let mut rdev = RenderDevice::new(rdev_ptr);
-    //make_grobs(&mut rdev);
-    //test_gc();
+    let input = match cstring_to_str(text) {
+        Ok(s) => md_to_html(s),
+        Err(..) => "".to_string(),
+    };
 
-    string_manip("This is one nice test.\n And some more.", &mut rdev)
+    string_manip(input.as_str(), &mut rdev);
 }
 
 

@@ -6,9 +6,13 @@
 // Import C headers for rust API
 #include "mdlayout/mdlayout.h"
 
-SEXP C_grobs_from_rust() {
+SEXP C_render_markdown(SEXP str) {
   double ymax = rdev_device_height();
   RenderDevice* rdev = rdev_new(ymax);
-  test_renderer(rdev);
+  
+  if (xlength(str) >= 1) {
+    mdl_test_renderer(rdev, Rf_translateCharUTF8(STRING_ELT(str, 0)));
+  }
+  
   return rdev_release(rdev);
 }

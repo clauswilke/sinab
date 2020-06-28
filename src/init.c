@@ -6,7 +6,7 @@
 #include "renderer.h"
 
 /* test.c */
-extern SEXP C_grobs_from_rust(); 
+extern SEXP C_render_markdown(SEXP); 
 
 /* markdown.c */
 extern SEXP C_md_to_html(SEXP);
@@ -16,7 +16,7 @@ extern SEXP run_testthat_tests();
 
 static const R_CallMethodDef CallEntries[] = {
   {"C_md_to_html", (DL_FUNC) &C_md_to_html, 1},
-  {"C_grobs_from_rust", (DL_FUNC) &C_grobs_from_rust, 0},
+  {"C_render_markdown", (DL_FUNC) &C_render_markdown, 1},
   {"rdev_string_metrics", (DL_FUNC) &rdev_string_metrics, 0},
   {"test_rdev_new_release", (DL_FUNC) &test_rdev_new_release, 1},
   {"gpar_empty", (DL_FUNC) &gpar_empty, 0},

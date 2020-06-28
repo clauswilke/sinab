@@ -10,9 +10,9 @@ SEXP C_md_to_html(SEXP str) {
   PROTECT(out = allocVector(STRSXP, n));
   
   for (R_xlen_t i = 0; i < n; i++) {
-    char *s = md_to_html(Rf_translateCharUTF8(STRING_ELT(str, i)));
+    char *s = mdl_md_to_html(Rf_translateCharUTF8(STRING_ELT(str, i)));
     SEXP rs = PROTECT(Rf_mkCharCE(s, CE_UTF8)); 
-    free_rust_cstring(s); /* make sure the raw string we were given is properly deallocated */
+    mdl_free_cstring(s); /* make sure the raw string we were given is properly deallocated */
     SET_STRING_ELT(out, i, rs);
     UNPROTECT(1);
   }

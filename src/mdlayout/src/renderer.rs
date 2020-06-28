@@ -89,6 +89,29 @@ impl GContext {
         };
         unsafe { gcontext_set_fontface(self.gc_ptr, cface); }
     }
+    /// Sets the fontface taking into consideration the current value, i.e., if
+    /// it is already Italics and is set to Bold, the result is BoldItalics. Never
+    /// removes an attribute, only adds.
+    pub fn modify_fontface(&mut self, fontface: Fontface) {
+        match fontface {
+            Fontface::Plain => {},
+            Fontface::Bold => {
+                match self.fontface() {
+                    Fontface::Plain => self.set_fontface(Fontface::Bold),
+                    Fontface::Italics => self.set_fontface(Fontface::BoldItalics),
+                    _ => {},
+                };
+            }
+            Fontface::Italics => {
+                match self.fontface() {
+                    Fontface::Plain => self.set_fontface(Fontface::Italics),
+                    Fontface::Bold => self.set_fontface(Fontface::BoldItalics),
+                    _ => {},
+                };
+            }
+            Fontface::BoldItalics => self.set_fontface(Fontface::BoldItalics),
+        }
+    }
     pub fn set_fontsize(&mut self, fontsize: f64) {
         unsafe { gcontext_set_fontsize(self.gc_ptr, fontsize as c_double); }
     }

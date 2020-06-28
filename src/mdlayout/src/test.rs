@@ -1,79 +1,149 @@
-#![allow(dead_code)]
+extern crate kuchiki;
 
 use super::renderer::*;
 use super::c_helper::*;
 use super::markdown::md_to_html;
+
+use kuchiki::traits::*;
+use kuchiki::NodeData::*;
+use kuchiki::NodeRef;
+
 use std::str;
 use std::rc::Rc;
+use std::cell::RefCell;
 use std::ops::Deref;
 
-pub enum InlineBoxContent<'a> {
+pub enum InlineBoxContent {
     Space,
     Linebreak,
-    Text(&'a str),
+    Text(RefCell<String>),
 }
 
-struct InlineBox<'a> {
-    pub content: InlineBoxContent<'a>,
+struct InlineBox {
+    pub content: InlineBoxContent,
     pub width: f64,
     pub linespacing: f64,
     pub gc: Rc<GContext>,
 }
 
-fn setup_inline_boxes<'a>(input: &'a str, rdev: &mut RenderDevice) -> Vec<InlineBox<'a>> {
-    let gc = Rc::new(GContext::new());
+
+fn make_text_boxes(
+    boxes: &mut Vec<InlineBox>,
+    text: &RefCell<String>,
+    gc: &Rc<GContext>,
+    rdev: &mut RenderDevice
+) {
     let fm = rdev.font_metrics(&gc);
-    let mut inline_boxes: Vec<InlineBox> = Vec::new();
 
-    let mut i = 0;
-    for line in input.lines() {
-        for word in line.split(" ") {
-            i += 1;
-            // words of length 0 arise from repeated spaces
-            if word.len() > 0 {
-                let mut gc_new = gc.clone();
-                if i == 3 {
-                    let mut gc_tmp = gc.deref().clone();
-                    gc_tmp.set_color("red");
-                    gc_tmp.set_fontsize(34.0);
-                    gc_tmp.set_fontface(Fontface::Italics);
-                    gc_new = Rc::new(gc_tmp);
-                }
+    // add a starting whitespace box if none exists yet
+    let s = text.borrow();
+    if s.starts_with(|x: char| x.is_ascii_whitespace()) {
+        maybe_add_space(boxes, &fm, gc);
+    }
 
-                // push word, then space
-                let m = rdev.string_metrics(word, &gc_new);
-                let b = InlineBox {
-                    content: InlineBoxContent::Text(word),
-                    width: m.width,
-                    linespacing: fm.linespacing,
-                    gc: gc_new,
-                };
-                inline_boxes.push(b);
-                let b = InlineBox {
-                    content: InlineBoxContent::Space,
-                    width: fm.space_width,
-                    linespacing: fm.linespacing,
-                    gc: gc.clone(),
-                };
-                inline_boxes.push(b);
-            }
-        }
-        // remove last box if it is a space before adding newline
-        if let Some(b) = inline_boxes.last() {
-            if let InlineBoxContent::Space = b.content {
-                inline_boxes.pop();
-            }
-        }
+    for word in s.split_ascii_whitespace() {
+        // push word, then space
+        let m = rdev.string_metrics(word, gc.deref());
         let b = InlineBox {
-            content: InlineBoxContent::Linebreak,
-            width: 0.0,
+            content: InlineBoxContent::Text(RefCell::new(word.to_string())),
+            width: m.width,
             linespacing: fm.linespacing,
             gc: gc.clone(),
         };
-        inline_boxes.push(b);
+        boxes.push(b);
+        add_space(boxes, &fm, &gc);
     }
 
-    inline_boxes
+    // remove final space if string doesn't end with whitespace
+    if !s.ends_with(|x: char| x.is_ascii_whitespace()) {
+        maybe_remove_space(boxes);
+    }
+}
+
+/// Unconditionally add a space box
+fn add_space(boxes: &mut Vec<InlineBox>, fm: &FontMetrics, gc: &Rc<GContext>) {
+    let b = InlineBox {
+        content: InlineBoxContent::Space,
+        width: fm.space_width,
+        linespacing: fm.linespacing,
+        gc: gc.clone(),
+    };
+
+    boxes.push(b);
+}
+
+/// Add space only if current box list doesn't end in a space.
+/// Never adds a space to an empty box list or after a linebreak.
+fn maybe_add_space(boxes: &mut Vec<InlineBox>, fm: &FontMetrics, gc: &Rc<GContext>) {
+    if let Some(b) = boxes.last() {
+        match b.content {
+            InlineBoxContent::Space => {},
+            InlineBoxContent::Linebreak => {},
+            _ => add_space(boxes, fm, gc),
+        }
+    }
+}
+
+/// Remove last box if it is a space box
+fn maybe_remove_space(boxes: &mut Vec<InlineBox>) {
+    if let Some(b) = boxes.last() {
+        if let InlineBoxContent::Space = b.content {
+            boxes.pop();
+        }
+    }
+}
+
+/// Add a newline box. First removes a last space if it exists.
+fn add_newline(boxes: &mut Vec<InlineBox>, gc: &Rc<GContext>, rdev: &mut RenderDevice) {
+    let fm = rdev.font_metrics(&gc);
+
+    maybe_remove_space(boxes);
+
+    let b = InlineBox {
+        content: InlineBoxContent::Linebreak,
+        width: 0.0,
+        linespacing: fm.linespacing,
+        gc: gc.clone(),
+    };
+    boxes.push(b);
+}
+
+
+fn process_node(
+    boxes: &mut Vec<InlineBox>,
+    node: &NodeRef,
+    gc: &Rc<GContext>,
+    rdev: &mut RenderDevice
+) {
+    let mut gc_new = gc.clone();
+
+    match node.data() {
+        Element(elt) => {
+            let name = &elt.name.local;
+            match name.as_ref() {
+                "em" => {
+                    let mut tmp = gc.deref().clone();
+                    tmp.modify_fontface(Fontface::Italics);
+                    gc_new = Rc::new(tmp);
+                },
+                "strong" => {
+                    let mut tmp = gc.deref().clone();
+                    tmp.modify_fontface(Fontface::Bold);
+                    gc_new = Rc::new(tmp);
+                },
+                "br" => add_newline(boxes, &gc_new, rdev),
+                _ => {},
+            }
+        },
+        Text(text) => {
+            make_text_boxes(boxes, text, &gc_new, rdev);
+        },
+        _ => {},
+    }
+
+    for child in node.children() {
+        process_node(boxes, &child, &gc_new, rdev);
+    }
 }
 
 fn render_inline_boxes(inline_boxes: &Vec<InlineBox>, rdev: &mut RenderDevice) {
@@ -82,7 +152,7 @@ fn render_inline_boxes(inline_boxes: &Vec<InlineBox>, rdev: &mut RenderDevice) {
     let mut x = 0.0;
     let mut y = 0.0;
     for b in inline_boxes {
-        match b.content {
+        match &b.content {
             InlineBoxContent::Space => {
                 x += b.width;
             },
@@ -91,57 +161,20 @@ fn render_inline_boxes(inline_boxes: &Vec<InlineBox>, rdev: &mut RenderDevice) {
                 y += b.linespacing;
             },
             InlineBoxContent::Text(word) => {
-                rdev.draw_text(word, x0 + x, y0 + y, &b.gc);
+                rdev.draw_text(&word.borrow(), x0 + x, y0 + y, &b.gc);
                 x += b.width;
             }
         }
     }
 }
 
+fn render_html(input: &str, rdev: &mut RenderDevice) {
+    let mut inline_boxes: Vec<InlineBox> = Vec::new();
+    let gc = Rc::new(GContext::new());
+    let document = kuchiki::parse_html().one(input);
 
-fn render_text(input: &str, rdev: &mut RenderDevice) {
-    let boxes = setup_inline_boxes(input, rdev);
-    render_inline_boxes(&boxes, rdev);
-}
-
-fn make_grobs(rdev: &mut RenderDevice) {
-    let gc = GContext::new();
-    let mut m = rdev.string_metrics(" ", &gc);
-    let w_space = m.width;
-    let mut x = 0.2;
-    let y = 0.5;
-    rdev.draw_text("These", x, y, &gc);
-    m = rdev.string_metrics("These", &gc);
-    x += w_space + m.width;
-    let mut gc2 = gc.clone();
-    gc2.set_color("red");
-    gc2.set_fontface(Fontface::Bold);
-    rdev.draw_text("grobs", x, y, &gc2);
-    m = rdev.string_metrics("grobs", &gc2);
-    x += w_space + m.width;
-    rdev.draw_text("were made", x, y, &gc);
-    m = rdev.string_metrics("were made", &gc);
-    x += w_space + m.width;
-    gc2.set_color("blue");
-    gc2.set_fontface(Fontface::Italics);
-    rdev.draw_text("in rust.", x, y, &gc2);
-}
-
-
-fn test_gc() {
-    let mut gc = GContext::new();
-
-    gc.set_color("blue");
-    gc.set_fontfamily("Times New Roman");
-    gc.set_fontface(Fontface::BoldItalics);
-    gc.set_lineheight(2.10);
-
-    println!("color: {}", gc.color());
-    println!("fill: {}", gc.fill());
-    println!("fontfamily: {}", gc.fontfamily());
-    println!("fontface: {}", gc.fontface());
-    println!("fontsize: {}", gc.fontsize());
-    println!("lineheight: {}", gc.lineheight());
+    process_node(&mut inline_boxes, &document, &gc, rdev);
+    render_inline_boxes(&inline_boxes, rdev);
 }
 
 #[no_mangle]
@@ -152,7 +185,7 @@ pub extern "C" fn mdl_test_renderer(rdev_ptr: *mut C_RenderDevice, text: *const 
         Err(..) => "".to_string(),
     };
 
-    render_text(input.as_str(), &mut rdev);
+    render_html(input.as_str(), &mut rdev);
 }
 
 

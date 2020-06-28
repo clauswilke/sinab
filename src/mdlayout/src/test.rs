@@ -16,10 +16,11 @@ pub enum InlineBoxContent<'a> {
 struct InlineBox<'a> {
     pub content: InlineBoxContent<'a>,
     pub width: f64,
+    pub linespacing: f64,
     pub gc: Rc<GContext>,
 }
 
-fn string_manip(input: &str, rdev: &mut RenderDevice) {
+fn setup_inline_boxes<'a>(input: &'a str, rdev: &mut RenderDevice) -> Vec<InlineBox<'a>> {
     let gc = Rc::new(GContext::new());
     let fm = rdev.font_metrics(&gc);
     let mut inline_boxes: Vec<InlineBox> = Vec::new();
@@ -44,12 +45,14 @@ fn string_manip(input: &str, rdev: &mut RenderDevice) {
                 let b = InlineBox {
                     content: InlineBoxContent::Text(word),
                     width: m.width,
+                    linespacing: fm.linespacing,
                     gc: gc_new,
                 };
                 inline_boxes.push(b);
                 let b = InlineBox {
                     content: InlineBoxContent::Space,
                     width: fm.space_width,
+                    linespacing: fm.linespacing,
                     gc: gc.clone(),
                 };
                 inline_boxes.push(b);
@@ -64,14 +67,18 @@ fn string_manip(input: &str, rdev: &mut RenderDevice) {
         let b = InlineBox {
             content: InlineBoxContent::Linebreak,
             width: 0.0,
+            linespacing: fm.linespacing,
             gc: gc.clone(),
         };
         inline_boxes.push(b);
     }
 
+    inline_boxes
+}
+
+fn render_inline_boxes(inline_boxes: &Vec<InlineBox>, rdev: &mut RenderDevice) {
     let x0 = 0.2;
     let y0 = 0.5;
-    let linespacing = fm.linespacing;
     let mut x = 0.0;
     let mut y = 0.0;
     for b in inline_boxes {
@@ -81,7 +88,7 @@ fn string_manip(input: &str, rdev: &mut RenderDevice) {
             },
             InlineBoxContent::Linebreak=> {
                 x = 0.0;
-                y += linespacing;
+                y += b.linespacing;
             },
             InlineBoxContent::Text(word) => {
                 rdev.draw_text(word, x0 + x, y0 + y, &b.gc);
@@ -91,6 +98,11 @@ fn string_manip(input: &str, rdev: &mut RenderDevice) {
     }
 }
 
+
+fn render_text(input: &str, rdev: &mut RenderDevice) {
+    let boxes = setup_inline_boxes(input, rdev);
+    render_inline_boxes(&boxes, rdev);
+}
 
 fn make_grobs(rdev: &mut RenderDevice) {
     let gc = GContext::new();
@@ -140,7 +152,7 @@ pub extern "C" fn mdl_test_renderer(rdev_ptr: *mut C_RenderDevice, text: *const 
         Err(..) => "".to_string(),
     };
 
-    string_manip(input.as_str(), &mut rdev);
+    render_text(input.as_str(), &mut rdev);
 }
 
 

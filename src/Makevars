@@ -8,7 +8,7 @@ all: C_clean
 $(SHLIB): $(STATLIB)
 
 $(STATLIB):
-	cargo build --manifest-path=mdlayout/Cargo.toml
+	cargo build --lib --manifest-path=mdlayout/Cargo.toml
 
 C_clean:
 	rm -Rf $(SHLIB) $(STATLIB) #$(OBJECTS)

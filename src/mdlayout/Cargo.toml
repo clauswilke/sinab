@@ -13,3 +13,4 @@ libc = "0.2"
 # https://github.com/raphlinus/pulldown-cmark/blob/master/README.md#build-options
 pulldown-cmark = { version = "0.7", default-features = false, features = ["simd"] }
 kuchiki = "0.8.0"
+cssparser = "0.27.2"

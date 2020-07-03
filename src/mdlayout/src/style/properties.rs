@@ -13,6 +13,12 @@ impl<'i> Color<'i> {
         let location = input.current_source_location();
         match *input.next()? {
             Token::Ident(ref s) => Ok(Color(s.clone())),
+            Token::Hash(ref s) => {
+                let mut c = String::with_capacity(9);
+                c.push('#');
+                c.push_str(s);
+                Ok(Self(CowRcStr::from(c)))
+            },
             Token::IDHash(ref s) => {
                 let mut c = String::with_capacity(9);
                 c.push('#');
@@ -22,10 +28,14 @@ impl<'i> Color<'i> {
             ref t => Err(location.new_unexpected_token_error(t.clone())),
         }
     }
+
+    pub fn as_ref(&self) -> &str {
+        self.0.as_ref()
+    }
 }
 
 /// Type that holds a CSS dimension (number with unit attached).
-#[derive(Copy,Clone,Debug)]
+#[derive(Copy,Clone,Debug,PartialOrd,PartialEq)]
 #[allow(non_camel_case_types)]
 pub enum Dimension {
     /// centimeters
@@ -135,4 +145,106 @@ impl<'i> AtRuleParser<'i> for CssPropertyParser {
     type PreludeBlock = ();
     type AtRule = CssProperty<'i>;
     type Error = ();
+}
+
+/// Convenience function for working with `DeclarationListParser`: Take
+/// a string input containing one or more declarations, parse them, and return
+/// a vector of parsed CSS properties.
+pub fn parse_declaration_block(s: &str) -> Vec<CssProperty> {
+    let mut parser_input = ParserInput::new(s);
+    let mut input = Parser::new(&mut parser_input);
+
+    DeclarationListParser::new(&mut input, CssPropertyParser)
+        // we discard all declarations that weren't parsed correctly
+        .filter_map(|x| { x.ok() })
+        .collect()
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::style::properties::*;
+    //use std::borrow::Borrow;
+
+    #[test]
+    fn ignore_css_parse_errors() {
+        let css = r#"color: red green;font-size:;"#;
+        let result = parse_declaration_block(css);
+        assert_eq!(result.len(), 0);
+    }
+
+    #[test]
+    fn parse_color() {
+        let css = r#"color: red; background: #00FF00; COLOR: #ff00ff00;"#;
+        let mut result = parse_declaration_block(css);
+        assert_eq!(result.len(), 3);
+        assert_eq!(match result.pop().unwrap() {
+                CssProperty::Color(ref s) => s.0.as_ref(),
+                _ => ""
+        }, "#ff00ff00");
+        assert_eq!(match result.pop().unwrap() {
+            CssProperty::Background(ref s) => s.0.as_ref(),
+            _ => ""
+        }, "#00FF00");
+        assert_eq!(match result.pop().unwrap() {
+            CssProperty::Color(ref s) => s.0.as_ref(),
+            _ => ""
+        }, "red");
+    }
+
+    #[test]
+    fn parse_dimension() {
+        let css = r#"
+           font-size: 1cm;
+           font-size: 10mm;
+           font-size: 0.5in;
+           font-size: 12px;
+           font-size: 20.5pt;
+           font-size: 8pc;
+           font-size: 2em;
+           font-size: 5ex;
+           font-size: 50%;
+           font-size: 0;"#;
+        let mut result = parse_declaration_block(css);
+        assert_eq!(result.len(), 10);
+        assert_eq!(match result.pop().unwrap() {
+            CssProperty::FontSize(d) => d,
+            _ => Dimension::px(1.0),
+        }, Dimension::px(0.0));
+        assert_eq!(match result.pop().unwrap() {
+            CssProperty::FontSize(d) => d,
+            _ => Dimension::px(0.0),
+        }, Dimension::percent(0.5));
+        assert_eq!(match result.pop().unwrap() {
+            CssProperty::FontSize(d) => d,
+            _ => Dimension::px(0.0),
+        }, Dimension::ex(5.0));
+        assert_eq!(match result.pop().unwrap() {
+            CssProperty::FontSize(d) => d,
+            _ => Dimension::px(0.0),
+        }, Dimension::em(2.0));
+        assert_eq!(match result.pop().unwrap() {
+            CssProperty::FontSize(d) => d,
+            _ => Dimension::px(0.0),
+        }, Dimension::pc(8.0));
+        assert_eq!(match result.pop().unwrap() {
+            CssProperty::FontSize(d) => d,
+            _ => Dimension::px(0.0),
+        }, Dimension::pt(20.5));
+        assert_eq!(match result.pop().unwrap() {
+            CssProperty::FontSize(d) => d,
+            _ => Dimension::px(0.0),
+        }, Dimension::px(12.0));
+        assert_eq!(match result.pop().unwrap() {
+            CssProperty::FontSize(d) => d,
+            _ => Dimension::px(0.0),
+        }, Dimension::inch(0.5));
+        assert_eq!(match result.pop().unwrap() {
+            CssProperty::FontSize(d) => d,
+            _ => Dimension::px(0.0),
+        }, Dimension::mm(10.0));
+        assert_eq!(match result.pop().unwrap() {
+            CssProperty::FontSize(d) => d,
+            _ => Dimension::px(0.0),
+        }, Dimension::cm(1.0));
+    }
 }

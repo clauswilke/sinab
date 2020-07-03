@@ -1,12 +1,14 @@
 extern crate kuchiki;
 
-use super::renderer::*;
-use super::c_helper::*;
-use super::markdown::md_to_html;
+use crate::renderer::*;
+use crate::c_helper::*;
+use crate::markdown::md_to_html;
+use crate::style::properties::*;
 
 use kuchiki::traits::*;
 use kuchiki::NodeData::*;
 use kuchiki::NodeRef;
+use kuchiki::ElementData;
 
 use std::str;
 use std::rc::Rc;
@@ -108,6 +110,24 @@ fn add_newline(boxes: &mut Vec<InlineBox>, gc: &Rc<GContext>, rdev: &mut RenderD
     boxes.push(b);
 }
 
+fn apply_style_attribute(elt: &ElementData, gc: Rc<GContext>) -> Rc<GContext> {
+    if let Some(css) = elt.attributes.borrow().get("style") {
+        let result = parse_declaration_block(css);
+        if result.len() > 0 {
+            let mut gc_new = gc.deref().clone();
+            for decl in result.iter() {
+                match decl {
+                    CssProperty::Color(ref s) => {
+                        gc_new.set_color(s.as_ref());
+                    }
+                    _ => {}
+                }
+            }
+            return Rc::new(gc_new)
+        }
+    }
+    gc
+}
 
 fn process_node(
     boxes: &mut Vec<InlineBox>,
@@ -125,11 +145,16 @@ fn process_node(
                     let mut tmp = gc.deref().clone();
                     tmp.modify_fontface(Fontface::Italics);
                     gc_new = Rc::new(tmp);
+                    gc_new = apply_style_attribute(elt, gc_new);
+                },
+                "span" => {
+                    gc_new = apply_style_attribute(elt, gc_new);
                 },
                 "strong" => {
                     let mut tmp = gc.deref().clone();
                     tmp.modify_fontface(Fontface::Bold);
                     gc_new = Rc::new(tmp);
+                    gc_new = apply_style_attribute(elt, gc_new);
                 },
                 "br" => add_newline(boxes, &gc_new, rdev),
                 _ => {},
@@ -186,14 +211,4 @@ pub extern "C" fn mdl_test_renderer(rdev_ptr: *mut C_RenderDevice, text: *const 
     };
 
     render_html(input.as_str(), &mut rdev);
-}
-
-
-// keep an empty test here for now as a reminder to write proper unit tests
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn it_works() {
-        assert_eq!(2 + 2, 4);
-    }
 }

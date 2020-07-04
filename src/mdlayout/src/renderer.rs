@@ -5,6 +5,12 @@ use libc::{c_char, c_double, c_int};
 use std::ffi::{CString, CStr};
 use std::fmt;
 
+// for COW implementation of GContext
+use std::borrow::Cow;
+use std::borrow::Borrow;
+use std::ops::{Deref, DerefMut};
+
+
 #[repr(C)]
 pub struct C_GContext { _private: [u8; 0] }
 
@@ -31,11 +37,6 @@ extern {
     fn gcontext_lineheight(gc: *mut C_GContext) -> c_double;
 }
 
-#[repr(C)]
-pub struct GContext {
-    gc_ptr: *mut C_GContext,
-}
-
 #[allow(dead_code)]
 #[derive(Copy, Clone, PartialEq)]
 pub enum Fontface {
@@ -57,7 +58,11 @@ impl fmt::Display for Fontface {
 }
 
 
-impl GContext {
+pub struct GContextImpl {
+    gc_ptr: *mut C_GContext,
+}
+
+impl GContextImpl {
     pub fn new() -> Self {
         Self {
             gc_ptr: unsafe { gcontext_new() }
@@ -167,7 +172,7 @@ impl GContext {
     }
 }
 
-impl Clone for GContext {
+impl Clone for GContextImpl {
     fn clone(&self) -> Self {
         Self {
             gc_ptr: unsafe { gcontext_clone(self.gc_ptr) }
@@ -175,12 +180,40 @@ impl Clone for GContext {
     }
 }
 
-
-impl Drop for GContext {
+impl Drop for GContextImpl {
     fn drop(&mut self) {
         unsafe { gcontext_delete(self.gc_ptr); }
     }
 }
+
+pub struct GContext<'a>(Cow<'a, GContextImpl>);
+
+impl<'a> GContext<'a> {
+    pub fn new() -> Self {
+        Self(Cow::Owned(GContextImpl::new()))
+    }
+}
+
+impl<'a> Clone for GContext<'a> {
+    fn clone(&self) -> Self {
+        Self(self.0.clone())
+    }
+}
+
+impl<'a> Deref for GContext<'a> {
+    type Target = GContextImpl;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl<'a> DerefMut for GContext<'a> {
+    fn deref_mut(&mut self) -> &mut GContextImpl {
+        self.0.to_mut()
+    }
+}
+
 
 #[repr(C)]
 pub struct C_RenderDevice { _private: [u8; 0] }
@@ -190,7 +223,6 @@ extern {
     fn rdev_string_metrics(rdev_ptr: *mut C_RenderDevice, label: *const c_char, gc: *const C_GContext, ascent: &mut c_double, descent: &mut c_double, width: &mut c_double);
 }
 
-#[repr(C)]
 pub struct RenderDevice {
     rdev_ptr: *mut C_RenderDevice,
 }

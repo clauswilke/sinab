@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 extern crate kuchiki;
 
 use crate::renderer::*;
@@ -11,9 +13,8 @@ use kuchiki::NodeRef;
 use kuchiki::ElementData;
 
 use std::str;
-use std::rc::Rc;
 use std::cell::RefCell;
-use std::ops::Deref;
+use std::option::Option;
 
 pub enum InlineBoxContent {
     Space,
@@ -21,21 +22,21 @@ pub enum InlineBoxContent {
     Text(RefCell<String>),
 }
 
-struct InlineBox {
+struct InlineBox<'a> {
     pub content: InlineBoxContent,
     pub width: f64,
     pub linespacing: f64,
-    pub gc: Rc<GContext>,
+    pub gc: GContext<'a>,
 }
 
 
-fn make_text_boxes(
-    boxes: &mut Vec<InlineBox>,
+fn make_text_boxes<'a>(
+    boxes: &mut Vec<InlineBox<'a>>,
     text: &RefCell<String>,
-    gc: &Rc<GContext>,
+    gc: &GContext<'a>,
     rdev: &mut RenderDevice
 ) {
-    let fm = rdev.font_metrics(&gc);
+    let fm = rdev.font_metrics(gc);
 
     // add a starting whitespace box if none exists yet
     let s = text.borrow();
@@ -45,7 +46,7 @@ fn make_text_boxes(
 
     for word in s.split_ascii_whitespace() {
         // push word, then space
-        let m = rdev.string_metrics(word, gc.deref());
+        let m = rdev.string_metrics(word, gc);
         let b = InlineBox {
             content: InlineBoxContent::Text(RefCell::new(word.to_string())),
             width: m.width,
@@ -53,7 +54,7 @@ fn make_text_boxes(
             gc: gc.clone(),
         };
         boxes.push(b);
-        add_space(boxes, &fm, &gc);
+        add_space(boxes, &fm, gc);
     }
 
     // remove final space if string doesn't end with whitespace
@@ -63,7 +64,7 @@ fn make_text_boxes(
 }
 
 /// Unconditionally add a space box
-fn add_space(boxes: &mut Vec<InlineBox>, fm: &FontMetrics, gc: &Rc<GContext>) {
+fn add_space<'a>(boxes: &mut Vec<InlineBox<'a>>, fm: &FontMetrics, gc: &GContext<'a>) {
     let b = InlineBox {
         content: InlineBoxContent::Space,
         width: fm.space_width,
@@ -76,7 +77,7 @@ fn add_space(boxes: &mut Vec<InlineBox>, fm: &FontMetrics, gc: &Rc<GContext>) {
 
 /// Add space only if current box list doesn't end in a space.
 /// Never adds a space to an empty box list or after a linebreak.
-fn maybe_add_space(boxes: &mut Vec<InlineBox>, fm: &FontMetrics, gc: &Rc<GContext>) {
+fn maybe_add_space<'a>(boxes: &mut Vec<InlineBox<'a>>, fm: &FontMetrics, gc: &GContext<'a>) {
     if let Some(b) = boxes.last() {
         match b.content {
             InlineBoxContent::Space => {},
@@ -96,8 +97,8 @@ fn maybe_remove_space(boxes: &mut Vec<InlineBox>) {
 }
 
 /// Add a newline box. First removes a last space if it exists.
-fn add_newline(boxes: &mut Vec<InlineBox>, gc: &Rc<GContext>, rdev: &mut RenderDevice) {
-    let fm = rdev.font_metrics(&gc);
+fn add_newline<'a>(boxes: &mut Vec<InlineBox<'a>>, gc: &GContext<'a>, rdev: &mut RenderDevice) {
+    let fm = rdev.font_metrics(gc);
 
     maybe_remove_space(boxes);
 
@@ -110,11 +111,11 @@ fn add_newline(boxes: &mut Vec<InlineBox>, gc: &Rc<GContext>, rdev: &mut RenderD
     boxes.push(b);
 }
 
-fn apply_style_attribute(elt: &ElementData, gc: Rc<GContext>) -> Rc<GContext> {
+fn apply_style_attribute<'a>(elt: &ElementData, gc: &GContext<'a>) -> Option<GContext<'a>> {
     if let Some(css) = elt.attributes.borrow().get("style") {
         let result = parse_declaration_block(css);
         if result.len() > 0 {
-            let mut gc_new = gc.deref().clone();
+            let mut gc_new = gc.clone();
             for decl in result.iter() {
                 match decl {
                     CssProperty::Color(ref s) => {
@@ -123,51 +124,63 @@ fn apply_style_attribute(elt: &ElementData, gc: Rc<GContext>) -> Rc<GContext> {
                     _ => {}
                 }
             }
-            return Rc::new(gc_new)
+            return Some(gc_new);
         }
     }
-    gc
+    None
 }
 
-fn process_node(
-    boxes: &mut Vec<InlineBox>,
+fn process_node<'a>(
+    boxes: &mut Vec<InlineBox<'a>>,
     node: &NodeRef,
-    gc: &Rc<GContext>,
+    gc: &GContext<'a>,
     rdev: &mut RenderDevice
 ) {
-    let mut gc_new = gc.clone();
+    let mut gc_opt:Option<GContext> = Option::None;
 
     match node.data() {
         Element(elt) => {
             let name = &elt.name.local;
             match name.as_ref() {
                 "em" => {
-                    let mut tmp = gc.deref().clone();
-                    tmp.modify_fontface(Fontface::Italics);
-                    gc_new = Rc::new(tmp);
-                    gc_new = apply_style_attribute(elt, gc_new);
+                    let mut gc_new = gc.clone();
+                    gc_new.modify_fontface(Fontface::Italics);
+                    gc_opt = Some(gc_new.clone());
+                    if let Some(g) = apply_style_attribute(elt, &gc_new) {
+                        gc_opt = Some(g);
+                    }
                 },
                 "span" => {
-                    gc_new = apply_style_attribute(elt, gc_new);
+                    if let Some(g) = apply_style_attribute(elt, gc) {
+                        gc_opt = Some(g);
+                    }
                 },
                 "strong" => {
-                    let mut tmp = gc.deref().clone();
-                    tmp.modify_fontface(Fontface::Bold);
-                    gc_new = Rc::new(tmp);
-                    gc_new = apply_style_attribute(elt, gc_new);
+                    let mut gc_new = gc.clone();
+                    gc_new.modify_fontface(Fontface::Bold);
+                    gc_opt = Some(gc_new.clone());
+                    if let Some(g) = apply_style_attribute(elt, &gc_new) {
+                        gc_opt = Some(g);
+                    }
                 },
-                "br" => add_newline(boxes, &gc_new, rdev),
+                "br" => add_newline(boxes, gc, rdev),
                 _ => {},
             }
         },
         Text(text) => {
-            make_text_boxes(boxes, text, &gc_new, rdev);
+            make_text_boxes(boxes, text, gc, rdev);
         },
         _ => {},
     }
 
-    for child in node.children() {
-        process_node(boxes, &child, &gc_new, rdev);
+    if let Some(g) = gc_opt {
+        for child in node.children() {
+            process_node(boxes, &child, &g, rdev);
+        }
+    } else {
+        for child in node.children() {
+            process_node(boxes, &child, gc, rdev);
+        }
     }
 }
 
@@ -195,11 +208,37 @@ fn render_inline_boxes(inline_boxes: &Vec<InlineBox>, rdev: &mut RenderDevice) {
 
 fn render_html(input: &str, rdev: &mut RenderDevice) {
     let mut inline_boxes: Vec<InlineBox> = Vec::new();
-    let gc = Rc::new(GContext::new());
+    let gc = GContext::new();
     let document = kuchiki::parse_html().one(input);
 
     process_node(&mut inline_boxes, &document, &gc, rdev);
     render_inline_boxes(&inline_boxes, rdev);
+}
+
+fn test() {
+    /*
+    println!("1");
+    let mut gc = GContext::new();
+    println!("2 {}", gc.color());
+    gc.set_color("red");
+    println!("3 {}", gc.color());
+    let mut gc2 = gc.clone();
+    println!("4 {}", gc2.color());
+    gc2.set_color("green");
+    gc2.set_fontsize(15.0);
+    println!("5 {} {}", gc2.color(), gc2.fontsize());
+    gc2.set_color("blue");
+    let gc3 = gc2.clone();
+    println!("6 {} {}", gc2.color(), gc3.color());
+*/
+
+    let mut gc_opt1:Option<GContext> = Option::None;
+    let mut gc_opt2:Option<GContext> = Option::None;
+    let gc1 = GContext::new();
+    gc_opt1 = Some(gc1.clone());
+    gc_opt2 = Some(gc1.clone());
+    println!("{}", gc_opt1.unwrap().color());
+    println!("{}", gc_opt2.unwrap().color());
 }
 
 #[no_mangle]
@@ -210,5 +249,7 @@ pub extern "C" fn mdl_test_renderer(rdev_ptr: *mut C_RenderDevice, text: *const 
         Err(..) => "".to_string(),
     };
 
-    render_html(input.as_str(), &mut rdev);
+    //render_html(input.as_str(), &mut rdev);
+
+    test();
 }

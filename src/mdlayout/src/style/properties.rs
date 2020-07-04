@@ -1,9 +1,19 @@
 use cssparser::*;
+use std::ops::Deref;
 
 /// Type that holds a color value. Colors are kept as strings, so this is a simple
 /// newtype alias for `cssparser::CowRcStr`.
 #[derive(Clone,Debug)]
 pub struct Color<'a>(CowRcStr<'a>);
+
+impl<'i> Deref for Color<'i> {
+    type Target = CowRcStr<'i>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
 
 /// Parse a color value.
 impl<'i> Color<'i> {
@@ -28,10 +38,6 @@ impl<'i> Color<'i> {
             ref t => Err(location.new_unexpected_token_error(t.clone())),
         }
     }
-
-    pub fn as_ref(&self) -> &str {
-        self.0.as_ref()
-    }
 }
 
 /// Type that holds a CSS dimension (number with unit attached).
@@ -54,8 +60,6 @@ pub enum Dimension {
     em(f64),
     /// ex (relative to the x-height of the current font)
     ex(f64),
-    /// percent (relative to the parent element, stored as fraction)
-    percent(f64),
 }
 
 /// Parse a dimension value.
@@ -66,7 +70,6 @@ impl Dimension {
         let location = input.current_source_location();
         match *input.next()? {
             Token::Number { .. } => Ok(Dimension::px(0.0)),
-            Token::Percentage { unit_value, .. } => Ok(Dimension::percent(unit_value as f64)),
             Token::Dimension { has_sign, value, int_value, ref unit } =>
                 match_ignore_ascii_case!(unit.as_ref(),
                     "cm" => Ok(Dimension::cm(value as f64)),
@@ -202,18 +205,13 @@ mod tests {
            font-size: 8pc;
            font-size: 2em;
            font-size: 5ex;
-           font-size: 50%;
            font-size: 0;"#;
         let mut result = parse_declaration_block(css);
-        assert_eq!(result.len(), 10);
+        assert_eq!(result.len(), 9);
         assert_eq!(match result.pop().unwrap() {
             CssProperty::FontSize(d) => d,
             _ => Dimension::px(1.0),
         }, Dimension::px(0.0));
-        assert_eq!(match result.pop().unwrap() {
-            CssProperty::FontSize(d) => d,
-            _ => Dimension::px(0.0),
-        }, Dimension::percent(0.5));
         assert_eq!(match result.pop().unwrap() {
             CssProperty::FontSize(d) => d,
             _ => Dimension::px(0.0),

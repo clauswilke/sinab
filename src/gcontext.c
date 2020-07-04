@@ -1,7 +1,7 @@
 #include "renderer.h"
 
 /* If defined, print out debug messages */
-#define DEBUG_MSG
+/*#define DEBUG_MSG*/
 
 /* GContext is similar to R_GE_gcontext from R_ext/GraphicsEngine.h */
 

@@ -22,18 +22,18 @@ pub enum InlineBoxContent {
     Text(RefCell<String>),
 }
 
-struct InlineBox<'a> {
+struct InlineBox {
     pub content: InlineBoxContent,
     pub width: f64,
     pub linespacing: f64,
-    pub gc: GContext<'a>,
+    pub gc: GContext,
 }
 
 
-fn make_text_boxes<'a>(
-    boxes: &mut Vec<InlineBox<'a>>,
+fn make_text_boxes(
+    boxes: &mut Vec<InlineBox>,
     text: &RefCell<String>,
-    gc: &GContext<'a>,
+    gc: &GContext,
     rdev: &mut RenderDevice
 ) {
     let fm = rdev.font_metrics(gc);
@@ -64,7 +64,7 @@ fn make_text_boxes<'a>(
 }
 
 /// Unconditionally add a space box
-fn add_space<'a>(boxes: &mut Vec<InlineBox<'a>>, fm: &FontMetrics, gc: &GContext<'a>) {
+fn add_space<'a>(boxes: &mut Vec<InlineBox>, fm: &FontMetrics, gc: &GContext) {
     let b = InlineBox {
         content: InlineBoxContent::Space,
         width: fm.space_width,
@@ -77,7 +77,7 @@ fn add_space<'a>(boxes: &mut Vec<InlineBox<'a>>, fm: &FontMetrics, gc: &GContext
 
 /// Add space only if current box list doesn't end in a space.
 /// Never adds a space to an empty box list or after a linebreak.
-fn maybe_add_space<'a>(boxes: &mut Vec<InlineBox<'a>>, fm: &FontMetrics, gc: &GContext<'a>) {
+fn maybe_add_space(boxes: &mut Vec<InlineBox>, fm: &FontMetrics, gc: &GContext) {
     if let Some(b) = boxes.last() {
         match b.content {
             InlineBoxContent::Space => {},
@@ -97,7 +97,7 @@ fn maybe_remove_space(boxes: &mut Vec<InlineBox>) {
 }
 
 /// Add a newline box. First removes a last space if it exists.
-fn add_newline<'a>(boxes: &mut Vec<InlineBox<'a>>, gc: &GContext<'a>, rdev: &mut RenderDevice) {
+fn add_newline(boxes: &mut Vec<InlineBox>, gc: &GContext, rdev: &mut RenderDevice) {
     let fm = rdev.font_metrics(gc);
 
     maybe_remove_space(boxes);
@@ -111,7 +111,7 @@ fn add_newline<'a>(boxes: &mut Vec<InlineBox<'a>>, gc: &GContext<'a>, rdev: &mut
     boxes.push(b);
 }
 
-fn apply_style_attribute<'a>(elt: &ElementData, gc: &GContext<'a>) -> Option<GContext<'a>> {
+fn apply_style_attribute(elt: &ElementData, gc: &GContext) -> Option<GContext> {
     if let Some(css) = elt.attributes.borrow().get("style") {
         let result = parse_declaration_block(css);
         if result.len() > 0 {
@@ -130,10 +130,10 @@ fn apply_style_attribute<'a>(elt: &ElementData, gc: &GContext<'a>) -> Option<GCo
     None
 }
 
-fn process_node<'a>(
-    boxes: &mut Vec<InlineBox<'a>>,
+fn process_node(
+    boxes: &mut Vec<InlineBox>,
     node: &NodeRef,
-    gc: &GContext<'a>,
+    gc: &GContext,
     rdev: &mut RenderDevice
 ) {
     let mut gc_opt:Option<GContext> = Option::None;
@@ -173,14 +173,13 @@ fn process_node<'a>(
         _ => {},
     }
 
-    if let Some(g) = gc_opt {
-        for child in node.children() {
-            process_node(boxes, &child, &g, rdev);
-        }
-    } else {
-        for child in node.children() {
-            process_node(boxes, &child, gc, rdev);
-        }
+    let gc_final = match gc_opt {
+        Some(g) => g,
+        None => gc.clone(),
+    };
+
+    for child in node.children() {
+        process_node(boxes, &child, &gc_final, rdev);
     }
 }
 
@@ -215,8 +214,9 @@ fn render_html(input: &str, rdev: &mut RenderDevice) {
     render_inline_boxes(&inline_boxes, rdev);
 }
 
+/*
 fn test() {
-    /*
+
     println!("1");
     let mut gc = GContext::new();
     println!("2 {}", gc.color());
@@ -230,8 +230,8 @@ fn test() {
     gc2.set_color("blue");
     let gc3 = gc2.clone();
     println!("6 {} {}", gc2.color(), gc3.color());
-*/
 
+/*
     let mut gc_opt1:Option<GContext> = Option::None;
     let mut gc_opt2:Option<GContext> = Option::None;
     let gc1 = GContext::new();
@@ -239,7 +239,11 @@ fn test() {
     gc_opt2 = Some(gc1.clone());
     println!("{}", gc_opt1.unwrap().color());
     println!("{}", gc_opt2.unwrap().color());
+
+     */
 }
+
+ */
 
 #[no_mangle]
 pub extern "C" fn mdl_test_renderer(rdev_ptr: *mut C_RenderDevice, text: *const c_char) {
@@ -249,7 +253,7 @@ pub extern "C" fn mdl_test_renderer(rdev_ptr: *mut C_RenderDevice, text: *const 
         Err(..) => "".to_string(),
     };
 
-    //render_html(input.as_str(), &mut rdev);
+    render_html(input.as_str(), &mut rdev);
 
-    test();
+    //test();
 }

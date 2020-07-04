@@ -5,10 +5,10 @@ use libc::{c_char, c_double, c_int};
 use std::ffi::{CString, CStr};
 use std::fmt;
 
-// for COW implementation of GContext
-use std::borrow::Cow;
-use std::borrow::Borrow;
+// for Rc implementation of GContext
+use std::rc::Rc;
 use std::ops::{Deref, DerefMut};
+
 
 
 #[repr(C)]
@@ -186,21 +186,25 @@ impl Drop for GContextImpl {
     }
 }
 
-pub struct GContext<'a>(Cow<'a, GContextImpl>);
+pub struct GContext(Rc<GContextImpl>);
 
-impl<'a> GContext<'a> {
+impl GContext {
     pub fn new() -> Self {
-        Self(Cow::Owned(GContextImpl::new()))
+        Self(Rc::new(GContextImpl::new()))
+    }
+
+    pub fn new_from(&self) -> Self {
+        Self(Rc::new(self.deref().clone()))
     }
 }
 
-impl<'a> Clone for GContext<'a> {
+impl Clone for GContext {
     fn clone(&self) -> Self {
         Self(self.0.clone())
     }
 }
 
-impl<'a> Deref for GContext<'a> {
+impl Deref for GContext {
     type Target = GContextImpl;
 
     fn deref(&self) -> &Self::Target {
@@ -208,12 +212,11 @@ impl<'a> Deref for GContext<'a> {
     }
 }
 
-impl<'a> DerefMut for GContext<'a> {
+impl DerefMut for GContext {
     fn deref_mut(&mut self) -> &mut GContextImpl {
-        self.0.to_mut()
+        Rc::make_mut(&mut self.0)
     }
 }
-
 
 #[repr(C)]
 pub struct C_RenderDevice { _private: [u8; 0] }

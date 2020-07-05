@@ -91,6 +91,7 @@ impl Dimension {
 pub enum CssProperty<'i> {
     Background(Color<'i>),
     Color(Color<'i>),
+    CssColor(cssparser::Color),
     FontSize(Dimension),
     Other {
         name: CowRcStr<'i>,
@@ -137,6 +138,7 @@ impl<'i> DeclarationParser<'i> for CssPropertyParser {
         Ok(match_ignore_ascii_case!(name.as_ref(),
             "background" => CssProperty::Background(Color::parse(input)?),
             "color" => CssProperty::Color(Color::parse(input)?),
+            "testcolor" => CssProperty::CssColor(cssparser::Color::parse(input)?),
             "font-size" => CssProperty::FontSize(Dimension::parse(input)?),
             _ => CssProperty::Other{name, tokens: parse_tokens(input)?},
         ))

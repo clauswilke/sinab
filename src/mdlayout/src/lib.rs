@@ -1,10 +1,10 @@
 // Modules are other .rs source files
-mod renderer; // render text, rectangles, etc.
-mod c_helper; // support functions to interface with C
-mod style;    // css styles and parsing
-mod dom;      // document object model
-mod markdown; // convert markdown to HTML
-mod layout;
+pub mod renderer; // render text, rectangles, etc.
+pub mod c_helper; // support functions to interface with C
+pub mod style;    // css styles and parsing
+pub mod dom;      // document object model
+pub mod markdown; // convert markdown to HTML
+pub mod layout;
 mod test;
 
 extern crate cssparser;

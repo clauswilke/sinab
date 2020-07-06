@@ -1,6 +1,6 @@
 use cssparser::*;
-use std::ops::Deref;
 
+/*
 /// Type that holds a color value. Colors are kept as strings, so this is a simple
 /// newtype alias for `cssparser::CowRcStr`.
 #[derive(Clone,Debug)]
@@ -39,6 +39,8 @@ impl<'i> Color<'i> {
         }
     }
 }
+
+*/
 
 /// Type that holds a CSS dimension (number with unit attached).
 #[derive(Copy,Clone,Debug,PartialOrd,PartialEq)]
@@ -89,9 +91,9 @@ impl Dimension {
 
 #[derive(Clone,Debug)]
 pub enum CssProperty<'i> {
-    Background(Color<'i>),
-    Color(Color<'i>),
-    CssColor(cssparser::Color),
+    Background(Color),
+    Color(Color),
+    CssColor(Color),
     FontSize(Dimension),
     Other {
         name: CowRcStr<'i>,
@@ -138,7 +140,7 @@ impl<'i> DeclarationParser<'i> for CssPropertyParser {
         Ok(match_ignore_ascii_case!(name.as_ref(),
             "background" => CssProperty::Background(Color::parse(input)?),
             "color" => CssProperty::Color(Color::parse(input)?),
-            "testcolor" => CssProperty::CssColor(cssparser::Color::parse(input)?),
+            "testcolor" => CssProperty::CssColor(Color::parse(input)?),
             "font-size" => CssProperty::FontSize(Dimension::parse(input)?),
             _ => CssProperty::Other{name, tokens: parse_tokens(input)?},
         ))
@@ -168,6 +170,7 @@ pub fn parse_declaration_block(s: &str) -> Vec<CssProperty> {
 #[cfg(test)]
 mod tests {
     use crate::style::properties::*;
+    use cssparser::{Color, RGBA};
     //use std::borrow::Borrow;
 
     #[test]
@@ -183,17 +186,18 @@ mod tests {
         let mut result = parse_declaration_block(css);
         assert_eq!(result.len(), 3);
         assert_eq!(match result.pop().unwrap() {
-                CssProperty::Color(ref s) => s.0.as_ref(),
-                _ => ""
-        }, "#ff00ff00");
+            CssProperty::Color(Color::RGBA(color)) => color,
+            _ => RGBA::new(25, 25, 25, 25)
+        }, RGBA::new(255, 0, 255, 0));
         assert_eq!(match result.pop().unwrap() {
-            CssProperty::Background(ref s) => s.0.as_ref(),
-            _ => ""
-        }, "#00FF00");
+            CssProperty::Background(Color::RGBA(color)) => color,
+            _ => RGBA::new(25, 25, 25, 25)
+        }, RGBA::new(0, 255, 0, 255));
         assert_eq!(match result.pop().unwrap() {
-            CssProperty::Color(ref s) => s.0.as_ref(),
-            _ => ""
-        }, "red");
+            CssProperty::Color(Color::RGBA(color)) => color,
+            _ => RGBA::new(25, 25, 25, 25)
+        }, RGBA::new(255, 0, 0, 255));
+
     }
 
     #[test]

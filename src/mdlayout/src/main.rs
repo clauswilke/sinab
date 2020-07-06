@@ -1,15 +1,19 @@
 // Modules are other .rs source files
-mod markdown; // convert markdown to HTML
 mod renderer; // render text, rectangles, etc.
 mod c_helper; // support functions to interface with C
 mod style;    // css styles and parsing
+mod dom;      // document object model
+mod markdown; // convert markdown to HTML
 mod layout;
 mod test;
 
-use crate::style::properties::parse_declaration_block;
+extern crate cssparser;
 
-use cssparser::Color;
-use cssparser::RGBA;
+#[macro_use]
+extern crate html5ever;
+
+
+use crate::style::properties::parse_declaration_block;
 
 fn simple_css_parsing() {
     let css = r#"
@@ -32,24 +36,7 @@ fn simple_css_parsing() {
     }
 }
 
-fn color_to_string(color: &Color) -> String {
-    match color {
-        Color::RGBA(RGBA{ red, green, blue, alpha }) => {
-            if *alpha == 255 { // without alpha component
-                format!("#{:x}{:x}{:x}", *red, *green, *blue)
-            } else { // with alpha component
-                format!("#{:x}{:x}{:x}{:x}", *red, *green, *blue, *alpha)
-            }
-        }
-        _ => {
-            String::from("#000000")
-        }
-    }
-}
 
 fn main() {
     simple_css_parsing();
-
-    let c: Color = Color::RGBA(RGBA::new(254, 40, 80, 128));
-    println!("{}", color_to_string(&c));
 }

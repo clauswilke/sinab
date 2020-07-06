@@ -114,8 +114,8 @@ fn apply_style_attribute(elt: &ElementData, gc: &GContext) -> Option<GContext> {
             let mut gc_new = gc.clone();
             for decl in result.iter() {
                 match decl {
-                    CssProperty::Color(ref s) => {
-                        gc_new.set_color(s.as_ref());
+                    CssProperty::Color(ref color) => {
+                        gc_new.set_color(color);
                     }
                     _ => {}
                 }

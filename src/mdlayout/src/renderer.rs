@@ -9,6 +9,23 @@ use std::fmt;
 use std::rc::Rc;
 use std::ops::{Deref, DerefMut};
 
+use cssparser::{Color, RGBA};
+
+/// helper function to convert cssparser::Color to a String
+fn color_to_string(color: &Color) -> String {
+    match color {
+        Color::RGBA(RGBA{ red, green, blue, alpha }) => {
+            if *alpha == 255 { // without alpha component
+                format!("#{:02x}{:02x}{:02x}", *red, *green, *blue)
+            } else { // with alpha component
+                format!("#{:02x}{:02x}{:02x}{:02x}", *red, *green, *blue, *alpha)
+            }
+        }
+        _ => {
+            String::from("#000000")
+        }
+    }
+}
 
 
 #[repr(C)]
@@ -73,12 +90,12 @@ impl GContextImpl {
     }
 
     // setters
-    pub fn set_color(&mut self, color: &str) {
-        let ccolor = CString::new(color).unwrap();
+    pub fn set_color(&mut self, color: &Color) {
+        let ccolor = CString::new(color_to_string(color)).unwrap();
         unsafe { gcontext_set_color(self.gc_ptr, ccolor.as_ptr()); }
     }
-    pub fn set_fill(&mut self, color: &str) {
-        let ccolor = CString::new(color).unwrap();
+    pub fn set_fill(&mut self, color: &Color) {
+        let ccolor = CString::new(color_to_string(color)).unwrap();
         unsafe { gcontext_set_fill(self.gc_ptr, ccolor.as_ptr()); }
     }
     pub fn set_fontfamily(&mut self, fontfamily: &str) {
@@ -125,6 +142,7 @@ impl GContextImpl {
     }
 
     // getters
+    /* // need to update to work with cssparser::Color
     pub fn color(&self) -> &str {
         let c_str = unsafe {
             CStr::from_ptr(gcontext_color(self.gc_ptr))
@@ -137,6 +155,7 @@ impl GContextImpl {
         };
         c_str.to_str().unwrap()
     }
+    */
     pub fn fontfamily(&self) -> &str {
         let c_str = unsafe {
             CStr::from_ptr(gcontext_fontfamily(self.gc_ptr))

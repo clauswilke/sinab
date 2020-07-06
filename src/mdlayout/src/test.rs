@@ -15,3 +15,19 @@ pub extern "C" fn mdl_test_renderer(rdev_ptr: *mut C_RenderDevice, text: *const 
 
     render_html(input.as_str(), &mut rdev);
 }
+
+use crate::dom::*;
+use std::ops::Index;
+
+pub fn test_dom() {
+    let input = "<p>Hello, <em>world!</em></p>";
+
+    let document = Document::parse_html(input.as_bytes());
+
+    for n in document.nodes() {
+        let node = document.index(n);
+        println!("{:?}", node.data);
+    }
+
+    println!("testing the dom");
+}

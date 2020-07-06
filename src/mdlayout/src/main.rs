@@ -1,6 +1,6 @@
-pub mod style;
+extern crate mdlayout;
 
-use style::properties::parse_declaration_block;
+use mdlayout::style::properties::parse_declaration_block;
 
 fn simple_css_parsing() {
     let css = r#"
@@ -23,7 +23,9 @@ fn simple_css_parsing() {
     }
 }
 
+use mdlayout::test::test_dom;
 
 fn main() {
-    simple_css_parsing();
+    //simple_css_parsing();
+    test_dom();
 }

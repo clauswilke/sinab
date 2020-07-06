@@ -218,6 +218,7 @@ impl std::ops::IndexMut<NodeId> for Document {
     }
 }
 
+#[derive(Debug)]
 pub(crate) enum NodeData {
     Document,
     Doctype {
@@ -238,6 +239,7 @@ pub(crate) enum NodeData {
     },
 }
 
+#[derive(Debug)]
 pub(crate) struct ElementData {
     pub(crate) name: QualName,
     pub(crate) attrs: Vec<Attribute>,
@@ -245,6 +247,7 @@ pub(crate) struct ElementData {
     //pub(crate) layout_data: atomic_refcell::AtomicRefCell<crate::layout::LayoutDataForElement>,
 }
 
+#[derive(Debug)]
 pub(crate) struct Attribute {
     /// The name of the attribute (e.g. the `class` in `<div class="test">`)
     pub name: QualName,

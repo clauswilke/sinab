@@ -1,12 +1,8 @@
-extern crate kuchiki;
-
 use crate::renderer::*;
 use crate::style::properties::*;
 
-use kuchiki::traits::*;
-use kuchiki::NodeData::*;
-use kuchiki::NodeRef;
-use kuchiki::ElementData;
+// for dom
+use crate::dom::*;
 
 use std::str;
 use std::cell::RefCell;
@@ -28,19 +24,18 @@ struct InlineBox {
 
 fn make_text_boxes(
     boxes: &mut Vec<InlineBox>,
-    text: &RefCell<String>,
+    text: &str,
     gc: &GContext,
     rdev: &mut RenderDevice
 ) {
     let fm = rdev.font_metrics(gc);
 
     // add a starting whitespace box if none exists yet
-    let s = text.borrow();
-    if s.starts_with(|x: char| x.is_ascii_whitespace()) {
+    if text.starts_with(|x: char| x.is_ascii_whitespace()) {
         maybe_add_space(boxes, &fm, gc);
     }
 
-    for word in s.split_ascii_whitespace() {
+    for word in text.split_ascii_whitespace() {
         // push word, then space
         let m = rdev.string_metrics(word, gc);
         let b = InlineBox {
@@ -54,7 +49,7 @@ fn make_text_boxes(
     }
 
     // remove final space if string doesn't end with whitespace
-    if !s.ends_with(|x: char| x.is_ascii_whitespace()) {
+    if !text.ends_with(|x: char| x.is_ascii_whitespace()) {
         maybe_remove_space(boxes);
     }
 }
@@ -108,7 +103,7 @@ fn add_newline(boxes: &mut Vec<InlineBox>, gc: &GContext, rdev: &mut RenderDevic
 }
 
 fn apply_style_attribute(elt: &ElementData, gc: &GContext) -> Option<GContext> {
-    if let Some(css) = elt.attributes.borrow().get("style") {
+    if let Some(css) = elt.get_attr(&local_name!("style")) {
         let result = parse_declaration_block(css);
         if result.len() > 0 {
             let mut gc_new = gc.clone();
@@ -128,17 +123,18 @@ fn apply_style_attribute(elt: &ElementData, gc: &GContext) -> Option<GContext> {
 
 fn process_node(
     boxes: &mut Vec<InlineBox>,
-    node: &NodeRef,
+    node_id: NodeId,
+    document: &Document,
     gc: &GContext,
     rdev: &mut RenderDevice
 ) {
     let mut gc_opt:Option<GContext> = Option::None;
 
-    match node.data() {
-        Element(elt) => {
-            let name = &elt.name.local;
-            match name.as_ref() {
-                "em" => {
+    let node = &document[node_id];
+    match node.data {
+        NodeData::Element(ref elt) => {
+            match &elt.name.local {
+                &local_name!("em") => {
                     let mut gc_new = gc.clone();
                     gc_new.modify_fontface(Fontface::Italics);
                     gc_opt = Some(gc_new.clone());
@@ -146,12 +142,12 @@ fn process_node(
                         gc_opt = Some(g);
                     }
                 },
-                "span" => {
+                &local_name!("span") => {
                     if let Some(g) = apply_style_attribute(elt, gc) {
                         gc_opt = Some(g);
                     }
                 },
-                "strong" => {
+                &local_name!("strong") => {
                     let mut gc_new = gc.clone();
                     gc_new.modify_fontface(Fontface::Bold);
                     gc_opt = Some(gc_new.clone());
@@ -159,12 +155,12 @@ fn process_node(
                         gc_opt = Some(g);
                     }
                 },
-                "br" => add_newline(boxes, gc, rdev),
+                &local_name!("br") => add_newline(boxes, gc, rdev),
                 _ => {},
             }
         },
-        Text(text) => {
-            make_text_boxes(boxes, text, gc, rdev);
+        NodeData::Text{ref contents} => {
+            make_text_boxes(boxes, contents, gc, rdev);
         },
         _ => {},
     }
@@ -174,8 +170,10 @@ fn process_node(
         None => gc.clone(),
     };
 
-    for child in node.children() {
-        process_node(boxes, &child, &gc_final, rdev);
+    if let Some(child_id) = node.first_child {
+        for nid in document.node_and_following_siblings(child_id) {
+            process_node(boxes, nid, document, &gc_final, rdev);
+        }
     }
 }
 
@@ -204,8 +202,8 @@ fn render_inline_boxes(inline_boxes: &Vec<InlineBox>, rdev: &mut RenderDevice) {
 pub fn render_html(input: &str, rdev: &mut RenderDevice) {
     let mut inline_boxes: Vec<InlineBox> = Vec::new();
     let gc = GContext::new();
-    let document = kuchiki::parse_html().one(input);
+    let document = Document::parse_html(input.as_bytes());
 
-    process_node(&mut inline_boxes, &document, &gc, rdev);
+    process_node(&mut inline_boxes, document.root_element(), &document, &gc, rdev);
     render_inline_boxes(&inline_boxes, rdev);
 }

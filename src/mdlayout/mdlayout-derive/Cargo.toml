@@ -1,0 +1,12 @@
+[package]
+name = "mdlayout-derive"
+version = "0.1.0"
+edition = "2018"
+
+[lib]
+proc-macro = true
+
+[dependencies]
+syn = "1.0.33"
+quote = "1.0.7"
+proc-macro2 = "1.0.18"

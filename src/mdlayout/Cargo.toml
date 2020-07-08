@@ -9,6 +9,7 @@ edition = "2018"
 crate-type = ["staticlib", "lib"]
 
 [dependencies]
+mdlayout-derive = { path = "mdlayout-derive", version = "0.1.0" }
 libc = "0.2"
 # The option `features = ["simd"]` enables SIMD-accelerated processing, see:
 # https://github.com/raphlinus/pulldown-cmark/blob/master/README.md#build-options

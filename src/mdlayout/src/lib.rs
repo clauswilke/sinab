@@ -11,3 +11,6 @@ extern crate cssparser;
 
 #[macro_use]
 extern crate html5ever;
+
+#[macro_use]
+extern crate mdlayout_derive;

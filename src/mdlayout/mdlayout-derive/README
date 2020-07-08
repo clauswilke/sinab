@@ -1,0 +1,1 @@
+Macros that enable #[derive(...)] features in the main crate. Originally written by Simon Sapin. 

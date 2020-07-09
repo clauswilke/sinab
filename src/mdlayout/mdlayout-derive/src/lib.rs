@@ -1,6 +1,6 @@
-/// Macros that enable `#[derive(...)]` features in the main crate. Originally written by Simon Sapin.
-
 #![recursion_limit = "128"]
+
+/// Macros that enable `#[derive(...)]` features in the main crate. Originally written by Simon Sapin.
 
 extern crate proc_macro;
 extern crate proc_macro2;

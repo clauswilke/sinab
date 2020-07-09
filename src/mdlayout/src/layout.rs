@@ -1,5 +1,5 @@
 use crate::renderer::*;
-use crate::style::properties::*;
+use crate::style2::properties::*;
 
 // for dom
 use crate::dom::*;

@@ -1,6 +1,6 @@
 extern crate mdlayout;
 
-use mdlayout::style::properties::parse_declaration_block;
+use mdlayout::style2::properties::parse_declaration_block;
 
 fn simple_css_parsing() {
     let css = r#"

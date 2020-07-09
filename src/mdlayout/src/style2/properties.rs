@@ -169,7 +169,7 @@ pub fn parse_declaration_block(s: &str) -> Vec<CssProperty> {
 
 #[cfg(test)]
 mod tests {
-    use crate::style::properties::*;
+    use crate::style2::properties::*;
     use cssparser::{Color, RGBA};
     //use std::borrow::Borrow;
 

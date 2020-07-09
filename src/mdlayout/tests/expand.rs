@@ -8,8 +8,19 @@ extern crate mdlayout_derive;
 use cssparser::*;
 */
 
+
+#[macro_use]
+extern crate mdlayout_derive;
+
+
+trait StringFormat {
+    // Static method signature; `Self` refers to the implementor type.
+    fn string_format(&self) -> String;
+}
+
+
 //#[derive(Copy, Clone, Eq, Parse, PartialEq, SpecifiedAsComputed)]
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, StringFormat)]
 enum Float {
     None,
     Left,
@@ -20,5 +31,5 @@ enum Float {
 fn expand_test() {
     let f = Float::Left;
 
-    println!("Hello world! {:?}", f);
+    println!("Hello world! {:?}", f.string_format());
 }

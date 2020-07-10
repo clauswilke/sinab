@@ -9,6 +9,7 @@ extern crate quote;
 extern crate syn;
 
 include!("style.rs");
+include!("generic.rs"); // TODO: Should this be integrated into "style.rs"? It's also used in style.
 
 // The remainder of this file is a test of proc_macro_derive().
 

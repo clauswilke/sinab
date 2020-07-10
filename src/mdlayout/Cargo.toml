@@ -16,3 +16,9 @@ libc = "0.2"
 pulldown-cmark = { version = "0.7", default-features = false, features = ["simd"] }
 cssparser = "0.27.2"
 html5ever = "0.25.1"
+selectors = "0.22.0"
+euclid = "0.20.14"
+lazy_static = "1.4.0"
+# matches = "0.1.8" ## needed?
+smallbitvec = "2.5.0"
+smallvec = "1.4.1"

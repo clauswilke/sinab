@@ -3,7 +3,7 @@
 mod html;
 //mod xml;
 
-//use crate::style::{StyleSet, StyleSetBuilder};
+use crate::style::{StyleSet, StyleSetBuilder};
 use html5ever::{LocalName, QualName};
 use std::borrow::Cow;
 use std::fmt;
@@ -44,7 +44,6 @@ impl Document {
         NodeId(std::num::NonZeroUsize::new(1).unwrap())
     }
 
-    /*
     pub(crate) fn parse_stylesheets(&self) -> StyleSet {
         let mut style_set = StyleSetBuilder::new();
         for &id in &self.style_elements {
@@ -59,7 +58,6 @@ impl Document {
         }
         style_set.finish()
     }
-    */
 
     /// (rel_attribute, href_attribute)
     pub fn html_link_elements(&self) -> impl Iterator<Item = (&str, &str)> {

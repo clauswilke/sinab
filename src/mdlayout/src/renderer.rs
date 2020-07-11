@@ -4,6 +4,7 @@ extern crate libc;
 use libc::{c_char, c_double, c_int};
 use std::ffi::{CString, CStr};
 use std::fmt;
+use std::panic::UnwindSafe;
 
 // for Rc implementation of GContext
 use std::rc::Rc;
@@ -11,6 +12,7 @@ use std::ops::{Deref, DerefMut};
 
 use cssparser::{Color, RGBA};
 
+/*
 /// helper function to convert cssparser::Color to a String
 fn color_to_string(color: &Color) -> String {
     match color {
@@ -26,6 +28,19 @@ fn color_to_string(color: &Color) -> String {
         }
     }
 }
+*/
+
+/// helper function to convert cssparser::RGBA to a String
+fn rgba_to_string(color: &RGBA) -> String {
+    //match color {
+    //    Color::RGBA(RGBA{ red, green, blue, alpha }) => {
+    if color.alpha == 255 { // without alpha component
+        format!("#{:02x}{:02x}{:02x}", color.red, color.green, color.blue)
+    } else { // with alpha component
+        format!("#{:02x}{:02x}{:02x}{:02x}", color.red, color.green, color.blue, color.alpha)
+    }
+}
+
 
 
 #[repr(C)]
@@ -90,12 +105,12 @@ impl GContextImpl {
     }
 
     // setters
-    pub fn set_color(&mut self, color: &Color) {
-        let ccolor = CString::new(color_to_string(color)).unwrap();
+    pub fn set_color(&mut self, color: &RGBA) {
+        let ccolor = CString::new(rgba_to_string(color)).unwrap();
         unsafe { gcontext_set_color(self.gc_ptr, ccolor.as_ptr()); }
     }
-    pub fn set_fill(&mut self, color: &Color) {
-        let ccolor = CString::new(color_to_string(color)).unwrap();
+    pub fn set_fill(&mut self, color: &RGBA) {
+        let ccolor = CString::new(rgba_to_string(color)).unwrap();
         unsafe { gcontext_set_fill(self.gc_ptr, ccolor.as_ptr()); }
     }
     pub fn set_fontfamily(&mut self, fontfamily: &str) {
@@ -142,7 +157,7 @@ impl GContextImpl {
     }
 
     // getters
-    /* // need to update to work with cssparser::Color
+    /* // need to update to work with cssparser::RGBA
     pub fn color(&self) -> &str {
         let c_str = unsafe {
             CStr::from_ptr(gcontext_color(self.gc_ptr))
@@ -321,3 +336,5 @@ impl RenderDevice {
     }
 }
 
+// Mark as UnwindSafe so we can catch errors with panic::catch_unwind()
+impl UnwindSafe for RenderDevice {}

@@ -156,16 +156,13 @@ impl<'a> selectors::Element for NodeRef<'a> {
         self.node().as_element().unwrap().name.ns == ns!(html) && self.node().in_html_document()
     }
 
-    /*
-    // In selectors 0.22, these are called has_local_name() and has_namespace(), see below
-    fn local_name(&self) -> &LocalName {
-        &self.node().as_element().unwrap().name.local
+    fn has_local_name(&self, local_name: &<Self::Impl as SelectorImpl>::BorrowedLocalName) -> bool {
+        self.node().as_element().unwrap().name.local == *local_name
     }
 
-    fn namespace(&self) -> &Namespace {
-        &self.node().as_element().unwrap().name.ns
+    fn has_namespace(&self, ns: &<Self::Impl as SelectorImpl>::BorrowedNamespaceUrl) -> bool {
+        self.node().as_element().unwrap().name.ns == *ns
     }
-    */
 
     fn is_html_slot_element(&self) -> bool {
         false
@@ -271,8 +268,6 @@ impl<'a> selectors::Element for NodeRef<'a> {
 
     // todo implementations
     fn is_pseudo_element(&self) -> bool { todo!() }
-    fn has_local_name(&self, _local_name: &<Self::Impl as SelectorImpl>::BorrowedLocalName) -> bool { todo!() }
-    fn has_namespace(&self, _ns: &<Self::Impl as SelectorImpl>::BorrowedNamespaceUrl) -> bool { todo!() }
     fn is_same_type(&self, _other: &Self) -> bool { todo!() }
     fn exported_part(&self, _name: &<Self::Impl as SelectorImpl>::PartName) -> Option<<Self::Impl as SelectorImpl>::PartName> { todo!() }
     fn imported_part(&self, _name: &<Self::Impl as SelectorImpl>::PartName) -> Option<<Self::Impl as SelectorImpl>::PartName> { todo!() }

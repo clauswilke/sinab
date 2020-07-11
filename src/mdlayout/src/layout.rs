@@ -1,5 +1,6 @@
 use crate::renderer::*;
 use crate::style2::properties::*;
+use crate::style::{style_for_element, StyleSet, ComputedValues};
 
 // for dom
 use crate::dom::*;
@@ -7,6 +8,11 @@ use crate::dom::*;
 use std::str;
 use std::cell::RefCell;
 use std::option::Option;
+
+pub struct Context<'a> {
+    pub document: &'a Document,
+    pub author_styles: &'a StyleSet,
+}
 
 pub enum InlineBoxContent {
     Space,
@@ -102,6 +108,7 @@ fn add_newline(boxes: &mut Vec<InlineBox>, gc: &GContext, rdev: &mut RenderDevic
     boxes.push(b);
 }
 
+/*
 fn apply_style_attribute(elt: &ElementData, gc: &GContext) -> Option<GContext> {
     if let Some(css) = elt.get_attr(&local_name!("style")) {
         let result = parse_declaration_block(css);
@@ -120,44 +127,52 @@ fn apply_style_attribute(elt: &ElementData, gc: &GContext) -> Option<GContext> {
     }
     None
 }
+*/
 
-fn process_node(
+fn apply_style_attributes(style: &ComputedValues, gc: &GContext) -> GContext {
+    let mut gc_new = gc.clone();
+    gc_new.set_color(&style.color.color);
+    gc_new
+}
+
+
+fn process_node<'dom>(
     boxes: &mut Vec<InlineBox>,
     node_id: NodeId,
-    document: &Document,
+    parent_element_style: &ComputedValues,
+    context: &'dom Context,
     gc: &GContext,
     rdev: &mut RenderDevice
 ) {
+    let style = style_for_element(
+        context.author_styles,
+        context.document,
+        node_id,
+        Some(parent_element_style),
+    );
+
     let mut gc_opt:Option<GContext> = Option::None;
 
-    let node = &document[node_id];
+    let node = &context.document[node_id];
     match node.data {
         NodeData::Element(ref elt) => {
+            // generate a new GContext for each element, just in case
+            let mut gc_new = gc.clone();
+
             match &elt.name.local {
                 &local_name!("em") => {
-                    let mut gc_new = gc.clone();
                     gc_new.modify_fontface(Fontface::Italics);
-                    gc_opt = Some(gc_new.clone());
-                    if let Some(g) = apply_style_attribute(elt, &gc_new) {
-                        gc_opt = Some(g);
-                    }
-                },
-                &local_name!("span") => {
-                    if let Some(g) = apply_style_attribute(elt, gc) {
-                        gc_opt = Some(g);
-                    }
                 },
                 &local_name!("strong") => {
-                    let mut gc_new = gc.clone();
                     gc_new.modify_fontface(Fontface::Bold);
-                    gc_opt = Some(gc_new.clone());
-                    if let Some(g) = apply_style_attribute(elt, &gc_new) {
-                        gc_opt = Some(g);
-                    }
                 },
                 &local_name!("br") => add_newline(boxes, gc, rdev),
                 _ => {},
             }
+
+            // apply styles from styleset
+            gc_opt = Some(apply_style_attributes(&style, &gc_new));
+
         },
         NodeData::Text{ref contents} => {
             make_text_boxes(boxes, contents, gc, rdev);
@@ -171,8 +186,15 @@ fn process_node(
     };
 
     if let Some(child_id) = node.first_child {
-        for nid in document.node_and_following_siblings(child_id) {
-            process_node(boxes, nid, document, &gc_final, rdev);
+        for nid in context.document.node_and_following_siblings(child_id) {
+            process_node(
+                boxes,
+                nid,
+                &style,
+                context,
+                &gc_final,
+                rdev
+            );
         }
     }
 }
@@ -199,11 +221,18 @@ fn render_inline_boxes(inline_boxes: &Vec<InlineBox>, rdev: &mut RenderDevice) {
     }
 }
 
-pub fn render_html(input: &str, rdev: &mut RenderDevice) {
+pub fn render_html(input: &str, mut rdev: RenderDevice) {
     let mut inline_boxes: Vec<InlineBox> = Vec::new();
     let gc = GContext::new();
     let document = Document::parse_html(input.as_bytes());
+    let author_styles = &document.parse_stylesheets();
+    let context = Context {
+        document: &document,
+        author_styles,
+    };
+    let root_element = document.root_element();
+    let style = style_for_element(context.author_styles, context.document, root_element, None);
 
-    process_node(&mut inline_boxes, document.root_element(), &document, &gc, rdev);
-    render_inline_boxes(&inline_boxes, rdev);
+    process_node(&mut inline_boxes, document.root_element(), &style, &context, &gc, &mut rdev);
+    render_inline_boxes(&inline_boxes, &mut rdev);
 }

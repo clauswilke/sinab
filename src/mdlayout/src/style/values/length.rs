@@ -18,32 +18,32 @@ pub(crate) struct Percentage {
 }
 
 /// <https://drafts.csswg.org/css-values/#lengths>
-#[derive(Clone, FromVariants)]
+#[derive(Clone, Debug, PartialEq, FromVariants)]
 pub(in crate::style) enum SpecifiedLength {
     Absolute(Length),
     Em(f32),
 }
 
-#[derive(Clone, Parse, FromVariants)]
+#[derive(Clone, Debug, Parse, FromVariants)]
 pub(in crate::style) enum SpecifiedLengthOrPercentage {
     Length(SpecifiedLength),
     Percentage(Percentage),
 }
 
-#[derive(Debug, Copy, Clone, FromSpecified, FromVariants)]
+#[derive(Copy, Clone, Debug, FromSpecified, FromVariants)]
 pub(crate) enum LengthOrPercentage {
     Length(Length),
     Percentage(Percentage),
 }
 
-#[derive(Clone, Parse, FromVariants)]
+#[derive(Clone, Debug, Parse, FromVariants)]
 pub(in crate::style) enum SpecifiedLengthOrPercentageOrAuto {
     Length(SpecifiedLength),
     Percentage(Percentage),
     Auto,
 }
 
-#[derive(Debug, Copy, Clone, FromSpecified, FromVariants)]
+#[derive(Copy, Clone, Debug, FromSpecified, FromVariants)]
 pub(crate) enum LengthOrPercentageOrAuto {
     Length(Length),
     Percentage(Percentage),
@@ -61,6 +61,11 @@ impl Parse for SpecifiedLength {
         match parser.next()? {
             Token::Dimension { value, unit, .. } => match_ignore_ascii_case!(unit,
                 "px" => Ok(SpecifiedLength::Absolute(Length { px: *value })),
+                "pt" => Ok(SpecifiedLength::Absolute(Length { px: *value / 72.0 * 96.0 })),
+                "in" => Ok(SpecifiedLength::Absolute(Length { px: *value * 96.0 })),
+                "cm" => Ok(SpecifiedLength::Absolute(Length { px: *value * 96.0 / 2.54 })),
+                "mm" => Ok(SpecifiedLength::Absolute(Length { px: *value * 96.0 / 25.4 })),
+                "pc" => Ok(SpecifiedLength::Absolute(Length { px: *value * 16.0 })),
                 "em" => Ok(SpecifiedLength::Em(*value)),
                 _ => {
                     let u = unit.clone();

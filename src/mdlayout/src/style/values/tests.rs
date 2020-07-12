@@ -48,5 +48,19 @@ mod tests {
         } else {
             assert!(false);
         }
+
+        let one_inch = parse_value!("96px", SpecifiedLength);
+
+        if let SpecifiedLength::Absolute(Length{ px: value }) = one_inch {
+            assert_eq!(value, 96.0);
+        } else {
+            assert!(false);
+        }
+
+        assert_eq!(parse_value!("72pt", SpecifiedLength), one_inch);
+        assert_eq!(parse_value!("1in", SpecifiedLength), one_inch);
+        assert_eq!(parse_value!("2.54cm", SpecifiedLength), one_inch);
+        assert_eq!(parse_value!("25.4mm", SpecifiedLength), one_inch);
+        assert_eq!(parse_value!("6pc", SpecifiedLength), one_inch);
     }
 }

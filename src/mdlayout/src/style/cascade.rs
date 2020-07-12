@@ -26,6 +26,8 @@ impl StyleSetBuilder {
         StyleSetBuilder(StyleSet { rules: Vec::new() })
     }
 
+    pub fn new_from_styleset(s: StyleSet) -> Self { StyleSetBuilder(s) }
+
     pub fn add_stylesheet(&mut self, css: &str) {
         let mut input = ParserInput::new(css);
         let mut parser = Parser::new(&mut input);

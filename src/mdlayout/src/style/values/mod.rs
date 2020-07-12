@@ -11,6 +11,7 @@ mod fonts;
 mod generic;
 mod length;
 mod writing_modes;
+mod tests; // testing module for values
 
 pub(super) use self::{background::*, generic::*};
 pub(crate) use self::{border::*, box_::*, color::*, fonts::*, length::*, writing_modes::*};

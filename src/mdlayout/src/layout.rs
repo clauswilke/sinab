@@ -221,11 +221,11 @@ fn render_inline_boxes(inline_boxes: &Vec<InlineBox>, rdev: &mut RenderDevice) {
     }
 }
 
-pub fn render_html(input: &str, mut rdev: RenderDevice) {
+pub fn render_html(text_input: &str, css_input: &str, mut rdev: RenderDevice) {
     let mut inline_boxes: Vec<InlineBox> = Vec::new();
     let gc = GContext::new();
-    let document = Document::parse_html(input.as_bytes());
-    let author_styles = &document.parse_stylesheets();
+    let document = Document::parse_html(text_input.as_bytes());
+    let author_styles = &document.parse_stylesheets(Some(css_input));
     let context = Context {
         document: &document,
         author_styles,

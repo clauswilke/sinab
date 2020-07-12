@@ -44,8 +44,13 @@ impl Document {
         NodeId(std::num::NonZeroUsize::new(1).unwrap())
     }
 
-    pub(crate) fn parse_stylesheets(&self) -> StyleSet {
+    pub(crate) fn parse_stylesheets(&self, user_css: Option<&str>) -> StyleSet {
         let mut style_set = StyleSetBuilder::new();
+
+        if let Some(s) = user_css {
+            style_set.add_stylesheet(s);
+        }
+
         for &id in &self.style_elements {
             let element = &self[id];
             // https://html.spec.whatwg.org/multipage/semantics.html#update-a-style-block

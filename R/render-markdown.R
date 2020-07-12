@@ -1,2 +1,2 @@
 #' @export
-render_markdown <- function(text) .Call(C_render_markdown, text)
+render_markdown <- function(text, css) .Call(C_render_markdown, text, css)

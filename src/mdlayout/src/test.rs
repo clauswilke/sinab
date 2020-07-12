@@ -10,15 +10,19 @@ use crate::style::style_for_element;
 use std::panic;
 
 #[no_mangle]
-pub extern "C" fn mdl_test_renderer(rdev_ptr: *mut C_RenderDevice, text: *const c_char) {
-    let mut rdev = RenderDevice::new(rdev_ptr);
-    let input = match cstring_to_str(text) {
+pub extern "C" fn mdl_test_renderer(rdev_ptr: *mut C_RenderDevice, text: *const c_char, css: *const c_char) {
+    let rdev = RenderDevice::new(rdev_ptr);
+    let text_input = match cstring_to_str(text) {
         Ok(s) => md_to_html(s),
         Err(..) => "".to_string(),
     };
+    let css_input = match cstring_to_str(css) {
+        Ok(s) => s,
+        Err(..) => "",
+    };
 
     let result = panic::catch_unwind(move || {
-        render_html(input.as_str(), rdev);
+        render_html(text_input.as_str(), css_input, rdev);
     });
 
     if result.is_err() {
@@ -69,7 +73,7 @@ pub fn test_dom() {
         The quick brown fox.</p>";
 
     let document = Document::parse_html(input.as_bytes());
-    let author_styles = &document.parse_stylesheets();
+    let author_styles = &document.parse_stylesheets(None);
     let context = Context {
         document: &document,
         author_styles,

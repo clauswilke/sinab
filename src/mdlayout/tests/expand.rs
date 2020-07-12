@@ -1,13 +1,6 @@
 // A mock integration test to make it easy to look at expanded macro code for specific macros.
 // Run with: cargo expand --test expand --theme GitHub
 
-/* Not sure if this is needed; needs more investigation
-#[macro_use]
-extern crate mdlayout_derive;
-
-use cssparser::*;
-*/
-
 
 #[macro_use]
 extern crate mdlayout_derive;
@@ -33,3 +26,5 @@ fn expand_test() {
 
     println!("Hello world! {:?}", f.string_format());
 }
+
+

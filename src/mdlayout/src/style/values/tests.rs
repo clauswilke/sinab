@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use crate::style::values::*;
     use cssparser::{Parser, ParserInput, Color, RGBA};
 
     /// Parse css expressions corresponding to values of the given type:
@@ -10,7 +10,10 @@ mod tests {
             {
                 let mut parser_input = ParserInput::new($css);
                 let mut input = Parser::new(&mut parser_input);
-                <$value_type>::parse(&mut input).unwrap()
+                match <$value_type>::parse(&mut input) {
+                    Ok(value) => value,
+                    Err(_) => panic!("Error parsing css value of type {}", stringify!($value_type)),
+                }
             }
         };
     }
@@ -36,5 +39,14 @@ mod tests {
         }
 
         assert_eq!(parse_value!("currentcolor", Color), Color::CurrentColor);
+    }
+
+    #[test]
+    fn test_specified_length() {
+        if let SpecifiedLength::Em(value) = parse_value!("2em", SpecifiedLength) {
+            assert_eq!(value, 2.0);
+        } else {
+            assert!(false);
+        }
     }
 }

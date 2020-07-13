@@ -2,11 +2,12 @@ use crate::style::errors::PropertyParseError;
 use crate::style::values::Parse;
 use cssparser::Parser;
 
+#[derive(Debug)]
 pub(in crate::style) struct FourSides<T> {
     pub top: T,
-    pub left: T,
-    pub bottom: T,
     pub right: T,
+    pub bottom: T,
+    pub left: T,
 }
 
 impl<T> Parse for FourSides<T>
@@ -16,14 +17,14 @@ where
     fn parse<'i, 't>(parser: &mut Parser<'i, 't>) -> Result<Self, PropertyParseError<'i>> {
         let top = T::parse(parser)?;
 
-        let left = if let Ok(left) = parser.r#try(T::parse) {
-            left
+        let right = if let Ok(right) = parser.r#try(T::parse) {
+            right
         } else {
             return Ok(FourSides {
                 top: top.clone(),
-                left: top.clone(),
+                right: top.clone(),
                 bottom: top.clone(),
-                right: top,
+                left: top,
             });
         };
 
@@ -32,28 +33,28 @@ where
         } else {
             return Ok(FourSides {
                 top: top.clone(),
-                left: left.clone(),
+                right: right.clone(),
                 bottom: top,
-                right: left,
+                left: right,
             });
         };
 
-        let right = if let Ok(right) = parser.r#try(T::parse) {
-            right
+        let left = if let Ok(left) = parser.r#try(T::parse) {
+            left
         } else {
             return Ok(FourSides {
                 top: top,
-                left: left.clone(),
+                left: right.clone(),
                 bottom: bottom,
-                right: left,
+                right: right,
             });
         };
 
         Ok(FourSides {
             top,
-            left,
-            bottom,
             right,
+            bottom,
+            left,
         })
     }
 }

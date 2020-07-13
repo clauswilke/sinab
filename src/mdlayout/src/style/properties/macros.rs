@@ -26,7 +26,7 @@ macro_rules! properties {
 
         tagged_union_with_jump_tables! {
             #[repr($DiscriminantType)]
-            #[derive(Copy, Clone)]
+            #[derive(Copy, Clone, Debug)]
             #[allow(non_camel_case_types)]
             pub(in crate::style) enum LonghandId {
                 $($(
@@ -92,6 +92,7 @@ macro_rules! properties {
 
         tagged_union_with_jump_tables! {
             #[repr($DiscriminantType)]
+            #[derive(Debug)]
             #[allow(non_camel_case_types)]
             pub(in crate::style) enum LonghandDeclaration {
                 $($(

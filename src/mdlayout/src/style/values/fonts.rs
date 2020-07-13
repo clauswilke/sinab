@@ -1,6 +1,6 @@
 use super::{EarlyCascadeContext, EarlyFromSpecified, Length, SpecifiedLength, SpecifiedValue};
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 pub(crate) struct FontSize(pub Length);
 
 impl From<Length> for FontSize {

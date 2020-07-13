@@ -4,7 +4,7 @@ use cssparser::Parser;
 use std::sync::Arc;
 
 /// https://drafts.csswg.org/css-display-3/#the-display-properties
-#[derive(Copy, Clone, Eq, PartialEq, SpecifiedAsComputed)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, SpecifiedAsComputed)]
 pub(crate) enum Display {
     None,
     Contents,
@@ -16,7 +16,7 @@ fn _static_assert_size_of() {
     let _ = std::mem::transmute::<Display, [u8; 2]>;
 }
 
-#[derive(Copy, Clone, Eq, PartialEq)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub(crate) enum DisplayGeneratingBox {
     OutsideInside {
         outside: DisplayOutside,
@@ -28,14 +28,14 @@ pub(crate) enum DisplayGeneratingBox {
 }
 
 /// https://drafts.csswg.org/css-display-3/#outer-role
-#[derive(Copy, Clone, Eq, PartialEq)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub(crate) enum DisplayOutside {
     Inline,
     Block,
 }
 
 /// https://drafts.csswg.org/css-display-3/#inner-model
-#[derive(Copy, Clone, Eq, PartialEq)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub(crate) enum DisplayInside {
     Flow,
     FlowRoot,
@@ -108,7 +108,7 @@ impl super::Parse for Display {
 }
 
 /// https://drafts.csswg.org/css2/visuren.html#propdef-float
-#[derive(Copy, Clone, Eq, Parse, PartialEq, SpecifiedAsComputed)]
+#[derive(Copy, Clone, Debug, Eq, Parse, PartialEq, SpecifiedAsComputed)]
 pub(crate) enum Float {
     None,
     Left,
@@ -125,7 +125,7 @@ impl Float {
 }
 
 /// https://drafts.csswg.org/css-position-3/#position-property
-#[derive(Copy, Clone, Eq, Parse, PartialEq, SpecifiedAsComputed)]
+#[derive(Copy, Clone, Debug, Eq, Parse, PartialEq, SpecifiedAsComputed)]
 pub(crate) enum Position {
     Static,
     Relative,

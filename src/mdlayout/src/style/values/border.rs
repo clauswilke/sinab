@@ -3,13 +3,13 @@ use crate::style::errors::PropertyParseError;
 use cssparser::{Color, Parser};
 
 /// https://drafts.csswg.org/css-backgrounds/#typedef-line-style
-#[derive(Copy, Clone, Parse, SpecifiedAsComputed)]
+#[derive(Copy, Clone, Debug, Parse, SpecifiedAsComputed)]
 pub(crate) enum LineStyle {
     None,
     Solid,
 }
 
-#[derive(Parse)]
+#[derive(Debug, Parse)]
 enum ParsedLineWidth {
     Thin,
     Medium,
@@ -17,10 +17,10 @@ enum ParsedLineWidth {
     Other(SpecifiedLengthOrPercentage),
 }
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub(in crate::style) struct SpecifiedLineWidth(pub SpecifiedLengthOrPercentage);
 
-#[derive(Copy, Clone, FromSpecified)]
+#[derive(Copy, Clone, Debug, FromSpecified)]
 pub(crate) struct LineWidth(pub LengthOrPercentage);
 
 impl LineWidth {
@@ -84,7 +84,7 @@ parse_one_or_more!(BorderSide {
     width,
 });
 
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub(in crate::style) struct BorderSide {
     pub style: Option<LineStyle>,
     pub color: Option<Color>,

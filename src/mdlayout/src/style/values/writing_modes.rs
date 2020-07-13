@@ -1,10 +1,10 @@
-#[derive(Debug, Copy, Clone, PartialEq, Parse)]
+#[derive(Copy, Clone, Debug, PartialEq, Parse)]
 pub(crate) enum Direction {
     Ltr,
     Rtl,
 }
 
-#[derive(Debug, Copy, Clone, PartialEq, Parse)]
+#[derive(Copy, Clone, Debug, PartialEq, Parse)]
 pub(crate) enum WritingMode {
     HorizontalTb,
     VerticalRl,

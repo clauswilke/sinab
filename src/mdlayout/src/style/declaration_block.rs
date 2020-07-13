@@ -5,7 +5,7 @@ use cssparser::{AtRuleParser, ParseError, Parser};
 use cssparser::{CowRcStr, DeclarationListParser, DeclarationParser};
 use std::iter::repeat;
 
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub(super) struct DeclarationBlock {
     declarations: Vec<LonghandDeclaration>,
     important: smallbitvec::SmallBitVec,
@@ -65,6 +65,11 @@ impl DeclarationBlock {
                 },
             )
         }
+    }
+
+    /// Simple accessor function for debugging.
+    pub fn get_declarations(&self) -> &Vec<LonghandDeclaration> {
+        &self.declarations
     }
 }
 

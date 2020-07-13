@@ -24,7 +24,7 @@ enum Float {
 fn expand_test() {
     let f = Float::Left;
 
-    println!("Hello world! {:?}", f.string_format());
+    println!("Macro expansion test.\nOutput from #[derive]ed code: {:?}", f.string_format());
 }
 
 

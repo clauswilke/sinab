@@ -45,7 +45,7 @@ pub(super) trait EarlyFromSpecified: SpecifiedValue {
     ) -> Self;
 }
 
-#[derive(Copy, Clone, Parse)]
+#[derive(Copy, Clone, Debug, Parse)]
 pub(super) enum CssWideKeyword {
     Inherit,
     Initial,

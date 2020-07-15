@@ -1,5 +1,4 @@
 use crate::renderer::*;
-use crate::style2::properties::*;
 use crate::style::{style_for_element, StyleSet, ComputedValues};
 
 // for dom

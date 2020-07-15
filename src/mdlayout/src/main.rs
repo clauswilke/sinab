@@ -1,5 +1,6 @@
 extern crate mdlayout;
 
+/*
 use mdlayout::style2::properties::parse_declaration_block;
 
 fn simple_css_parsing() {
@@ -22,6 +23,8 @@ fn simple_css_parsing() {
         println!("Declaration {}: {:?}", rule.0, rule.1);
     }
 }
+
+ */
 
 use mdlayout::test::test_dom;
 

@@ -31,7 +31,6 @@ pub extern "C" fn mdl_test_renderer(rdev_ptr: *mut C_RenderDevice, text: *const 
 }
 
 use crate::dom::*;
-use std::ops::Index;
 
 fn process_nodes(node_id: NodeId, document: &Document) {
     let node = &document[node_id];
@@ -57,7 +56,7 @@ fn process_nodes(node_id: NodeId, document: &Document) {
 
 }
 
-/*
+
 pub fn test_dom() {
     let input = "<p>Hello, <em>world!</em> How is it going?</p><strong><em><span>test</span></em></strong>";
 
@@ -65,21 +64,4 @@ pub fn test_dom() {
 
     process_nodes(document.root_element(), &document)
 }
-*/
 
-pub fn test_dom() {
-    let input = "<p>The <strong>quick <span style='color:brown'>brown</span>
-        <em>fox</em></strong> jumps over the <span style='color:#0000ff80'>lazy dog.</span><br>
-        The quick brown fox.</p>";
-
-    let document = Document::parse_html(input.as_bytes());
-    let author_styles = &document.parse_stylesheets(None);
-    let context = Context {
-        document: &document,
-        author_styles,
-    };
-    let root_element = document.root_element();
-    println!("Hello world");
-    // this next line currently crashes
-    let style = style_for_element(context.author_styles, context.document, root_element, None);
-}

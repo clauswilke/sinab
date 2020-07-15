@@ -10,7 +10,7 @@ use std::panic::UnwindSafe;
 use std::rc::Rc;
 use std::ops::{Deref, DerefMut};
 
-use cssparser::{Color, RGBA};
+use cssparser::{RGBA};
 
 /*
 /// helper function to convert cssparser::Color to a String

@@ -1,4 +1,7 @@
 #[cfg(test)]
+mod selectors;
+
+#[cfg(test)]
 mod tests {
     use crate::style::values::*;
     use crate::style::properties::LonghandDeclaration;
@@ -7,7 +10,7 @@ mod tests {
 
     /// A simple macro to help with iterating through declarations,
     /// unstructuring them, and testing the inner variable for some value.
-    macro_rules! match_next_declaration {
+    macro_rules! validate_next_declaration {
         ($decl_iter:expr, $pattern:pat, $assert_expr:expr) => {
             match $decl_iter.next().unwrap() {
                 $pattern => { $assert_expr; },
@@ -29,28 +32,28 @@ mod tests {
         let mut input = Parser::new(&mut parser_input);
         let mut declarations = DeclarationBlock::parse(&mut input);
 
-        ///*
+        /*
         for d in declarations.get_declarations() {
             println!("{:?}", d);
         }
-        //*/
+        */
 
         assert_eq!(declarations.get_declarations().len(), 11);
         let mut decl_iter = declarations.get_declarations().into_iter();
 
-        match_next_declaration!(
+        validate_next_declaration!(
             decl_iter,
             LonghandDeclaration::color(Color::RGBA(ref rgba)),
             assert_eq!(*rgba, RGBA::new(0, 128, 0, 255))
         );
 
-        match_next_declaration!(
+        validate_next_declaration!(
             decl_iter,
             LonghandDeclaration::background_color(Color::RGBA(ref rgba)),
             assert_eq!(*rgba, RGBA::new(255, 0, 0, 255))
         );
 
-        match_next_declaration!(
+        validate_next_declaration!(
             decl_iter,
             LonghandDeclaration::margin_top(
                 SpecifiedLengthOrPercentageOrAuto::Length(
@@ -58,7 +61,7 @@ mod tests {
             assert_eq!(*value, 96.0)
         );
 
-        match_next_declaration!(
+        validate_next_declaration!(
             decl_iter,
             LonghandDeclaration::margin_left(
                 SpecifiedLengthOrPercentageOrAuto::Length(
@@ -66,7 +69,7 @@ mod tests {
             assert_eq!(*value, 96.0)
         );
 
-        match_next_declaration!(
+        validate_next_declaration!(
             decl_iter,
             LonghandDeclaration::margin_bottom(
                 SpecifiedLengthOrPercentageOrAuto::Length(
@@ -74,7 +77,7 @@ mod tests {
             assert_eq!(*value, 96.0)
         );
 
-        match_next_declaration!(
+        validate_next_declaration!(
             decl_iter,
             LonghandDeclaration::margin_right(
                 SpecifiedLengthOrPercentageOrAuto::Length(
@@ -82,7 +85,7 @@ mod tests {
             assert_eq!(*value, 96.0)
         );
 
-        match_next_declaration!(
+        validate_next_declaration!(
             decl_iter,
             LonghandDeclaration::padding_top(
                 SpecifiedLengthOrPercentage::Length(
@@ -90,7 +93,7 @@ mod tests {
             assert_eq!(*value, 10.0)
         );
 
-        match_next_declaration!(
+        validate_next_declaration!(
             decl_iter,
             LonghandDeclaration::padding_left(
                 SpecifiedLengthOrPercentage::Length(
@@ -99,7 +102,7 @@ mod tests {
         );
 
 
-        match_next_declaration!(
+        validate_next_declaration!(
             decl_iter,
             LonghandDeclaration::padding_bottom(
                 SpecifiedLengthOrPercentage::Length(
@@ -108,7 +111,7 @@ mod tests {
         );
 
 
-        match_next_declaration!(
+        validate_next_declaration!(
             decl_iter,
             LonghandDeclaration::padding_right(
                 SpecifiedLengthOrPercentage::Length(
@@ -116,7 +119,7 @@ mod tests {
             assert_eq!(*value, 5.0)
         );
 
-        match_next_declaration!(
+        validate_next_declaration!(
             decl_iter,
             LonghandDeclaration::padding_top(
                 SpecifiedLengthOrPercentage::Length(

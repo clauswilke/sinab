@@ -75,13 +75,15 @@ macro_rules! validate_color {
 fn selectors() {
     // avoid whitespace in html to simplify testing
     let text_input =
-r#"<body><p>par 1</p><p class="p2">par 2</p><p id="p3">par 3</p><span id="p3">span 1</span></body>"#;
+r#"<body><p>par 1</p><p class="p2">par 2</p><p id="p3">par 3</p><span id="p3">span 1<em>em</em></span></body>"#;
     let css_input = r#"
-        p      { color: red; }
-        .p2    { color: blue; }
-        #p3    { color: white; }
-        body   { color: green; }
-        span   { color: yellow !important; }
+        p       { color: red; }
+        .p2     { color: blue; }
+        #p3     { color: white; }
+        body    { color: green; }
+        span    { color: yellow !important; }
+        em      { color: red; }
+        span em { color: blue; }
     "#;
 
     let document = Document::parse_html(text_input.as_bytes());
@@ -131,4 +133,12 @@ r#"<body><p>par 1</p><p class="p2">par 2</p><p id="p3">par 3</p><span id="p3">sp
     validate_color!(node_id, RGBA::new(255, 255, 0, 255), document, author_styles);
     let child = document[node_id].first_child.unwrap();
     validate_text!(child, "span 1", document);
+
+    // em inside span 1 --- blue
+    let node_id = document[child].next_sibling.unwrap();
+    validate_element_type!(node_id, "em", document);
+    validate_color!(node_id, RGBA::new(0, 0, 255, 255), document, author_styles);
+    let child = document[node_id].first_child.unwrap();
+    validate_text!(child, "em", document);
+
 }

@@ -1,8 +1,6 @@
-use proc_macro::TokenStream;
-
 #[proc_macro_derive(SpecifiedAsComputed)]
 pub fn derive_specified_as_computed(input: TokenStream) -> TokenStream {
-    let input: syn::DeriveInput = syn::parse(input).unwrap();
+    let input = parse_macro_input!(input as DeriveInput);
     let name = input.ident;
     quote!(
         impl crate::style::values::SpecifiedValue for #name {
@@ -30,7 +28,7 @@ pub fn derive_specified_as_computed(input: TokenStream) -> TokenStream {
 
 #[proc_macro_derive(FromSpecified)]
 pub fn derive_from_specified(input: TokenStream) -> TokenStream {
-    let input: syn::DeriveInput = syn::parse(input).unwrap();
+    let input = parse_macro_input!(input as DeriveInput);
     let name = &input.ident;
     let (specified_type, specified_name) = if input.generics.type_params().next().is_none() {
         let specified = syn::Ident::new(&format!("Specified{}", name), name.span());
@@ -114,7 +112,7 @@ pub fn derive_from_specified(input: TokenStream) -> TokenStream {
 
 #[proc_macro_derive(Parse)]
 pub fn derive_parse(input: TokenStream) -> TokenStream {
-    let input: syn::DeriveInput = syn::parse(input).unwrap();
+    let input = parse_macro_input!(input as DeriveInput);
     let name = &input.ident;
 
     let mut unit_variants = Vec::new();

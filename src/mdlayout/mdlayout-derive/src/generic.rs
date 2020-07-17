@@ -1,6 +1,6 @@
 #[proc_macro_derive(FromVariants)]
 pub fn derive_from_variants(input: TokenStream) -> TokenStream {
-    let input: syn::DeriveInput = syn::parse(input).unwrap();
+    let input = parse_macro_input!(input as DeriveInput);
     let name = input.ident;
     let mut impls = quote!();
     if let syn::Data::Enum(data) = input.data {

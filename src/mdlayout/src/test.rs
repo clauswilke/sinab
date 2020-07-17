@@ -4,8 +4,6 @@ use crate::renderer::*;
 use crate::c_helper::*;
 use crate::markdown::md_to_html;
 use crate::layout::render_html;
-use crate::layout::Context;
-use crate::style::style_for_element;
 
 use std::panic;
 

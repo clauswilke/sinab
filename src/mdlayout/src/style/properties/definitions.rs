@@ -1,3 +1,5 @@
+#![allow(unused_braces)]  // The properties!() macro requires some extra braces that look unnecessary to the linter
+
 use crate::style::values::*;
 use cssparser::{Color, RGBA};
 

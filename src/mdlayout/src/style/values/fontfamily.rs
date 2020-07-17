@@ -1,5 +1,5 @@
 use crate::style::values::{Parse};
-use crate::style::errors::{PropertyParseError, PropertyParseErrorKind};
+use crate::style::errors::{PropertyParseError};
 use cssparser::{Parser, Token};
 
 // TODO: CSS allows for multiple fonts separated by comma.

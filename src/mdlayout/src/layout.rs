@@ -146,16 +146,13 @@ fn process_node<'dom>(
     let node = &context.document[node_id];
     match node.data {
         NodeData::Element(ref elt) => {
-            // generate a new GContext for each element, just in case
-            let mut gc_new = gc.clone();
-
             match &elt.name.local {
                 &local_name!("br") => add_newline(boxes, gc, rdev),
                 _ => {},
             }
 
             // apply styles from styleset
-            gc_opt = Some(apply_style_attributes(&style, &gc_new));
+            gc_opt = Some(apply_style_attributes(&style, &gc));
 
         },
         NodeData::Text{ref contents} => {

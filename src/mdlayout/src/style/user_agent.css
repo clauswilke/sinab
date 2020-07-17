@@ -15,6 +15,9 @@ html, body { display: block; }
 
 body { margin: 8px }
 
+em { font-style: italic; }
+strong { font-weight: bold; }
+
 address, blockquote, center, dialog, div, figure, figcaption, footer, form,
 header, hr, legend, listing, main, p, plaintext, pre, xmp {
   display: block;

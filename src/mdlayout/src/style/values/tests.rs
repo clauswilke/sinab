@@ -63,4 +63,15 @@ mod tests {
         assert_eq!(parse_value!("25.4mm", SpecifiedLength), one_inch);
         assert_eq!(parse_value!("6pc", SpecifiedLength), one_inch);
     }
+
+    #[test]
+    fn test_font() {
+        assert_eq!(parse_value!("normal", FontStyle), FontStyle::Normal);
+        assert_eq!(parse_value!("italic", FontStyle), FontStyle::Italic);
+        assert_eq!(parse_value!("oblique", FontStyle), FontStyle::Oblique);
+
+        assert_eq!(parse_value!("normal", FontWeight), FontWeight::Normal);
+        assert_eq!(parse_value!("bold", FontWeight), FontWeight::Bold);
+
+    }
 }

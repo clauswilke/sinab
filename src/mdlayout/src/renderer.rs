@@ -120,8 +120,8 @@ impl GContextImpl {
     pub fn set_fontface(&mut self, fontface: Fontface) {
         let cface:c_int = match fontface {
             Fontface::Plain => 1,
-            Fontface::Bold=> 2,
-            Fontface::Italics=> 3,
+            Fontface::Bold => 2,
+            Fontface::Italics => 3,
             Fontface::BoldItalics => 4,
         };
         unsafe { gcontext_set_fontface(self.gc_ptr, cface); }

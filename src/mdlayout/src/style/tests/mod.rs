@@ -32,12 +32,6 @@ mod tests {
         let mut input = Parser::new(&mut parser_input);
         let mut declarations = DeclarationBlock::parse(&mut input);
 
-        /*
-        for d in declarations.get_declarations() {
-            println!("{:?}", d);
-        }
-        */
-
         assert_eq!(declarations.get_declarations().len(), 11);
         let mut decl_iter = declarations.get_declarations().into_iter();
 
@@ -126,5 +120,70 @@ mod tests {
                     SpecifiedLength::Absolute(Length{ px: value }))),
             assert_eq!(*value, 20.0)
         );
+    }
+
+    #[test]
+    fn test_font_properties() {
+        let css = "
+            font-style: normal;
+            font-style: italic;
+            font-weight: normal;
+            font-weight: bold;
+            ";
+        let mut parser_input = ParserInput::new(css);
+        let mut input = Parser::new(&mut parser_input);
+        let mut declarations = DeclarationBlock::parse(&mut input);
+
+        assert_eq!(declarations.get_declarations().len(), 4);
+        let mut decl_iter = declarations.get_declarations().into_iter();
+
+        validate_next_declaration!(
+            decl_iter,
+            LonghandDeclaration::font_style(style),
+            assert_eq!(*style, FontStyle::Normal)
+        );
+
+        validate_next_declaration!(
+            decl_iter,
+            LonghandDeclaration::font_style(style),
+            assert_eq!(*style, FontStyle::Italic)
+        );
+
+        validate_next_declaration!(
+            decl_iter,
+            LonghandDeclaration::font_weight(weight),
+            assert_eq!(*weight, FontWeight::Normal)
+        );
+
+        validate_next_declaration!(
+            decl_iter,
+            LonghandDeclaration::font_weight(weight),
+            assert_eq!(*weight, FontWeight::Bold)
+        );
+    }
+
+        #[test]
+    fn test_declaration_block2() {
+        // a dummy test to explore parsing results
+        /*
+        let css = r#"
+            border-top: none green 5%;
+            border-style: solid;
+            border-color: red;
+            border-width: 1in;
+        "#;
+         */
+        let css = r#"
+            font-weight: bold;
+            font-style: italic;
+        "#;
+        let mut parser_input = ParserInput::new(css);
+        let mut input = Parser::new(&mut parser_input);
+        let mut declarations = DeclarationBlock::parse(&mut input);
+
+        for d in declarations.get_declarations() {
+            println!("{:?}", d);
+        }
+        assert!(true);
     }
 }

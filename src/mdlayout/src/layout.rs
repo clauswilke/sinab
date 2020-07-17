@@ -1,4 +1,5 @@
 use crate::renderer::*;
+use crate::style::values::*;
 use crate::style::{style_for_element, StyleSet, ComputedValues};
 
 // for dom
@@ -107,30 +108,21 @@ fn add_newline(boxes: &mut Vec<InlineBox>, gc: &GContext, rdev: &mut RenderDevic
     boxes.push(b);
 }
 
-/*
-fn apply_style_attribute(elt: &ElementData, gc: &GContext) -> Option<GContext> {
-    if let Some(css) = elt.get_attr(&local_name!("style")) {
-        let result = parse_declaration_block(css);
-        if result.len() > 0 {
-            let mut gc_new = gc.clone();
-            for decl in result.iter() {
-                match decl {
-                    CssProperty::Color(ref color) => {
-                        gc_new.set_color(color);
-                    }
-                    _ => {}
-                }
-            }
-            return Some(gc_new);
-        }
-    }
-    None
-}
-*/
-
 fn apply_style_attributes(style: &ComputedValues, gc: &GContext) -> GContext {
     let mut gc_new = gc.clone();
     gc_new.set_color(&style.color.color);
+    gc_new.set_fontface(
+        match &style.font.font_style {
+            FontStyle::Normal => match &style.font.font_weight {
+                FontWeight::Normal => Fontface::Plain,
+                _ => Fontface::Bold,
+            },
+            FontStyle::Italic | FontStyle::Oblique => match &style.font.font_weight {
+                FontWeight::Normal => Fontface::Italics,
+                _ => Fontface::BoldItalics,
+            }
+        }
+    );
     gc_new
 }
 
@@ -159,12 +151,6 @@ fn process_node<'dom>(
             let mut gc_new = gc.clone();
 
             match &elt.name.local {
-                &local_name!("em") => {
-                    gc_new.modify_fontface(Fontface::Italics);
-                },
-                &local_name!("strong") => {
-                    gc_new.modify_fontface(Fontface::Bold);
-                },
                 &local_name!("br") => add_newline(boxes, gc, rdev),
                 _ => {},
             }

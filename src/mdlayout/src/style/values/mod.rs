@@ -25,6 +25,10 @@ pub(super) struct CascadeContext<'a> {
     pub this: ComputedValuesForLateCascade<'a>,
 }
 
+/// The cascade is broken into an early and a regular/late part because some properties
+/// need to be calculated before others. In particular, if an element specifies a font size
+/// and also some other length relative to the font size (i.e., in em), the font size for the
+/// element needs to be calculated before the other length.
 pub(super) struct EarlyCascadeContext<'a> {
     pub inherited: &'a ComputedValues,
     pub this: ComputedValuesForEarlyCascade<'a>,

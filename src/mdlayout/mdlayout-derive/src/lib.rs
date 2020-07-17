@@ -14,9 +14,7 @@ include!("generic.rs"); // TODO: Should this be integrated into "style.rs"? It's
 // The remainder of this file is a test of proc_macro_derive().
 
 use quote::quote;
-use syn::{parse_macro_input, DeriveInput, Result};
-use syn::parse::{Parse, ParseStream};
-
+use syn::{parse_macro_input, DeriveInput};
 
 #[proc_macro_derive(StringFormat)]
 pub fn string_format_derive(input: TokenStream) -> TokenStream {

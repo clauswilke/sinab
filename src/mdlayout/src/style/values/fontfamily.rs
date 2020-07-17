@@ -2,7 +2,7 @@ use crate::style::values::{Parse};
 use crate::style::errors::{PropertyParseError, PropertyParseErrorKind};
 use cssparser::{Parser, Token};
 
-// TODO: CSS allows for multiple fonts separated by comma
+// TODO: CSS allows for multiple fonts separated by comma.
 
 #[derive(Clone, Debug, SpecifiedAsComputed, PartialEq)]
 pub enum FontFamily {
@@ -16,7 +16,7 @@ pub enum FontFamily {
 
 impl Parse for FontFamily {
     fn parse<'i, 't>(parser: &mut Parser<'i, 't>) -> Result<Self, PropertyParseError<'i>> {
-        match parser.next()? {
+        let result = match parser.next()? {
             Token::Ident(ref s) => match_ignore_ascii_case!(s,
                 "sans-serif" => Ok(FontFamily::GenericSans),
                 "serif" => Ok(FontFamily::GenericSerif),
@@ -32,6 +32,13 @@ impl Parse for FontFamily {
                 let t = token.clone();
                 Err(parser.new_unexpected_token_error(t))
             }
+        };
+
+        // there shouldn't be any further tokens; if there are, throw error
+        if let Ok(token) = parser.next() {
+            let t = token.clone();
+            return Err(parser.new_unexpected_token_error(t));
         }
+        result
     }
 }

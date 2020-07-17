@@ -8,6 +8,7 @@ properties! {
         @early font_size { "font-size", FontSize, initial = Length { px: 16. } }
         font_style { "font-style", FontStyle, initial = FontStyle::Normal }
         font_weight { "font-weight", FontWeight, initial = FontWeight::Normal }
+        font_family { "font-family", FontFamily, initial = FontFamily::GenericSans }
     }
 
     inherited struct color {

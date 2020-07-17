@@ -73,5 +73,17 @@ mod tests {
         assert_eq!(parse_value!("normal", FontWeight), FontWeight::Normal);
         assert_eq!(parse_value!("bold", FontWeight), FontWeight::Bold);
 
+        assert_eq!(parse_value!("sans-serif", FontFamily), FontFamily::GenericSans);
+        assert_eq!(parse_value!("monospace", FontFamily), FontFamily::GenericMonospace);
+        assert_eq!(
+            parse_value!("Times", FontFamily),
+            FontFamily::FamilyName("Times".to_string())
+        );
+        assert_eq!(
+            parse_value!("'Times New Roman'", FontFamily),
+            FontFamily::FamilyName("Times New Roman".to_string())
+        )
+
+
     }
 }

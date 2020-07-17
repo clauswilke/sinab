@@ -42,14 +42,14 @@ impl std::ops::Div<FontSize> for Length {
 */
 
 #[derive(Copy, Clone, Debug, Parse, SpecifiedAsComputed, PartialEq)]
-pub(crate) enum FontStyle {
+pub enum FontStyle {
     Normal,
     Italic,
     Oblique,
 }
 
 #[derive(Copy, Clone, Debug, Parse, SpecifiedAsComputed, PartialEq)]
-pub(crate) enum FontWeight {
+pub enum FontWeight {
     Normal,
     Bold,
 }

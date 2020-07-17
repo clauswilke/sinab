@@ -111,18 +111,17 @@ fn add_newline(boxes: &mut Vec<InlineBox>, gc: &GContext, rdev: &mut RenderDevic
 fn apply_style_attributes(style: &ComputedValues, gc: &GContext) -> GContext {
     let mut gc_new = gc.clone();
     gc_new.set_color(&style.color.color);
-    gc_new.set_fontface(
-        match &style.font.font_style {
-            FontStyle::Normal => match &style.font.font_weight {
-                FontWeight::Normal => Fontface::Plain,
-                _ => Fontface::Bold,
-            },
-            FontStyle::Italic | FontStyle::Oblique => match &style.font.font_weight {
-                FontWeight::Normal => Fontface::Italics,
-                _ => Fontface::BoldItalics,
-            }
-        }
-    );
+    gc_new.set_fontstyle(&style.font.font_style);
+    gc_new.set_fontweight(&style.font.font_weight);
+    gc_new.set_fontsize(*&style.font.font_size.0.px as f64);
+    let family = match &style.font.font_family {
+        FontFamily::GenericSans => "sans",
+        FontFamily::GenericSerif => "serif",
+        FontFamily::GenericMonospace => "mono",
+        FontFamily::FamilyName(ref s) => s.as_str(),
+        _ => "sans", // use sans for Fantasy and Cursive
+    };
+    gc_new.set_fontfamily(family);
     gc_new
 }
 

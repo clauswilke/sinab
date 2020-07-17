@@ -11,24 +11,8 @@ use std::rc::Rc;
 use std::ops::{Deref, DerefMut};
 
 use cssparser::{RGBA};
+use crate::style::values::*;
 
-/*
-/// helper function to convert cssparser::Color to a String
-fn color_to_string(color: &Color) -> String {
-    match color {
-        Color::RGBA(RGBA{ red, green, blue, alpha }) => {
-            if *alpha == 255 { // without alpha component
-                format!("#{:02x}{:02x}{:02x}", *red, *green, *blue)
-            } else { // with alpha component
-                format!("#{:02x}{:02x}{:02x}{:02x}", *red, *green, *blue, *alpha)
-            }
-        }
-        _ => {
-            String::from("#000000")
-        }
-    }
-}
-*/
 
 /// helper function to convert cssparser::RGBA to a String
 fn rgba_to_string(color: &RGBA) -> String {
@@ -126,34 +110,33 @@ impl GContextImpl {
         };
         unsafe { gcontext_set_fontface(self.gc_ptr, cface); }
     }
-    /// Sets the fontface taking into consideration the current value, i.e., if
-    /// it is already Italics and is set to Bold, the result is BoldItalics. Never
-    /// removes an attribute, only adds.
-    pub fn modify_fontface(&mut self, fontface: Fontface) {
-        match fontface {
-            Fontface::Plain => {},
-            Fontface::Bold => {
-                match self.fontface() {
-                    Fontface::Plain => self.set_fontface(Fontface::Bold),
-                    Fontface::Italics => self.set_fontface(Fontface::BoldItalics),
-                    _ => {},
-                };
-            }
-            Fontface::Italics => {
-                match self.fontface() {
-                    Fontface::Plain => self.set_fontface(Fontface::Italics),
-                    Fontface::Bold => self.set_fontface(Fontface::BoldItalics),
-                    _ => {},
-                };
-            }
-            Fontface::BoldItalics => self.set_fontface(Fontface::BoldItalics),
+
+    pub fn set_fontstyle(&mut self, style: &FontStyle) {
+        match style {
+            FontStyle::Italic | FontStyle::Oblique => match self.fontface() {
+                Fontface::Plain => self.set_fontface(Fontface::Italics),
+                Fontface::Bold => self.set_fontface(Fontface::BoldItalics),
+                _ => {},
+            },
+            _ => {},
         }
     }
-    pub fn set_fontsize(&mut self, fontsize: f64) {
-        unsafe { gcontext_set_fontsize(self.gc_ptr, fontsize as c_double); }
+
+    pub fn set_fontweight(&mut self, weight: &FontWeight) {
+        match weight {
+            FontWeight::Bold => match self.fontface() {
+                Fontface::Plain => self.set_fontface(Fontface::Bold),
+                Fontface::Italics => self.set_fontface(Fontface::BoldItalics),
+                _ => {},
+            },
+            _ => {},
+        }
     }
-    pub fn set_lineheight(&mut self, lineheight: f64) {
-        unsafe { gcontext_set_lineheight(self.gc_ptr, lineheight as c_double); }
+
+    /// Sets the fontsize, in px
+    pub fn set_fontsize(&mut self, px: f64) {
+        let csize = (px * 72.0 / 96.0) as c_double;
+        unsafe { gcontext_set_fontsize(self.gc_ptr, csize); }
     }
 
     // getters
@@ -190,12 +173,13 @@ impl GContextImpl {
             _ => Fontface::Plain, // interpret unknown fontfaces as Plain
         }
     }
+    /// Returns the current fontsize, in px
     pub fn fontsize(&self) -> f64 {
         let csize:c_double = unsafe {
             gcontext_fontsize(self.gc_ptr)
         };
 
-        csize as f64
+        (csize as f64) * 96.0 / 72.0
     }
     pub fn lineheight(&self) -> f64 {
         let cheight:c_double = unsafe {
@@ -275,7 +259,7 @@ pub struct StringMetrics {
 #[allow(dead_code)]
 #[derive(Copy, Clone)]
 pub struct FontMetrics {
-    pub fontsize: f64,    // fontsize, in pt
+    pub fontsize: f64,    // fontsize, in px
     pub lineheight: f64,  // height of line in multiples of fontsize
     pub linespacing: f64, // distance from baseline to baseline for the current font
     pub lineascent: f64,  // height from baseline for the current font
@@ -323,7 +307,7 @@ impl RenderDevice {
 
         let fontsize = gc.fontsize();
         let lineheight = gc.lineheight();
-        let linespacing = fontsize * lineheight / 72.0; // divide by 72 to convert to in
+        let linespacing = fontsize * lineheight / 72.0; // divide by 96 to convert to in
 
         FontMetrics {
             fontsize: fontsize,

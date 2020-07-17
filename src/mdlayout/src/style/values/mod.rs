@@ -8,13 +8,14 @@ mod border;
 mod box_;
 mod color;
 mod fonts;
+mod fontfamily;
 mod generic;
 mod length;
 mod writing_modes;
 mod tests; // testing module for values
 
 pub(super) use self::{background::*, generic::*};
-pub(crate) use self::{border::*, box_::*, color::*, fonts::*, length::*, writing_modes::*};
+pub(crate) use self::{border::*, box_::*, color::*, fonts::*, fontfamily::*, length::*, writing_modes::*};
 
 pub(super) trait Parse: Sized {
     fn parse<'i, 't>(parser: &mut Parser<'i, 't>) -> Result<Self, PropertyParseError<'i>>;

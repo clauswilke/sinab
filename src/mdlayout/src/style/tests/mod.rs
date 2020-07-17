@@ -124,17 +124,19 @@ mod tests {
 
     #[test]
     fn test_font_properties() {
-        let css = "
+        let css = r#"
             font-style: normal;
             font-style: italic;
             font-weight: normal;
             font-weight: bold;
-            ";
+            font-family: serif;
+            font-family: "Times New Roman";
+            "#;
         let mut parser_input = ParserInput::new(css);
         let mut input = Parser::new(&mut parser_input);
         let mut declarations = DeclarationBlock::parse(&mut input);
 
-        assert_eq!(declarations.get_declarations().len(), 4);
+        assert_eq!(declarations.get_declarations().len(), 6);
         let mut decl_iter = declarations.get_declarations().into_iter();
 
         validate_next_declaration!(
@@ -160,6 +162,19 @@ mod tests {
             LonghandDeclaration::font_weight(weight),
             assert_eq!(*weight, FontWeight::Bold)
         );
+
+        validate_next_declaration!(
+            decl_iter,
+            LonghandDeclaration::font_family(family),
+            assert_eq!(*family, FontFamily::GenericSerif)
+        );
+
+        validate_next_declaration!(
+            decl_iter,
+            LonghandDeclaration::font_family(family),
+            assert_eq!(*family, FontFamily::FamilyName("Times New Roman".to_string()))
+        );
+
     }
 
         #[test]

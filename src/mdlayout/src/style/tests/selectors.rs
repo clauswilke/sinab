@@ -63,7 +63,7 @@ macro_rules! validate_text {
         }
     }
 
-// validate that the style for the element has the expected color=
+// validate that the style for the element has the expected color
 macro_rules! validate_color {
         ($node_id:expr, $color:expr, $document:expr, $author_styles:expr) => {
             let style = style_for_element($author_styles, &$document, $node_id, None);

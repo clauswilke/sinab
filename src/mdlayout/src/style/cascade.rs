@@ -90,12 +90,11 @@ pub(crate) fn style_for_element(
     node: dom::NodeId,
     parent_style: Option<&ComputedValues>,
 ) -> Arc<ComputedValues> {
-    let maybe_elt = document[node].as_element();
-    if maybe_elt.is_none() { // if not an element, just return the parent style
-        return ComputedValues::new(parent_style, None);
-    }
-    // this unwrap() is now safe
-    let element = maybe_elt.unwrap();
+    let element = match document[node].as_element() {
+        Some(element) => element,
+        // if not an element, just return the parent style
+        None => return ComputedValues::new(parent_style, None)
+    };
     let style_attr_block;
     let mut matching = MatchingDeclarations {
         ua: SmallVec::new(),

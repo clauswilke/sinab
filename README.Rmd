@@ -1,15 +1,25 @@
+---
+output: github_document
+---
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+
 # gridtext rewrite
 
-An attempt to rewrite the gridtext package from scratch, with all the
-heavy lifting implemented in Rust.
+An attempt to rewrite the gridtext package from scratch, with all the heavy lifting implemented in Rust.
 
-An initial rendering engine has been implemented, though it is for
-demonstration purposes only at this time:
+An initial rendering engine has been implemented, though it is for demonstration purposes only at this time:
 
-``` r
+```{r}
 library(grdtext)
 library(grid)
 
@@ -29,11 +39,7 @@ grid.newpage()
 grid.draw(g)
 ```
 
-<img src="man/figures/README-unnamed-chunk-2-1.png" width="100%" />
-
 Simple markdown-to-html conversion is also implemented:
-
-``` r
+```{r}
 md_to_html("This is *a* **test**.")
-#> [1] "<p>This is <em>a</em> <strong>test</strong>.</p>\n"
 ```

@@ -344,15 +344,12 @@ impl FontManager {
         gc.set_fontstyle(style);
         gc.set_fontweight(weight);
         gc.set_fontsize(size.px as f64);
-        Font{ rdev_ptr: self.rdev_ptr, name: name.to_string(), style, weight, size, gc }
+        Font(Rc::new(FontImpl{ rdev_ptr: self.rdev_ptr, name: name.to_string(), style, weight, size, gc }))
     }
 }
 
-
-// TODO: this is currently extremely inefficient, since the font data gets copied on every .clone() call.
-
 #[derive(Clone)]
-pub(crate) struct Font {
+pub(crate) struct FontImpl {
     rdev_ptr: *const C_RenderDevice,
     name: String,
     style: FontStyle,
@@ -361,8 +358,8 @@ pub(crate) struct Font {
     gc: GContext,
 }
 
-impl Font {
-    pub fn string_metrics(&self, label: &str) -> StringMetrics {
+impl FontImpl {
+    pub(crate) fn string_metrics(&self, label: &str) -> StringMetrics {
         let clabel = CString::new(label).unwrap();
         let mut cascent: c_double = 0.0;
         let mut cdescent: c_double = 0.0;
@@ -386,7 +383,7 @@ impl Font {
         }
     }
 
-    pub fn font_metrics(&self) -> FontMetrics {
+    pub(crate) fn font_metrics(&self) -> FontMetrics {
         let m1 = self.string_metrics("gjpqyQ");
         let m2 = self.string_metrics(" ");
 
@@ -404,7 +401,29 @@ impl Font {
         }
     }
 
-    pub fn graphics_context(&self) -> GContext {
+    pub(crate) fn graphics_context(&self) -> GContext {
         self.gc.clone()
+    }
+}
+
+pub(crate) struct Font(Rc<FontImpl>);
+
+impl Clone for Font {
+    fn clone(&self) -> Self {
+        Self(self.0.clone())
+    }
+}
+
+impl Deref for Font {
+    type Target = FontImpl;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl DerefMut for Font {
+    fn deref_mut(&mut self) -> &mut FontImpl {
+        Rc::make_mut(&mut self.0)
     }
 }

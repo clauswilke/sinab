@@ -1,7 +1,7 @@
 #![allow(dead_code)]
 
-use crate::renderer::*;
-use crate::c_helper::*;
+use crate::graphics_engine::renderer::*;
+use crate::utils::c_helper::*;
 use crate::markdown::md_to_html;
 use crate::layout::render_html;
 

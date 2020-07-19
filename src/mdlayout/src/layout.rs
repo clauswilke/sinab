@@ -1,4 +1,4 @@
-use crate::renderer::*;
+use crate::graphics_engine::renderer::*;
 use crate::style::values::*;
 use crate::style::{style_for_element, StyleSet, ComputedValues};
 

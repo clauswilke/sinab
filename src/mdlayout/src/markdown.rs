@@ -1,6 +1,6 @@
 extern crate pulldown_cmark;
 
-use super::c_helper::*;
+use super::utils::c_helper::*;
 use pulldown_cmark::{html, Options, Parser};
 
 /// External C interface to `md_to_html()`.

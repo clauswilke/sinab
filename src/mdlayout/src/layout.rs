@@ -2,12 +2,13 @@ use crate::graphics_engine::renderer::*;
 use crate::style::values::*;
 use crate::style::{style_for_element, StyleSet, ComputedValues};
 
+use cssparser::RGBA;
+
 // for dom
 use crate::dom::*;
 
 use std::str;
 use std::cell::RefCell;
-use std::option::Option;
 
 pub struct Context<'a> {
     pub document: &'a Document,
@@ -24,34 +25,36 @@ struct InlineBox {
     pub content: InlineBoxContent,
     pub width: f64,
     pub linespacing: f64,
-    pub gc: GContext,
+    pub font: Font,
+    pub color: RGBA,
 }
 
 
 fn make_text_boxes(
     boxes: &mut Vec<InlineBox>,
     text: &str,
-    gc: &GContext,
-    rdev: &mut RenderDevice
+    font: &Font,
+    color: RGBA,
 ) {
-    let fm = rdev.font_metrics(gc);
+    let fm = font.font_metrics();
 
     // add a starting whitespace box if none exists yet
     if text.starts_with(|x: char| x.is_ascii_whitespace()) {
-        maybe_add_space(boxes, &fm, gc);
+        maybe_add_space(boxes, &fm, font);
     }
 
     for word in text.split_ascii_whitespace() {
         // push word, then space
-        let m = rdev.string_metrics(word, gc);
+        let m = font.string_metrics(word);
         let b = InlineBox {
             content: InlineBoxContent::Text(RefCell::new(word.to_string())),
             width: m.width,
             linespacing: fm.linespacing,
-            gc: gc.clone(),
+            font: font.clone(),
+            color: color,
         };
         boxes.push(b);
-        add_space(boxes, &fm, gc);
+        add_space(boxes, &fm, font);
     }
 
     // remove final space if string doesn't end with whitespace
@@ -61,12 +64,13 @@ fn make_text_boxes(
 }
 
 /// Unconditionally add a space box
-fn add_space(boxes: &mut Vec<InlineBox>, fm: &FontMetrics, gc: &GContext) {
+fn add_space(boxes: &mut Vec<InlineBox>, fm: &FontMetrics, font: &Font) {
     let b = InlineBox {
         content: InlineBoxContent::Space,
         width: fm.space_width,
         linespacing: fm.linespacing,
-        gc: gc.clone(),
+        font: font.clone(),
+        color: RGBA::new(0, 0, 0, 0),
     };
 
     boxes.push(b);
@@ -74,12 +78,12 @@ fn add_space(boxes: &mut Vec<InlineBox>, fm: &FontMetrics, gc: &GContext) {
 
 /// Add space only if current box list doesn't end in a space.
 /// Never adds a space to an empty box list or after a linebreak.
-fn maybe_add_space(boxes: &mut Vec<InlineBox>, fm: &FontMetrics, gc: &GContext) {
+fn maybe_add_space(boxes: &mut Vec<InlineBox>, fm: &FontMetrics, font: &Font) {
     if let Some(b) = boxes.last() {
         match b.content {
             InlineBoxContent::Space => {},
             InlineBoxContent::Linebreak => {},
-            _ => add_space(boxes, fm, gc),
+            _ => add_space(boxes, fm, font),
         }
     }
 }
@@ -94,8 +98,8 @@ fn maybe_remove_space(boxes: &mut Vec<InlineBox>) {
 }
 
 /// Add a newline box. First removes a last space if it exists.
-fn add_newline(boxes: &mut Vec<InlineBox>, gc: &GContext, rdev: &mut RenderDevice) {
-    let fm = rdev.font_metrics(gc);
+fn add_newline(boxes: &mut Vec<InlineBox>, font: &Font) {
+    let fm = font.font_metrics();
 
     maybe_remove_space(boxes);
 
@@ -103,17 +107,18 @@ fn add_newline(boxes: &mut Vec<InlineBox>, gc: &GContext, rdev: &mut RenderDevic
         content: InlineBoxContent::Linebreak,
         width: 0.0,
         linespacing: fm.linespacing,
-        gc: gc.clone(),
+        font: font.clone(),
+        color: RGBA::new(0, 0, 0, 0),
     };
     boxes.push(b);
 }
 
 fn apply_style_attributes(style: &ComputedValues, gc: &GContext) -> GContext {
     let mut gc_new = gc.clone();
-    gc_new.set_color(&style.color.color);
-    gc_new.set_fontstyle(&style.font.font_style);
-    gc_new.set_fontweight(&style.font.font_weight);
-    gc_new.set_fontsize(*&style.font.font_size.0.px as f64);
+    gc_new.set_color(style.color.color);
+    gc_new.set_fontstyle(style.font.font_style);
+    gc_new.set_fontweight(style.font.font_weight);
+    gc_new.set_fontsize(style.font.font_size.0.px as f64);
     let family = match &style.font.font_family {
         FontFamily::GenericSans => "sans",
         FontFamily::GenericSerif => "serif",
@@ -125,14 +130,29 @@ fn apply_style_attributes(style: &ComputedValues, gc: &GContext) -> GContext {
     gc_new
 }
 
+fn retrieve_font(style: &ComputedValues, fm: &FontManager) -> Font {
+    let family = match &style.font.font_family {
+        FontFamily::GenericSans => "sans",
+        FontFamily::GenericSerif => "serif",
+        FontFamily::GenericMonospace => "mono",
+        FontFamily::FamilyName(ref s) => s.as_str(),
+        _ => "sans", // use sans for Fantasy and Cursive
+    };
+
+    fm.new_font(
+        family,
+        style.font.font_style,
+        style.font.font_weight,
+        style.font.font_size.0
+    )
+}
 
 fn process_node<'dom>(
     boxes: &mut Vec<InlineBox>,
     node_id: NodeId,
     parent_element_style: &ComputedValues,
     context: &'dom Context,
-    gc: &GContext,
-    rdev: &mut RenderDevice
+    fm: &FontManager
 ) {
     let style = style_for_element(
         context.author_styles,
@@ -141,30 +161,21 @@ fn process_node<'dom>(
         Some(parent_element_style),
     );
 
-    let mut gc_opt:Option<GContext> = Option::None;
+    let font = retrieve_font(&style, fm);
 
     let node = &context.document[node_id];
     match node.data {
         NodeData::Element(ref elt) => {
             match &elt.name.local {
-                &local_name!("br") => add_newline(boxes, gc, rdev),
+                &local_name!("br") => add_newline(boxes, &font),
                 _ => {},
             }
-
-            // apply styles from styleset
-            gc_opt = Some(apply_style_attributes(&style, &gc));
-
         },
         NodeData::Text{ref contents} => {
-            make_text_boxes(boxes, contents, gc, rdev);
+            make_text_boxes(boxes, contents, &font, style.color.color);
         },
         _ => {},
     }
-
-    let gc_final = match gc_opt {
-        Some(g) => g,
-        None => gc.clone(),
-    };
 
     if let Some(child_id) = node.first_child {
         for nid in context.document.node_and_following_siblings(child_id) {
@@ -173,8 +184,7 @@ fn process_node<'dom>(
                 nid,
                 &style,
                 context,
-                &gc_final,
-                rdev
+                fm
             );
         }
     }
@@ -195,7 +205,7 @@ fn render_inline_boxes(inline_boxes: &Vec<InlineBox>, rdev: &mut RenderDevice) {
                 y += b.linespacing;
             },
             InlineBoxContent::Text(word) => {
-                rdev.draw_text(&word.borrow(), x0 + x, y0 + y, &b.gc);
+                rdev.draw_text(&word.borrow(), x0 + x, y0 + y, &b.font, b.color);
                 x += b.width;
             }
         }
@@ -204,7 +214,6 @@ fn render_inline_boxes(inline_boxes: &Vec<InlineBox>, rdev: &mut RenderDevice) {
 
 pub fn render_html(text_input: &str, css_input: &str, mut rdev: RenderDevice) {
     let mut inline_boxes: Vec<InlineBox> = Vec::new();
-    let gc = GContext::new();
     let document = Document::parse_html(text_input.as_bytes());
     let author_styles = &document.parse_stylesheets(Some(css_input));
     let context = Context {
@@ -213,7 +222,8 @@ pub fn render_html(text_input: &str, css_input: &str, mut rdev: RenderDevice) {
     };
     let root_element = document.root_element();
     let style = style_for_element(context.author_styles, context.document, root_element, None);
+    let fm = rdev.new_font_manager();
 
-    process_node(&mut inline_boxes, document.root_element(), &style, &context, &gc, &mut rdev);
+    process_node(&mut inline_boxes, document.root_element(), &style, &context, &fm);
     render_inline_boxes(&inline_boxes, &mut rdev);
 }

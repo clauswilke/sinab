@@ -15,7 +15,7 @@ use crate::style::values::*;
 
 
 /// helper function to convert cssparser::RGBA to a String
-fn rgba_to_string(color: &RGBA) -> String {
+fn rgba_to_string(color: RGBA) -> String {
     //match color {
     //    Color::RGBA(RGBA{ red, green, blue, alpha }) => {
     if color.alpha == 255 { // without alpha component
@@ -89,11 +89,11 @@ impl GContextImpl {
     }
 
     // setters
-    pub fn set_color(&mut self, color: &RGBA) {
+    pub fn set_color(&mut self, color: RGBA) {
         let ccolor = CString::new(rgba_to_string(color)).unwrap();
         unsafe { gcontext_set_color(self.gc_ptr, ccolor.as_ptr()); }
     }
-    pub fn set_fill(&mut self, color: &RGBA) {
+    pub fn set_fill(&mut self, color: RGBA) {
         let ccolor = CString::new(rgba_to_string(color)).unwrap();
         unsafe { gcontext_set_fill(self.gc_ptr, ccolor.as_ptr()); }
     }
@@ -111,7 +111,7 @@ impl GContextImpl {
         unsafe { gcontext_set_fontface(self.gc_ptr, cface); }
     }
 
-    pub fn set_fontstyle(&mut self, style: &FontStyle) {
+    pub fn set_fontstyle(&mut self, style: FontStyle) {
         match style {
             FontStyle::Italic | FontStyle::Oblique => match self.fontface() {
                 Fontface::Plain => self.set_fontface(Fontface::Italics),
@@ -122,7 +122,7 @@ impl GContextImpl {
         }
     }
 
-    pub fn set_fontweight(&mut self, weight: &FontWeight) {
+    pub fn set_fontweight(&mut self, weight: FontWeight) {
         match weight {
             FontWeight::Bold => match self.fontface() {
                 Fontface::Plain => self.set_fontface(Fontface::Bold),
@@ -241,7 +241,7 @@ pub struct C_RenderDevice { _private: [u8; 0] }
 
 extern {
     fn rdev_draw_text(rdev_ptr: *mut C_RenderDevice, label: *const c_char, x: c_double, y: c_double, gc: *const C_GContext);
-    fn rdev_string_metrics(rdev_ptr: *mut C_RenderDevice, label: *const c_char, gc: *const C_GContext, ascent: &mut c_double, descent: &mut c_double, width: &mut c_double);
+    fn rdev_string_metrics(rdev_ptr: *const C_RenderDevice, label: *const c_char, gc: *const C_GContext, ascent: &mut c_double, descent: &mut c_double, width: &mut c_double);
 }
 
 pub struct RenderDevice {
@@ -274,10 +274,13 @@ impl RenderDevice {
         }
     }
 
-    pub fn draw_text(&mut self, label: &str, x: f64, y: f64, gc: &GContext) {
+    pub(crate) fn draw_text(&mut self, label: &str, x: f64, y: f64, font: &Font, color: RGBA) {
         let clabel = CString::new(label).unwrap();
         let cx = x as c_double;
         let cy = y as c_double;
+
+        let mut gc = font.graphics_context();
+        gc.set_color(color);
 
         unsafe {
             rdev_draw_text(self.rdev_ptr, clabel.as_ptr(), cx, cy, gc.as_ptr());
@@ -318,7 +321,90 @@ impl RenderDevice {
             space_width: m2.width,
         }
     }
+
+    pub(crate) fn new_font_manager(&self) -> FontManager {
+        FontManager{ rdev_ptr: self.rdev_ptr }
+    }
 }
 
 // Mark as UnwindSafe so we can catch errors with panic::catch_unwind()
 impl UnwindSafe for RenderDevice {}
+
+
+
+pub(crate) struct FontManager {
+    rdev_ptr: *const C_RenderDevice,
+}
+
+
+impl FontManager {
+    pub(crate) fn new_font(&self, name: &str, style: FontStyle, weight: FontWeight, size: Length) -> Font {
+        let mut gc = GContext::new();
+        gc.set_fontfamily(name);
+        gc.set_fontstyle(style);
+        gc.set_fontweight(weight);
+        gc.set_fontsize(size.px as f64);
+        Font{ rdev_ptr: self.rdev_ptr, name: name.to_string(), style, weight, size, gc }
+    }
+}
+
+
+// TODO: this is currently extremely inefficient, since the font data gets copied on every .clone() call.
+
+#[derive(Clone)]
+pub(crate) struct Font {
+    rdev_ptr: *const C_RenderDevice,
+    name: String,
+    style: FontStyle,
+    weight: FontWeight,
+    size: Length,
+    gc: GContext,
+}
+
+impl Font {
+    pub fn string_metrics(&self, label: &str) -> StringMetrics {
+        let clabel = CString::new(label).unwrap();
+        let mut cascent: c_double = 0.0;
+        let mut cdescent: c_double = 0.0;
+        let mut cwidth: c_double = 0.0;
+
+        unsafe {
+            rdev_string_metrics(
+                self.rdev_ptr,
+                clabel.as_ptr(),
+                self.gc.as_ptr(),
+                &mut cascent,
+                &mut cdescent,
+                &mut cwidth
+            );
+        }
+
+        StringMetrics {
+            ascent: cascent as f64,
+            descent: cdescent as f64,
+            width: cwidth as f64
+        }
+    }
+
+    pub fn font_metrics(&self) -> FontMetrics {
+        let m1 = self.string_metrics("gjpqyQ");
+        let m2 = self.string_metrics(" ");
+
+        let fontsize = self.gc.fontsize();
+        let lineheight = self.gc.lineheight();
+        let linespacing = fontsize * lineheight / 72.0; // divide by 96 to convert to in
+
+        FontMetrics {
+            fontsize: fontsize,
+            lineheight: lineheight,
+            linespacing: linespacing,
+            lineascent: linespacing - m1.descent,
+            linedescent: m1.descent,
+            space_width: m2.width,
+        }
+    }
+
+    pub fn graphics_context(&self) -> GContext {
+        self.gc.clone()
+    }
+}

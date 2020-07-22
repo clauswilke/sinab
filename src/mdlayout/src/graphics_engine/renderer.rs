@@ -13,19 +13,6 @@ use std::ops::{Deref, DerefMut};
 use crate::primitives::RGBA;
 use crate::style::values::*;
 
-/*
-/// helper function to convert cssparser::RGBA to a String
-fn rgba_to_string(color: RGBA) -> String {
-    //match color {
-    //    Color::RGBA(RGBA{ red, green, blue, alpha }) => {
-    if color.alpha == 255 { // without alpha component
-        format!("#{:02x}{:02x}{:02x}", color.red, color.green, color.blue)
-    } else { // with alpha component
-        format!("#{:02x}{:02x}{:02x}{:02x}", color.red, color.green, color.blue, color.alpha)
-    }
-}
-*/
-
 
 #[repr(C)]
 pub struct C_GContext { _private: [u8; 0] }
@@ -286,42 +273,7 @@ impl RenderDevice {
             rdev_draw_text(self.rdev_ptr, clabel.as_ptr(), cx, cy, gc.as_ptr());
         }
     }
-
-    pub fn string_metrics(&mut self, label: &str, gc: &GContext) -> StringMetrics {
-        let clabel = CString::new(label).unwrap();
-        let mut cascent: c_double = 0.0;
-        let mut cdescent: c_double = 0.0;
-        let mut cwidth: c_double = 0.0;
-
-        unsafe {
-            rdev_string_metrics(self.rdev_ptr, clabel.as_ptr(), gc.as_ptr(), &mut cascent, &mut cdescent, &mut cwidth);
-        }
-
-        StringMetrics {
-            ascent: cascent as f64,
-            descent: cdescent as f64,
-            width: cwidth as f64
-        }
-    }
-
-    pub fn font_metrics(&mut self, gc: &GContext) -> FontMetrics {
-        let m1 = self.string_metrics("gjpqyQ", gc);
-        let m2 = self.string_metrics(" ", gc);
-
-        let fontsize = gc.get_fontsize();
-        let lineheight = gc.get_lineheight();
-        let linespacing = fontsize * lineheight / 72.0; // divide by 96 to convert to in
-
-        FontMetrics {
-            fontsize: fontsize,
-            lineheight: lineheight,
-            linespacing: linespacing,
-            lineascent: linespacing - m1.descent,
-            linedescent: m1.descent,
-            space_width: m2.width,
-        }
-    }
-
+    
     pub(crate) fn new_font_manager(&self) -> FontManager {
         FontManager{ rdev_ptr: self.rdev_ptr }
     }

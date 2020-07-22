@@ -113,7 +113,7 @@ impl GContextImpl {
 
     pub fn set_fontstyle(&mut self, style: FontStyle) {
         match style {
-            FontStyle::Italic | FontStyle::Oblique => match self.fontface() {
+            FontStyle::Italic | FontStyle::Oblique => match self.get_fontface() {
                 Fontface::Plain => self.set_fontface(Fontface::Italics),
                 Fontface::Bold => self.set_fontface(Fontface::BoldItalics),
                 _ => {},
@@ -124,7 +124,7 @@ impl GContextImpl {
 
     pub fn set_fontweight(&mut self, weight: FontWeight) {
         match weight {
-            FontWeight::Bold => match self.fontface() {
+            FontWeight::Bold => match self.get_fontface() {
                 Fontface::Plain => self.set_fontface(Fontface::Bold),
                 Fontface::Italics => self.set_fontface(Fontface::BoldItalics),
                 _ => {},
@@ -154,13 +154,13 @@ impl GContextImpl {
         c_str.to_str().unwrap()
     }
     */
-    pub fn fontfamily(&self) -> &str {
+    pub fn get_fontfamily(&self) -> &str {
         let c_str = unsafe {
             CStr::from_ptr(gcontext_fontfamily(self.gc_ptr))
         };
         c_str.to_str().unwrap()
     }
-    pub fn fontface(&self) -> Fontface {
+    pub fn get_fontface(&self) -> Fontface {
         let cface:c_int = unsafe {
             gcontext_fontface(self.gc_ptr)
         };
@@ -174,14 +174,14 @@ impl GContextImpl {
         }
     }
     /// Returns the current fontsize, in px
-    pub fn fontsize(&self) -> f64 {
+    pub fn get_fontsize(&self) -> f64 {
         let csize:c_double = unsafe {
             gcontext_fontsize(self.gc_ptr)
         };
 
         (csize as f64) * 96.0 / 72.0
     }
-    pub fn lineheight(&self) -> f64 {
+    pub fn get_lineheight(&self) -> f64 {
         let cheight:c_double = unsafe {
             gcontext_lineheight(self.gc_ptr)
         };
@@ -308,8 +308,8 @@ impl RenderDevice {
         let m1 = self.string_metrics("gjpqyQ", gc);
         let m2 = self.string_metrics(" ", gc);
 
-        let fontsize = gc.fontsize();
-        let lineheight = gc.lineheight();
+        let fontsize = gc.get_fontsize();
+        let lineheight = gc.get_lineheight();
         let linespacing = fontsize * lineheight / 72.0; // divide by 96 to convert to in
 
         FontMetrics {
@@ -387,8 +387,8 @@ impl FontImpl {
         let m1 = self.string_metrics("gjpqyQ");
         let m2 = self.string_metrics(" ");
 
-        let fontsize = self.gc.fontsize();
-        let lineheight = self.gc.lineheight();
+        let fontsize = self.gc.get_fontsize();
+        let lineheight = self.gc.get_lineheight();
         let linespacing = fontsize * lineheight / 72.0; // divide by 96 to convert to in
 
         FontMetrics {

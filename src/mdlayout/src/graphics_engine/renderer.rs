@@ -127,14 +127,14 @@ impl GContextImpl {
     }
 
     // getters
-    /* // need to update to work with cssparser::RGBA
-    pub fn color(&self) -> &str {
+    /* // need to update to work with RGBA; however, may also not be needed at all
+    pub fn get_color(&self) -> &str {
         let c_str = unsafe {
             CStr::from_ptr(gcontext_color(self.gc_ptr))
         };
         c_str.to_str().unwrap()
     }
-    pub fn fill(&self) -> &str {
+    pub fn get_fill(&self) -> &str {
         let c_str = unsafe {
             CStr::from_ptr(gcontext_fill(self.gc_ptr))
         };
@@ -172,7 +172,6 @@ impl GContextImpl {
         let cheight:c_double = unsafe {
             gcontext_lineheight(self.gc_ptr)
         };
-
         cheight as f64
     }
 }
@@ -238,20 +237,20 @@ pub struct RenderDevice {
 #[allow(dead_code)]
 #[derive(Copy, Clone)]
 pub struct StringMetrics {
-    pub ascent: f64,
-    pub descent: f64,
-    pub width: f64,
+    pub ascent: Length<CssPx>,
+    pub descent: Length<CssPx>,
+    pub width: Length<CssPx>,
 }
 
 #[allow(dead_code)]
 #[derive(Copy, Clone)]
 pub struct FontMetrics {
     pub fontsize: Length<CssPx>,    // fontsize, in px
-    pub lineheight: f64,  // height of line in multiples of fontsize
-    pub linespacing: f64, // distance from baseline to baseline for the current font
-    pub lineascent: f64,  // height from baseline for the current font
-    pub linedescent: f64, // depth below baseline for the current font
-    pub space_width: f64, // width of a space
+    pub lineheight: f64,  // height of line in multiples of fontsize; this is a unitless scalar
+    pub linespacing: Length<CssPx>, // distance from baseline to baseline for the current font
+    pub lineascent: Length<CssPx>,  // height from baseline for the current font
+    pub linedescent: Length<CssPx>, // depth below baseline for the current font
+    pub space_width: Length<CssPx>, // width of a space
 }
 
 impl RenderDevice {
@@ -261,10 +260,11 @@ impl RenderDevice {
         }
     }
 
-    pub(crate) fn draw_text(&mut self, label: &str, x: f64, y: f64, font: &Font, color: RGBA) {
+    pub(crate) fn draw_text(&mut self, label: &str, x: Length<CssPx>, y: Length<CssPx>, font: &Font, color: RGBA) {
         let clabel = CString::new(label).unwrap();
-        let cx = x as c_double;
-        let cy = y as c_double;
+        // divide by 96.0 to convert px to in
+        let cx = (x.get() as c_double) / 96.0;
+        let cy = (y.get() as c_double) / 96.0;
 
         let mut gc = font.graphics_context();
         gc.set_color(color);
@@ -329,9 +329,10 @@ impl FontImpl {
         }
 
         StringMetrics {
-            ascent: cascent as f64,
-            descent: cdescent as f64,
-            width: cwidth as f64
+            // multiply with 96.0 to convert in to px
+            ascent: Length::<CssPx>::new(96.0 * cascent as f32),
+            descent: Length::<CssPx>::new(96.0 * cdescent as f32),
+            width: Length::<CssPx>::new(96.0 * cwidth as f32),
         }
     }
 
@@ -341,7 +342,7 @@ impl FontImpl {
 
         let fontsize = self.gc.get_fontsize();
         let lineheight = self.gc.get_lineheight();
-        let linespacing = (fontsize.get() as f64) * lineheight / 72.0; // divide by 96 to convert to in
+        let linespacing = Length::<CssPx>::new(fontsize.get() * lineheight as f32);
 
         FontMetrics {
             fontsize: fontsize,

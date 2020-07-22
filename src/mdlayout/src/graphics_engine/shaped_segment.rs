@@ -73,7 +73,7 @@ impl ShapedSegment {
             Ok(l)
         } else {
             let sm = self.font.string_metrics(&self.glyphs);
-            let width = Length::<CssPx>::new(96.0 * sm.width as f32);
+            let width = sm.width;
             self.advance_width = Some(width);
             Ok(width)
         }

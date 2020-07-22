@@ -24,8 +24,8 @@ pub enum InlineBoxContent {
 
 struct InlineBox {
     pub content: InlineBoxContent,
-    pub width: f64,
-    pub linespacing: f64,
+    pub width: Length<CssPx>,
+    pub linespacing: Length<CssPx>,
     pub font: Font,
     pub color: RGBA,
 }
@@ -48,10 +48,9 @@ fn make_text_boxes(
         // push word, then space
 
         let mut s = ShapedSegment::shape(word, font.clone()).unwrap();
-        let w = s.get_advance_width().unwrap();
         let b = InlineBox {
             content: InlineBoxContent::Text(RefCell::new(word.to_string())),
-            width: (w.get() as f64) / 96.0,
+            width: s.get_advance_width().unwrap(),
             linespacing: fm.linespacing,
             font: font.clone(),
             color: color,
@@ -108,7 +107,7 @@ fn add_newline(boxes: &mut Vec<InlineBox>, font: &Font) {
 
     let b = InlineBox {
         content: InlineBoxContent::Linebreak,
-        width: 0.0,
+        width: Length::<CssPx>::new(0.0),
         linespacing: fm.linespacing,
         font: font.clone(),
         color: RGBA(0, 0, 0, 0),
@@ -194,17 +193,17 @@ fn process_node<'dom>(
 }
 
 fn render_inline_boxes(inline_boxes: &Vec<InlineBox>, rdev: &mut RenderDevice) {
-    let x0 = 0.2;
-    let y0 = 0.5;
-    let mut x = 0.0;
-    let mut y = 0.0;
+    let x0 = Length::<CssPx>::new(0.2 * 96.0);
+    let y0 = Length::<CssPx>::new(0.5 * 96.0);
+    let mut x = Length::<CssPx>::new(0.0);
+    let mut y = Length::<CssPx>::new(0.0);
     for b in inline_boxes {
         match &b.content {
             InlineBoxContent::Space => {
                 x += b.width;
             },
             InlineBoxContent::Linebreak=> {
-                x = 0.0;
+                x = Length::<CssPx>::new(0.0);
                 y += b.linespacing;
             },
             InlineBoxContent::Text(word) => {

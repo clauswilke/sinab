@@ -10,8 +10,8 @@ use std::panic::UnwindSafe;
 use std::rc::Rc;
 use std::ops::{Deref, DerefMut};
 
-use crate::primitives::RGBA;
-use crate::style::values::*;
+use crate::primitives::*;
+use crate::style::values::{FontStyle, FontWeight};
 
 
 #[repr(C)]
@@ -121,8 +121,8 @@ impl GContextImpl {
     }
 
     /// Sets the fontsize, in px
-    pub fn set_fontsize(&mut self, px: f64) {
-        let csize = (px * 72.0 / 96.0) as c_double;
+    pub fn set_fontsize(&mut self, size: Length<CssPx>) {
+        let csize = (size.get() * 72.0 / 96.0) as c_double;
         unsafe { gcontext_set_fontsize(self.gc_ptr, csize); }
     }
 
@@ -161,12 +161,12 @@ impl GContextImpl {
         }
     }
     /// Returns the current fontsize, in px
-    pub fn get_fontsize(&self) -> f64 {
+    pub fn get_fontsize(&self) -> Length<CssPx> {
         let csize:c_double = unsafe {
             gcontext_fontsize(self.gc_ptr)
         };
 
-        (csize as f64) * 96.0 / 72.0
+        Length::<CssPx>::new((csize as f32) * 96.0 / 72.0)
     }
     pub fn get_lineheight(&self) -> f64 {
         let cheight:c_double = unsafe {
@@ -246,7 +246,7 @@ pub struct StringMetrics {
 #[allow(dead_code)]
 #[derive(Copy, Clone)]
 pub struct FontMetrics {
-    pub fontsize: f64,    // fontsize, in px
+    pub fontsize: Length<CssPx>,    // fontsize, in px
     pub lineheight: f64,  // height of line in multiples of fontsize
     pub linespacing: f64, // distance from baseline to baseline for the current font
     pub lineascent: f64,  // height from baseline for the current font
@@ -273,7 +273,7 @@ impl RenderDevice {
             rdev_draw_text(self.rdev_ptr, clabel.as_ptr(), cx, cy, gc.as_ptr());
         }
     }
-    
+
     pub(crate) fn new_font_manager(&self) -> FontManager {
         FontManager{ rdev_ptr: self.rdev_ptr }
     }
@@ -290,12 +290,12 @@ pub(crate) struct FontManager {
 
 
 impl FontManager {
-    pub(crate) fn new_font(&self, name: &str, style: FontStyle, weight: FontWeight, size: Length) -> Font {
+    pub(crate) fn new_font(&self, name: &str, style: FontStyle, weight: FontWeight, size: Length<CssPx>) -> Font {
         let mut gc = GContext::new();
         gc.set_fontfamily(name);
         gc.set_fontstyle(style);
         gc.set_fontweight(weight);
-        gc.set_fontsize(size.px as f64);
+        gc.set_fontsize(size);
         Font(Rc::new(FontImpl{ rdev_ptr: self.rdev_ptr, name: name.to_string(), style, weight, size, gc }))
     }
 }
@@ -306,7 +306,7 @@ pub(crate) struct FontImpl {
     name: String,
     style: FontStyle,
     weight: FontWeight,
-    size: Length,
+    size: Length<CssPx>,
     gc: GContext,
 }
 
@@ -341,7 +341,7 @@ impl FontImpl {
 
         let fontsize = self.gc.get_fontsize();
         let lineheight = self.gc.get_lineheight();
-        let linespacing = fontsize * lineheight / 72.0; // divide by 96 to convert to in
+        let linespacing = (fontsize.get() as f64) * lineheight / 72.0; // divide by 96 to convert to in
 
         FontMetrics {
             fontsize: fontsize,

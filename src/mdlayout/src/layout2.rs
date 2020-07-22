@@ -2,7 +2,7 @@ use crate::graphics_engine::renderer::*;
 use crate::style::values::*;
 use crate::style::{style_for_element, StyleSet, ComputedValues};
 
-use crate::primitives::{CssPx, RGBA};
+use crate::primitives::{Length, CssPx, RGBA};
 
 // for dom
 use crate::dom::*;
@@ -121,7 +121,7 @@ fn apply_style_attributes(style: &ComputedValues, gc: &GContext) -> GContext {
     gc_new.set_color(style.color.color.into());
     gc_new.set_fontstyle(style.font.font_style);
     gc_new.set_fontweight(style.font.font_weight);
-    gc_new.set_fontsize(style.font.font_size.0.px as f64);
+    gc_new.set_fontsize(style.font.font_size.0.into());
     let family = match &style.font.font_family {
         FontFamily::GenericSans => "sans",
         FontFamily::GenericSerif => "serif",
@@ -146,7 +146,7 @@ fn retrieve_font(style: &ComputedValues, fm: &FontManager) -> Font {
         family,
         style.font.font_style,
         style.font.font_weight,
-        style.font.font_size.0
+        style.font.font_size.0.into()
     )
 }
 

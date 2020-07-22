@@ -15,7 +15,7 @@ mod markdown; // convert markdown to HTML
 mod dom;      // document object model
 mod style;
 mod graphics_engine;
-mod layout;
+mod layout2;
 pub mod test;
 
 // copied from victor, not yet integrated

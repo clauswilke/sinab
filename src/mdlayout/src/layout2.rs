@@ -2,13 +2,14 @@ use crate::graphics_engine::renderer::*;
 use crate::style::values::*;
 use crate::style::{style_for_element, StyleSet, ComputedValues};
 
-use cssparser::RGBA;
+use crate::primitives::{CssPx, RGBA};
 
 // for dom
 use crate::dom::*;
 
 use std::str;
 use std::cell::RefCell;
+use crate::graphics_engine::shaped_segment::ShapedSegment;
 
 pub struct Context<'a> {
     pub document: &'a Document,
@@ -45,10 +46,12 @@ fn make_text_boxes(
 
     for word in text.split_ascii_whitespace() {
         // push word, then space
-        let m = font.string_metrics(word);
+
+        let mut s = ShapedSegment::shape(word, font.clone()).unwrap();
+        let w = s.get_advance_width().unwrap();
         let b = InlineBox {
             content: InlineBoxContent::Text(RefCell::new(word.to_string())),
-            width: m.width,
+            width: (w.get() as f64) / 96.0,
             linespacing: fm.linespacing,
             font: font.clone(),
             color: color,
@@ -70,7 +73,7 @@ fn add_space(boxes: &mut Vec<InlineBox>, fm: &FontMetrics, font: &Font) {
         width: fm.space_width,
         linespacing: fm.linespacing,
         font: font.clone(),
-        color: RGBA::new(0, 0, 0, 0),
+        color: RGBA(0, 0, 0, 0),
     };
 
     boxes.push(b);
@@ -108,14 +111,14 @@ fn add_newline(boxes: &mut Vec<InlineBox>, font: &Font) {
         width: 0.0,
         linespacing: fm.linespacing,
         font: font.clone(),
-        color: RGBA::new(0, 0, 0, 0),
+        color: RGBA(0, 0, 0, 0),
     };
     boxes.push(b);
 }
 
 fn apply_style_attributes(style: &ComputedValues, gc: &GContext) -> GContext {
     let mut gc_new = gc.clone();
-    gc_new.set_color(style.color.color);
+    gc_new.set_color(style.color.color.into());
     gc_new.set_fontstyle(style.font.font_style);
     gc_new.set_fontweight(style.font.font_weight);
     gc_new.set_fontsize(style.font.font_size.0.px as f64);
@@ -172,7 +175,7 @@ fn process_node<'dom>(
             }
         },
         NodeData::Text{ref contents} => {
-            make_text_boxes(boxes, contents, &font, style.color.color);
+            make_text_boxes(boxes, contents, &font, style.color.color.into());
         },
         _ => {},
     }

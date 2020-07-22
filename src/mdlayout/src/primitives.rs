@@ -1,3 +1,5 @@
+use std::fmt::{Display, Formatter, Result};
+
 /// Origin at top-left corner, unit `1px`
 pub struct CssPx;
 
@@ -11,11 +13,21 @@ pub type SideOffsets<U> = euclid::SideOffsets2D<f32, U>;
 pub type Scale<Src, Dest> = euclid::Scale<f32, Src, Dest>;
 
 #[derive(Copy, Clone, PartialEq)]
-pub struct RGBA(pub f32, pub f32, pub f32, pub f32);
+pub struct RGBA(pub u8, pub u8, pub u8, pub u8);
 
 impl From<cssparser::RGBA> for RGBA {
     fn from(c: cssparser::RGBA) -> Self {
-        RGBA(c.red_f32(), c.green_f32(), c.blue_f32(), c.alpha_f32())
+        RGBA(c.red, c.green, c.blue, c.alpha)
+    }
+}
+
+impl Display for RGBA {
+    fn fmt(&self, f: &mut Formatter) -> Result {
+        if self.3 == 255 { // without alpha component
+            write!(f, "#{:02x}{:02x}{:02x}", self.0, self.1, self.2)
+        } else { // with alpha component
+            write!(f, "#{:02x}{:02x}{:02x}{:02x}", self.0, self.1, self.2, self.3)
+        }
     }
 }
 

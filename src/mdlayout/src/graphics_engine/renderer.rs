@@ -10,10 +10,10 @@ use std::panic::UnwindSafe;
 use std::rc::Rc;
 use std::ops::{Deref, DerefMut};
 
-use cssparser::{RGBA};
+use crate::primitives::RGBA;
 use crate::style::values::*;
 
-
+/*
 /// helper function to convert cssparser::RGBA to a String
 fn rgba_to_string(color: RGBA) -> String {
     //match color {
@@ -24,7 +24,7 @@ fn rgba_to_string(color: RGBA) -> String {
         format!("#{:02x}{:02x}{:02x}{:02x}", color.red, color.green, color.blue, color.alpha)
     }
 }
-
+*/
 
 
 #[repr(C)]
@@ -90,11 +90,11 @@ impl GContextImpl {
 
     // setters
     pub fn set_color(&mut self, color: RGBA) {
-        let ccolor = CString::new(rgba_to_string(color)).unwrap();
+        let ccolor = CString::new(color.to_string()).unwrap();
         unsafe { gcontext_set_color(self.gc_ptr, ccolor.as_ptr()); }
     }
     pub fn set_fill(&mut self, color: RGBA) {
-        let ccolor = CString::new(rgba_to_string(color)).unwrap();
+        let ccolor = CString::new(color.to_string()).unwrap();
         unsafe { gcontext_set_fill(self.gc_ptr, ccolor.as_ptr()); }
     }
     pub fn set_fontfamily(&mut self, fontfamily: &str) {
@@ -426,4 +426,12 @@ impl DerefMut for Font {
     fn deref_mut(&mut self) -> &mut FontImpl {
         Rc::make_mut(&mut self.0)
     }
+}
+
+/// Enum to signal problems with fonts. Since we're not doing proper font handling
+/// at this time, doesn't do much.
+#[derive(Debug)]
+pub enum FontError {
+    /// Something's wrong.
+    GeneralError,
 }

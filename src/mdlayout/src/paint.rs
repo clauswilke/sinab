@@ -5,10 +5,10 @@ use crate::primitives::{CssPx, Size};
 use crate::graphics_engine::renderer::RenderDevice;
 
 impl crate::dom::Document {
-    pub fn paint_onto(&self, rdev: &mut RenderDevice) {
+    pub fn paint_onto(&self, rdev: &mut RenderDevice, user_css: Option<&str>) {
         let font_manager = rdev.new_font_manager();
         let page_size: Size<CssPx> = Size::new(600., 800.);
-        let fragments = self.layout(page_size, &font_manager);
+        let fragments = self.layout(page_size, &font_manager, user_css);
         let containing_block = Rect {
             top_left: Vec2 {
                 x: Length::zero(),
@@ -31,7 +31,6 @@ impl crate::dom::Document {
 
 impl Fragment {
     fn paint_onto(&self, rdev: &mut RenderDevice, containing_block: &Rect<Length>) {
-        println!("{:?}", self);
         match self {
             Fragment::Box(b) => b.paint_onto(rdev, containing_block),
             Fragment::Anonymous(a) => {

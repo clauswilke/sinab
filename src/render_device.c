@@ -92,6 +92,30 @@ void rdev_draw_text(RenderDevice* rdev, const char* label, double x, double y, c
   UNPROTECT(9);
 }
 
+// x, y: top left corner
+void rdev_draw_rect(RenderDevice* rdev, double x, double y, double width, double height, const GContext *gc) {
+  SEXP sx, sy, sxu, syu, sw, sh, swu, shu, hjust, vjust, gp, grob;
+  
+  PROTECT(sx = ScalarReal(x));
+  PROTECT(sxu = unit_in(sx));
+  PROTECT(sy = ScalarReal(rdev->y0 - y)); /* invert y coordinate system */
+  PROTECT(syu = unit_in(sy));
+  PROTECT(sw = ScalarReal(width));
+  PROTECT(swu = unit_in(sw));
+  PROTECT(sh = ScalarReal(height));
+  PROTECT(shu = unit_in(sh));
+  PROTECT(hjust = ScalarReal(0));
+  PROTECT(vjust = ScalarReal(1));
+  PROTECT(gp = gpar_gcontext(gc));
+    
+  PROTECT(grob = rect_grob(sxu, syu, swu, shu, hjust, vjust, gp));
+    
+  rdev_add_SEXP(rdev, grob);
+    
+  UNPROTECT(12);
+}
+
+
 /* Calls GEStrMetric() and returns results in 
  * variables ascent, descent, width. These values are returned
  * in inches.

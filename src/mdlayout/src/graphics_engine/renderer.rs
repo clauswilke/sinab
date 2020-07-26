@@ -228,6 +228,7 @@ pub struct C_RenderDevice { _private: [u8; 0] }
 
 extern {
     fn rdev_draw_text(rdev_ptr: *mut C_RenderDevice, label: *const c_char, x: c_double, y: c_double, gc: *const C_GContext);
+    fn rdev_draw_rect(rdev_ptr: *mut C_RenderDevice, x: c_double, y: c_double, width: c_double, height: c_double, gc: *const C_GContext);
     fn rdev_string_metrics(rdev_ptr: *const C_RenderDevice, label: *const c_char, gc: *const C_GContext, ascent: &mut c_double, descent: &mut c_double, width: &mut c_double);
 }
 
@@ -272,6 +273,22 @@ impl RenderDevice {
 
         unsafe {
             rdev_draw_text(self.rdev_ptr, clabel.as_ptr(), cx, cy, gc.as_ptr());
+        }
+    }
+
+    pub(crate) fn draw_rect(&mut self, x: Length<CssPx>, y: Length<CssPx>, width: Length<CssPx>, height: Length<CssPx>, fill: RGBA) {
+        // divide by 96.0 to convert px to in
+        let cx = (x.get() as c_double) / 96.0;
+        let cy = (y.get() as c_double) / 96.0;
+        let cwidth = (width.get() as c_double) / 96.0;
+        let cheight = (height.get() as c_double) / 96.0;
+
+        let mut gc = GContext::new();
+        gc.set_color(RGBA(0, 0, 0, 0));
+        gc.set_fill(fill);
+
+        unsafe {
+            rdev_draw_rect(self.rdev_ptr, cx, cy, cwidth, cheight,gc.as_ptr());
         }
     }
 

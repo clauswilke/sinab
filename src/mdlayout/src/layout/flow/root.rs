@@ -6,16 +6,17 @@ impl crate::dom::Document {
         &self,
         viewport: crate::primitives::Size<crate::primitives::CssPx>,
         font_manager: &FontManager,
+        user_css: Option<&str>,
     ) -> Vec<Fragment> {
-        BoxTreeRoot::construct(self, font_manager).layout(viewport)
+        BoxTreeRoot::construct(self, font_manager, user_css).layout(viewport)
     }
 }
 
 struct BoxTreeRoot(BlockFormattingContext);
 
 impl BoxTreeRoot {
-    pub fn construct(document: &dom::Document, font_manager: &FontManager) -> Self {
-        let author_styles = &document.parse_stylesheets(None);
+    pub fn construct(document: &dom::Document, font_manager: &FontManager, user_css: Option<&str>) -> Self {
+        let author_styles = &document.parse_stylesheets(user_css);
         let context = Context {
             document,
             author_styles,

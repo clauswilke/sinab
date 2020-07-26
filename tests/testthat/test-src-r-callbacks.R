@@ -34,3 +34,19 @@ test_that("text_grob()", {
   g2$name <- g1$name # all grobs have a unique name
   expect_identical(g1, g2)
 })
+
+test_that("rect_grob()", {
+  x <- 2
+  y <- 5
+  width <- 3
+  height <- 4
+  hjust <- 0.5
+  vjust <- 1
+  gp <- grid::gpar(fill = "blue")
+  g1 <- .Call(rect_grob, x, y, width, height, hjust, vjust, gp)
+  g2 <- grid::rectGrob(
+    x, y, width, height, hjust = hjust, vjust = vjust, gp = gp
+  )
+  g2$name <- g1$name # all grobs have a unique name
+  expect_identical(g1, g2)
+})

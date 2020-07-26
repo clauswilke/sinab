@@ -48,6 +48,7 @@ typedef struct {
 extern RenderDevice* rdev_new(double y0);
 extern SEXP rdev_release(RenderDevice*); 
 extern void rdev_draw_text(RenderDevice*, const char* label, double x, double y, const GContext *);
+extern void rdev_draw_rect(RenderDevice*, double x, double y, double width, double height, const GContext *);
 extern void rdev_string_metrics(RenderDevice*, const char* label, const GContext *,
                                 double *ascent, double *descent, double *width);
 double rdev_device_height();
@@ -76,6 +77,7 @@ extern double gcontext_lineheight(GContext*);
 
 /* r-callbacks.c */
 extern SEXP text_grob(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
+extern SEXP rect_grob(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP gpar_empty();
 extern SEXP gpar_gcontext(const GContext *);
 extern SEXP unit_in(SEXP);

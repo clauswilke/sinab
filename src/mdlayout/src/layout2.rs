@@ -194,7 +194,7 @@ fn process_node<'dom>(
 
 fn render_inline_boxes(inline_boxes: &Vec<InlineBox>, rdev: &mut RenderDevice) {
     let x0 = Length::<CssPx>::new(0.2 * 96.0);
-    let y0 = Length::<CssPx>::new(0.5 * 96.0);
+    let y0 = Length::<CssPx>::new(1.0 * 96.0);
     let mut x = Length::<CssPx>::new(0.0);
     let mut y = Length::<CssPx>::new(0.0);
     for b in inline_boxes {
@@ -226,8 +226,17 @@ pub fn render_html(text_input: &str, css_input: &str, mut rdev: RenderDevice) {
     let style = style_for_element(context.author_styles, context.document, root_element, None);
     let fm = rdev.new_font_manager();
 
+    // draw test rectangle
+    rdev.draw_rect(
+        Length::<CssPx>::new(1.0 * 96.0),
+        Length::<CssPx>::new(0.5 * 96.0),
+        Length::<CssPx>::new(3.0 * 96.0),
+        Length::<CssPx>::new(2.0 * 96.0),
+        RGBA(5, 15, 200, 40)
+    );
+
     // new layouting pipeline
-    document.paint_onto(&mut rdev);
+    document.paint_onto(&mut rdev, Some(css_input));
 
     // old layouting pipeline
     process_node(&mut inline_boxes, document.root_element(), &style, &context, &fm);

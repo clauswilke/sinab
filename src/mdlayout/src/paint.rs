@@ -5,7 +5,7 @@ use crate::primitives::{CssPx, Size};
 use crate::graphics_engine::renderer::RenderDevice;
 
 impl crate::dom::Document {
-    pub fn paint_onto(&self, mut rdev: &RenderDevice) {
+    pub fn paint_onto(&self, rdev: &mut RenderDevice) {
         let font_manager = rdev.new_font_manager();
         let page_size: Size<CssPx> = Size::new(600., 800.);
         let fragments = self.layout(page_size, &font_manager);
@@ -30,7 +30,7 @@ impl crate::dom::Document {
 }
 
 impl Fragment {
-    fn paint_onto(&self, mut rdev: &RenderDevice, containing_block: &Rect<Length>) {
+    fn paint_onto(&self, rdev: &mut RenderDevice, containing_block: &Rect<Length>) {
         println!("{:?}", self);
         match self {
             Fragment::Box(b) => b.paint_onto(rdev, containing_block),
@@ -50,10 +50,17 @@ impl Fragment {
                     .translate(&containing_block.top_left)
                     .top_left;
                 // Distance from top edge to baseline
-                /*
-                let ascender = t.parent_style.font.font_size * t.text.font.ascender();
+                let ascender: Length = t.text.font.ascender().into();
                 origin.y += ascender;
 
+                rdev.draw_text(
+                    &t.text.glyphs,
+                    origin.x.into(),
+                    origin.y.into(),
+                    &t.text.font,
+                    t.parent_style.color.color.into()
+                );
+                /*
                 page.set_color(&t.parent_style.color.color.into());
                 page.show_text(&TextRun {
                     segment: &t.text,
@@ -69,7 +76,7 @@ impl Fragment {
 }
 
 impl BoxFragment {
-    fn paint_onto(&self, mut rdev: &RenderDevice, containing_block: &Rect<Length>) {
+    fn paint_onto(&self, rdev: &mut RenderDevice, containing_block: &Rect<Length>) {
         /*
         let background_color = self.style.to_rgba(self.style.background.background_color);
         if background_color.alpha > 0 {

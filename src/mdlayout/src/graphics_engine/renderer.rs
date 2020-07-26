@@ -337,6 +337,20 @@ impl FontImpl {
         }
     }
 
+    // this is not very efficiently implemented, as it re-calculates the
+    // font metrics over and over. but it works for now.
+    pub(crate) fn ascender(&self) -> Length<CssPx> {
+        let fm = self.font_metrics();
+        fm.lineascent
+    }
+
+    // this is not very efficiently implemented, as it re-calculates the
+    // font metrics over and over. but it works for now.
+    pub(crate) fn descender(&self) -> Length<CssPx> {
+        let fm = self.font_metrics();
+        fm.linedescent
+    }
+
     pub(crate) fn font_metrics(&self) -> FontMetrics {
         let m1 = self.string_metrics("gjpqyQ");
         let m2 = self.string_metrics(" ");
@@ -349,7 +363,7 @@ impl FontImpl {
             fontsize: fontsize,
             lineheight: lineheight,
             linespacing: linespacing,
-            lineascent: linespacing - m1.descent,
+            lineascent: m1.ascent,
             linedescent: m1.descent,
             space_width: m2.width,
         }

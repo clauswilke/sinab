@@ -30,16 +30,3 @@ impl Display for RGBA {
         }
     }
 }
-
-
-/*
-// This should probably live elsewhere, to create a better dependency graph without cycles
-
-use crate::text;
-
-pub struct TextRun<'a> {
-    pub segment: &'a text::ShapedSegment,
-    pub font_size: Length<CssPx>,
-    pub origin: Point<CssPx>,
-}
-*/

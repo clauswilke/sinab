@@ -279,9 +279,7 @@ impl TextRun {
                 let next = chars.next();
                 if matches!(next, Some(' ') | None) {
                     // TODO: handle potential error nicely, don't just unwrap()
-                    // also fix return type of get_advance_width()
-                    let tmp = shaped.get_advance_width().unwrap().get();
-                    let inline_size = Length{ px: tmp };
+                    let inline_size: Length = shaped.get_advance_width().unwrap().into();
                     if inline_size > available {
                         if let Some((state, iter)) = last_break_opportunity.take() {
                             shaped.restore(&state);
@@ -300,9 +298,7 @@ impl TextRun {
                 }
             }
             // TODO: handle potential error nicely, don't just unwrap()
-            // also fix return type of get_advance_width()
-            let tmp = shaped.get_advance_width().unwrap().get();
-            let inline_size = Length{ px: tmp };
+            let inline_size = shaped.get_advance_width().unwrap().into();
             // TODO: set line_height from CSS
             // https://www.w3.org/TR/CSS2/visudet.html#propdef-line-height
             // 'normal':

@@ -8,7 +8,7 @@ pub(crate) enum Fragment {
     Text(TextFragment),
 }
 
-#[derive(Debug)]
+// debug trait explicitly implmented to prevent printing of all children
 pub(crate) struct BoxFragment {
     pub style: Arc<ComputedValues>,
     pub children: Vec<Fragment>,
@@ -39,7 +39,7 @@ pub(crate) struct CollapsedMargin {
 }
 
 /// Can contain child fragments with relative coordinates, but does not contribute to painting itself.
-#[derive(Debug)]
+// debug trait explicitly implmented to prevent printing of all children
 pub(crate) struct AnonymousFragment {
     pub rect: Rect<Length>,
     pub children: Vec<Fragment>,
@@ -70,6 +70,36 @@ impl BoxFragment {
             .inflate(&self.border)
     }
 }
+
+impl std::fmt::Debug for BoxFragment {
+    fn fmt(&self, fmt: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(
+            fmt,
+            "BoxFragment {{ style: {:?}, children: {}, content_rect: {:?}, padding: {:?},
+    pub border: {:?}, margin: {:?}, block_margins_collapsed_with_children: {:?} }}",
+            self.style,
+            self.children.len(),
+            self.content_rect,
+            self.padding,
+            self.border,
+            self.margin,
+            self.block_margins_collapsed_with_children
+        )
+    }
+}
+
+impl std::fmt::Debug for AnonymousFragment {
+    fn fmt(&self, fmt: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(
+            fmt,
+            "AnonymousFragment {{ rect: {:?}, children: {}, mode: {:?} }}",
+            self.rect,
+            self.children.len(),
+            self.mode,
+        )
+    }
+}
+
 
 impl CollapsedBlockMargins {
     pub fn from_margin(margin: &Sides<Length>) -> Self {

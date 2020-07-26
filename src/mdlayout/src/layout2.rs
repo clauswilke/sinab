@@ -226,6 +226,10 @@ pub fn render_html(text_input: &str, css_input: &str, mut rdev: RenderDevice) {
     let style = style_for_element(context.author_styles, context.document, root_element, None);
     let fm = rdev.new_font_manager();
 
+    // test new layouting pipeline
+    document.paint_onto(&mut rdev);
+    // end test
+
     process_node(&mut inline_boxes, document.root_element(), &style, &context, &fm);
     render_inline_boxes(&inline_boxes, &mut rdev);
 }

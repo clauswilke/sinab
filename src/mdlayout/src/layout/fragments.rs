@@ -1,12 +1,14 @@
 use super::*;
 use crate::graphics_engine::shaped_segment::ShapedSegment;
 
+#[derive(Debug)]
 pub(crate) enum Fragment {
     Box(BoxFragment),
     Anonymous(AnonymousFragment),
     Text(TextFragment),
 }
 
+#[derive(Debug)]
 pub(crate) struct BoxFragment {
     pub style: Arc<ComputedValues>,
     pub children: Vec<Fragment>,
@@ -23,25 +25,28 @@ pub(crate) struct BoxFragment {
     pub block_margins_collapsed_with_children: CollapsedBlockMargins,
 }
 
+#[derive(Debug)]
 pub(crate) struct CollapsedBlockMargins {
     pub collapsed_through: bool,
     pub start: CollapsedMargin,
     pub end: CollapsedMargin,
 }
 
-#[derive(Clone, Copy)]
+#[derive(Copy, Clone, Debug)]
 pub(crate) struct CollapsedMargin {
     max_positive: Length,
     min_negative: Length,
 }
 
 /// Can contain child fragments with relative coordinates, but does not contribute to painting itself.
+#[derive(Debug)]
 pub(crate) struct AnonymousFragment {
     pub rect: Rect<Length>,
     pub children: Vec<Fragment>,
     pub mode: (WritingMode, Direction),
 }
 
+#[derive(Debug)]
 pub(crate) struct TextFragment {
     pub parent_style: Arc<ComputedValues>,
     pub content_rect: Rect<Length>,

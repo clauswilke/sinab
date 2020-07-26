@@ -17,6 +17,7 @@ mod style;
 mod graphics_engine;
 mod layout;
 mod layout2;
+mod paint;
 pub mod test;
 
 // copied from victor, not yet integrated

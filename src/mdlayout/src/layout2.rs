@@ -11,7 +11,7 @@ use std::str;
 use std::cell::RefCell;
 use crate::graphics_engine::shaped_segment::ShapedSegment;
 
-pub struct Context<'a> {
+pub struct LayoutContext<'a> {
     pub document: &'a Document,
     pub author_styles: &'a StyleSet,
 }
@@ -153,7 +153,7 @@ fn process_node<'dom>(
     boxes: &mut Vec<InlineBox>,
     node_id: NodeId,
     parent_element_style: &ComputedValues,
-    context: &'dom Context,
+    context: &'dom LayoutContext,
     fm: &FontManager
 ) {
     let style = style_for_element(
@@ -218,7 +218,7 @@ pub fn render_html(text_input: &str, css_input: &str, mut rdev: RenderDevice) {
     let mut inline_boxes: Vec<InlineBox> = Vec::new();
     let document = Document::parse_html(text_input.as_bytes());
     let author_styles = &document.parse_stylesheets(Some(css_input));
-    let context = Context {
+    let context = LayoutContext {
         document: &document,
         author_styles,
     };

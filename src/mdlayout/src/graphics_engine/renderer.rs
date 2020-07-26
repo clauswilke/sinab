@@ -60,7 +60,7 @@ impl fmt::Display for Fontface {
     }
 }
 
-
+#[derive(Debug)]
 pub struct GContextImpl {
     gc_ptr: *mut C_GContext,
 }
@@ -190,6 +190,7 @@ impl Drop for GContextImpl {
     }
 }
 
+#[derive(Debug)]
 pub struct GContext(Rc<GContextImpl>);
 
 impl GContext {
@@ -283,7 +284,7 @@ impl RenderDevice {
 impl UnwindSafe for RenderDevice {}
 
 
-
+#[derive(Copy, Clone)]
 pub(crate) struct FontManager {
     rdev_ptr: *const C_RenderDevice,
 }
@@ -300,7 +301,7 @@ impl FontManager {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub(crate) struct FontImpl {
     rdev_ptr: *const C_RenderDevice,
     name: String,
@@ -359,6 +360,7 @@ impl FontImpl {
     }
 }
 
+#[derive(Debug)]
 pub(crate) struct Font(Rc<FontImpl>);
 
 impl Clone for Font {

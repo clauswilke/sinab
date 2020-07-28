@@ -1,26 +1,23 @@
 use super::*;
-use crate::graphics_engine::renderer::FontManager;
 
 impl crate::dom::Document {
     pub(crate) fn layout(
         &self,
         viewport: crate::primitives::Size<crate::primitives::CssPx>,
-        font_manager: &FontManager,
         user_css: Option<&str>,
     ) -> Vec<Fragment> {
-        BoxTreeRoot::construct(self, font_manager, user_css).layout(viewport)
+        BoxTreeRoot::construct(self, user_css).layout(viewport)
     }
 }
 
 struct BoxTreeRoot(BlockFormattingContext);
 
 impl BoxTreeRoot {
-    pub fn construct(document: &dom::Document, font_manager: &FontManager, user_css: Option<&str>) -> Self {
+    pub fn construct(document: &dom::Document, user_css: Option<&str>) -> Self {
         let author_styles = &document.parse_stylesheets(user_css);
         let context = Context {
             document,
             author_styles,
-            font_manager,
         };
         let root_element = document.root_element();
         let style = style_for_element(context.author_styles, context.document, root_element, None);

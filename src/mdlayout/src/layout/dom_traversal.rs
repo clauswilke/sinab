@@ -1,13 +1,11 @@
 use super::*;
 use crate::dom::{Document, NodeData, NodeId};
 use crate::style::StyleSet;
-use crate::graphics_engine::renderer::FontManager;
 use std::cell::{RefMut};
 
 pub(super) struct Context<'a> {
     pub document: &'a Document,
     pub author_styles: &'a StyleSet,
-    pub font_manager: &'a FontManager,
 }
 
 #[derive(Copy, Clone)]
@@ -244,6 +242,8 @@ fn generate_pseudo_element_content(
     unimplemented!()
 }
 
+/// A `BoxSlot` is a mutable pointer to a `LayoutBox`, corresponding to the
+/// `self_box` member of the layout data for an element.
 pub(super) struct BoxSlot<'dom> {
     slot: Option<RefMut<'dom, Option<LayoutBox>>>,
 }
@@ -311,6 +311,9 @@ impl Context<'_> {
         }
     }
 
+    /// Removes all layout data by setting `layout_data.pseudo_elements` and
+    /// `layout_data.self_box` to `None` in the entire subtree belonging to
+    /// `base_element`.
     fn unset_boxes_in_subtree(&self, base_element: NodeId) {
         let mut node_id = base_element;
         loop {
@@ -318,6 +321,7 @@ impl Context<'_> {
             if let Some(element_data) = node.as_element() {
                 let mut layout_data = element_data.layout_data.borrow_mut();
                 layout_data.pseudo_elements = None;
+                // `take()` removes the `self_box` and replaces it with `None`.
                 if layout_data.self_box.take().is_some() {
                     // Only descend into children if we removed a box.
                     // If there wasn’t one, then descendants don’t have boxes either.

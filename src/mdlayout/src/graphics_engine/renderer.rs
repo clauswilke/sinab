@@ -12,6 +12,7 @@ use std::ops::{Deref, DerefMut};
 
 use crate::primitives::*;
 use crate::style::values::{FontStyle, FontWeight};
+use crate::graphics_engine::font::Font;
 
 
 #[repr(C)]
@@ -229,30 +230,11 @@ pub struct C_RenderDevice { _private: [u8; 0] }
 extern {
     fn rdev_draw_text(rdev_ptr: *mut C_RenderDevice, label: *const c_char, x: c_double, y: c_double, gc: *const C_GContext);
     fn rdev_draw_rect(rdev_ptr: *mut C_RenderDevice, x: c_double, y: c_double, width: c_double, height: c_double, gc: *const C_GContext);
-    fn rdev_string_metrics(rdev_ptr: *const C_RenderDevice, label: *const c_char, gc: *const C_GContext, ascent: &mut c_double, descent: &mut c_double, width: &mut c_double);
+    pub(super) fn rdev_string_metrics(label: *const c_char, gc: *const C_GContext, ascent: &mut c_double, descent: &mut c_double, width: &mut c_double);
 }
 
 pub struct RenderDevice {
     rdev_ptr: *mut C_RenderDevice,
-}
-
-#[allow(dead_code)]
-#[derive(Copy, Clone)]
-pub struct StringMetrics {
-    pub ascent: Length<CssPx>,
-    pub descent: Length<CssPx>,
-    pub width: Length<CssPx>,
-}
-
-#[allow(dead_code)]
-#[derive(Copy, Clone)]
-pub struct FontMetrics {
-    pub fontsize: Length<CssPx>,    // fontsize, in px
-    pub lineheight: f64,  // height of line in multiples of fontsize; this is a unitless scalar
-    pub linespacing: Length<CssPx>, // distance from baseline to baseline for the current font
-    pub lineascent: Length<CssPx>,  // height from baseline for the current font
-    pub linedescent: Length<CssPx>, // depth below baseline for the current font
-    pub space_width: Length<CssPx>, // width of a space
 }
 
 impl RenderDevice {
@@ -291,133 +273,7 @@ impl RenderDevice {
             rdev_draw_rect(self.rdev_ptr, cx, cy, cwidth, cheight,gc.as_ptr());
         }
     }
-
-    pub(crate) fn new_font_manager(&self) -> FontManager {
-        FontManager{ rdev_ptr: self.rdev_ptr }
-    }
 }
 
 // Mark as UnwindSafe so we can catch errors with panic::catch_unwind()
 impl UnwindSafe for RenderDevice {}
-
-
-#[derive(Copy, Clone)]
-pub(crate) struct FontManager {
-    rdev_ptr: *const C_RenderDevice,
-}
-
-
-impl FontManager {
-    pub(crate) fn new_font(&self, name: &str, style: FontStyle, weight: FontWeight, size: Length<CssPx>) -> Font {
-        let mut gc = GContext::new();
-        gc.set_fontfamily(name);
-        gc.set_fontstyle(style);
-        gc.set_fontweight(weight);
-        gc.set_fontsize(size);
-        Font(Rc::new(FontImpl{ rdev_ptr: self.rdev_ptr, name: name.to_string(), style, weight, size, gc }))
-    }
-}
-
-#[derive(Clone, Debug)]
-pub(crate) struct FontImpl {
-    rdev_ptr: *const C_RenderDevice,
-    name: String,
-    style: FontStyle,
-    weight: FontWeight,
-    size: Length<CssPx>,
-    gc: GContext,
-}
-
-impl FontImpl {
-    pub(crate) fn string_metrics(&self, label: &str) -> StringMetrics {
-        let clabel = CString::new(label).unwrap();
-        let mut cascent: c_double = 0.0;
-        let mut cdescent: c_double = 0.0;
-        let mut cwidth: c_double = 0.0;
-
-        unsafe {
-            rdev_string_metrics(
-                self.rdev_ptr,
-                clabel.as_ptr(),
-                self.gc.as_ptr(),
-                &mut cascent,
-                &mut cdescent,
-                &mut cwidth
-            );
-        }
-
-        StringMetrics {
-            // multiply with 96.0 to convert in to px
-            ascent: Length::<CssPx>::new(96.0 * cascent as f32),
-            descent: Length::<CssPx>::new(96.0 * cdescent as f32),
-            width: Length::<CssPx>::new(96.0 * cwidth as f32),
-        }
-    }
-
-    // this is not very efficiently implemented, as it re-calculates the
-    // font metrics over and over. but it works for now.
-    pub(crate) fn ascender(&self) -> Length<CssPx> {
-        let fm = self.font_metrics();
-        fm.lineascent
-    }
-
-    // this is not very efficiently implemented, as it re-calculates the
-    // font metrics over and over. but it works for now.
-    pub(crate) fn descender(&self) -> Length<CssPx> {
-        let fm = self.font_metrics();
-        fm.linedescent
-    }
-
-    pub(crate) fn font_metrics(&self) -> FontMetrics {
-        let m1 = self.string_metrics("gjpqyQ");
-        let m2 = self.string_metrics(" ");
-
-        let fontsize = self.gc.get_fontsize();
-        let lineheight = self.gc.get_lineheight();
-        let linespacing = Length::<CssPx>::new(fontsize.get() * lineheight as f32);
-
-        FontMetrics {
-            fontsize: fontsize,
-            lineheight: lineheight,
-            linespacing: linespacing,
-            lineascent: m1.ascent,
-            linedescent: m1.descent,
-            space_width: m2.width,
-        }
-    }
-
-    pub(crate) fn graphics_context(&self) -> GContext {
-        self.gc.clone()
-    }
-}
-
-#[derive(Debug)]
-pub(crate) struct Font(Rc<FontImpl>);
-
-impl Clone for Font {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-
-impl Deref for Font {
-    type Target = FontImpl;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-
-impl DerefMut for Font {
-    fn deref_mut(&mut self) -> &mut FontImpl {
-        Rc::make_mut(&mut self.0)
-    }
-}
-
-/// Enum to signal problems with fonts. Since we're not doing proper font handling
-/// at this time, doesn't do much.
-#[derive(Debug)]
-pub enum FontError {
-    /// Something's wrong.
-    GeneralError,
-}

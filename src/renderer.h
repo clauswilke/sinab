@@ -49,7 +49,7 @@ extern RenderDevice* rdev_new(double y0);
 extern SEXP rdev_release(RenderDevice*); 
 extern void rdev_draw_text(RenderDevice*, const char* label, double x, double y, const GContext *);
 extern void rdev_draw_rect(RenderDevice*, double x, double y, double width, double height, const GContext *);
-extern void rdev_string_metrics(RenderDevice*, const char* label, const GContext *,
+extern void rdev_string_metrics(const char* label, const GContext *,
                                 double *ascent, double *descent, double *width);
 double rdev_device_height();
 

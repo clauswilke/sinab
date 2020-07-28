@@ -26,6 +26,10 @@ pub(crate) mod physical {
 }
 
 pub(crate) mod flow_relative {
+    /// A 2d vector representing a position in relative flow coordinates. `inline` and `block`
+    /// are coordinates along the current inline and block direction. For LTR writing mode and
+    /// horizontal writing direction, they correspond to x and y, respectively. In the general
+    /// case, they need to be converted as described here: https://drafts.csswg.org/css-writing-modes/#propdef-writing-mode
     #[derive(Debug, Clone)]
     pub(crate) struct Vec2<T> {
         pub inline: T,

@@ -1,4 +1,5 @@
 use super::*;
+use crate::graphics_engine::font::Font;
 
 impl BlockFormattingContext {
     pub fn construct<'a>(
@@ -206,24 +207,6 @@ impl<'a> TraversalHandler<'a> for BlockContainerBuilder<'a> {
     }
 
     fn handle_text(&mut self, input: &str, parent_style: &Arc<ComputedValues>) {
-        // TODO: the next two let statements need to be moved to their appropriate
-        // place. Currently they are here mostly to make the borrow checker happy.
-        let family = match &parent_style.font.font_family {
-            FontFamily::GenericSans => "sans",
-            FontFamily::GenericSerif => "serif",
-            FontFamily::GenericMonospace => "mono",
-            FontFamily::FamilyName(ref s) => s.as_str(),
-            _ => "sans", // use sans for Fantasy and Cursive
-        };
-        let font =
-            self.context.font_manager.new_font(
-                family,
-                parent_style.font.font_style,
-                parent_style.font.font_weight,
-                parent_style.font.font_size.0.into()
-            );
-        // end TODO
-
         let (leading_whitespace, mut input) = self.handle_leading_whitespace(input);
         if leading_whitespace || !input.is_empty() {
             // This text node should be pushed either to the next ongoing
@@ -279,6 +262,20 @@ impl<'a> TraversalHandler<'a> for BlockContainerBuilder<'a> {
 
             if let Some(text) = new_text_run_contents {
                 let parent_style = parent_style.clone();
+                let family = match &parent_style.font.font_family {
+                    FontFamily::GenericSans => "sans",
+                    FontFamily::GenericSerif => "serif",
+                    FontFamily::GenericMonospace => "mono",
+                    FontFamily::FamilyName(ref s) => s.as_str(),
+                    _ => "sans", // use sans for Fantasy and Cursive
+                };
+                let font =
+                    Font::new(
+                        family,
+                        parent_style.font.font_style,
+                        parent_style.font.font_weight,
+                        parent_style.font.font_size.0.into()
+                    );
                 inlines.push(Arc::new(InlineLevelBox::TextRun(TextRun {
                     parent_style,
                     text,

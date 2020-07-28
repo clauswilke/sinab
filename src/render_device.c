@@ -121,8 +121,8 @@ void rdev_draw_rect(RenderDevice* rdev, double x, double y, double width, double
  * in inches.
  */
 
-void rdev_string_metrics(RenderDevice* rdev, const char* label, const GContext *gc,
-                       double *ascent, double *descent, double *width) {
+void rdev_string_metrics(const char* label, const GContext *gc,
+                         double *ascent, double *descent, double *width) {
   pGEDevDesc dev = GEcurrentDevice();
   
   /* set up R graphics context from grid renderer graphics context */

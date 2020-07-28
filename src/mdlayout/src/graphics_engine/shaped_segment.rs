@@ -1,4 +1,4 @@
-use crate::graphics_engine::renderer::{Font, FontError, StringMetrics};
+use crate::graphics_engine::font::{Font, FontError};
 use crate::primitives::{Length, CssPx};
 
 /// A `ShapedSegment` contains a piece of shaped text in a given font. For now, though,

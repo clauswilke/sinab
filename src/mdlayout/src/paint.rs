@@ -6,9 +6,8 @@ use crate::graphics_engine::renderer::RenderDevice;
 
 impl crate::dom::Document {
     pub fn paint_onto(&self, rdev: &mut RenderDevice, user_css: Option<&str>) {
-        let font_manager = rdev.new_font_manager();
         let page_size: Size<CssPx> = Size::new(600., 800.);
-        let fragments = self.layout(page_size, &font_manager, user_css);
+        let fragments = self.layout(page_size, user_css);
         let containing_block = Rect {
             top_left: Vec2 {
                 x: Length::zero(),
@@ -23,6 +22,7 @@ impl crate::dom::Document {
                 },
             },
         };
+
         for fragment in fragments {
             fragment.paint_onto(rdev, &containing_block)
         }
@@ -31,6 +31,8 @@ impl crate::dom::Document {
 
 impl Fragment {
     fn paint_onto(&self, rdev: &mut RenderDevice, containing_block: &Rect<Length>) {
+        println!("{:?}", self);
+
         match self {
             Fragment::Box(b) => b.paint_onto(rdev, containing_block),
             Fragment::Anonymous(a) => {
@@ -49,7 +51,7 @@ impl Fragment {
                     .translate(&containing_block.top_left)
                     .top_left;
                 // Distance from top edge to baseline
-                let ascender: Length = t.text.font.ascender().into();
+                let ascender: Length = t.text.font.get_ascent().into();
                 origin.y += ascender;
 
                 rdev.draw_text(
@@ -76,19 +78,22 @@ impl Fragment {
 
 impl BoxFragment {
     fn paint_onto(&self, rdev: &mut RenderDevice, containing_block: &Rect<Length>) {
-        /*
         let background_color = self.style.to_rgba(self.style.background.background_color);
         if background_color.alpha > 0 {
-            page.set_color(&background_color.into());
             let rect = self
                 .border_rect()
                 .to_physical(self.style.writing_mode(), containing_block)
-                .translate(&containing_block.top_left)
-                .into();
-            page.paint_rectangle(&rect);
+                .translate(&containing_block.top_left);
+
+            rdev.draw_rect(
+                rect.top_left.x.into(),
+                rect.top_left.y.into(),
+                rect.size.x.into(),
+                rect.size.y.into(),
+                background_color.into(),
+            );
         }
 
-         */
         let content_rect = self
             .content_rect
             .to_physical(self.style.writing_mode(), containing_block)

@@ -1,6 +1,6 @@
 use super::*;
 use crate::graphics_engine::shaped_segment::ShapedSegment;
-use crate::graphics_engine::renderer::Font;
+use crate::graphics_engine::font::Font;
 
 #[derive(Debug, Default)]
 pub(in crate::layout) struct InlineFormattingContext {

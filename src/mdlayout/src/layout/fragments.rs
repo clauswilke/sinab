@@ -8,7 +8,7 @@ pub(crate) enum Fragment {
     Text(TextFragment),
 }
 
-// debug trait explicitly implmented to prevent printing of all children
+// debug trait explicitly implmented
 pub(crate) struct BoxFragment {
     pub style: Arc<ComputedValues>,
     pub children: Vec<Fragment>,
@@ -39,7 +39,7 @@ pub(crate) struct CollapsedMargin {
 }
 
 /// Can contain child fragments with relative coordinates, but does not contribute to painting itself.
-// debug trait explicitly implmented to prevent printing of all children
+// debug trait explicitly implemented
 pub(crate) struct AnonymousFragment {
     pub rect: Rect<Length>,
     pub children: Vec<Fragment>,
@@ -75,28 +75,28 @@ impl std::fmt::Debug for BoxFragment {
     fn fmt(&self, fmt: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(
             fmt,
-            "BoxFragment {{ style: {:?}, children: {}, content_rect: {:?}, padding: {:?},
-    pub border: {:?}, margin: {:?}, block_margins_collapsed_with_children: {:?} }}",
-            self.style,
-            self.children.len(),
+            "BoxFragment {{ content_rect: {:?}, children:",
             self.content_rect,
-            self.padding,
-            self.border,
-            self.margin,
-            self.block_margins_collapsed_with_children
-        )
+        )?;
+        for c in &self.children {
+            write!(fmt, "\n B{:?}", c)?;
+        }
+        write!(fmt, "\n}}")
     }
 }
+
 
 impl std::fmt::Debug for AnonymousFragment {
     fn fmt(&self, fmt: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(
             fmt,
-            "AnonymousFragment {{ rect: {:?}, children: {}, mode: {:?} }}",
+            "AnonymousFragment {{ content_rect: {:?}, children:",
             self.rect,
-            self.children.len(),
-            self.mode,
-        )
+        )?;
+        for c in &self.children {
+            write!(fmt, "\n A{:?}", c)?;
+        }
+        write!(fmt, "\n}}")
     }
 }
 

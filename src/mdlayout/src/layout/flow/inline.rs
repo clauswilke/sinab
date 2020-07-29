@@ -36,10 +36,17 @@ pub(in crate::layout) struct TextRun {
     pub font: Font,
 }
 
+/// A struct representing the current line as it is being assembled
 struct InlineNestingLevelState<'box_tree> {
+    /// Iterator over the boxes that haven't been processed yet.
     remaining_boxes: std::slice::Iter<'box_tree, Arc<InlineLevelBox>>,
+    /// Fragments belonging to the current line. Once the line is completed,
+    /// these will be moved.
     fragments_so_far: Vec<Fragment>,
+    /// Start position of this set of fragments, relative to the containing block
     inline_start: Length,
+    /// Maximum block size (i.e., height) of all fragments encountered so far.
+    /// See spec for line height calculations: https://drafts.csswg.org/css2/#line-height
     max_block_size_of_fragments_so_far: Length,
 }
 
@@ -62,8 +69,8 @@ struct InlineFormattingContextState<'box_tree, 'cb> {
 }
 
 struct LinesBoxes {
-    boxes: Vec<Fragment>,
-    next_line_block_position: Length,
+    boxes: Vec<Fragment>, // vector of lines; each line gets represented as one anonymous fragment
+    next_line_block_position: Length, // position of the next line to be completed
 }
 
 impl InlineFormattingContext {
@@ -148,6 +155,9 @@ impl InlineFormattingContext {
 }
 
 impl LinesBoxes {
+    /// Takes all the fragments that have accumulated on the stack
+    /// (`top_nesting_level.fragments_so_far`), sticks them into an anonymous
+    /// fragment, and pushes it on the stack of lines (`self.boxes`).
     fn finish_line(
         &mut self,
         top_nesting_level: &mut InlineNestingLevelState,
@@ -169,7 +179,10 @@ impl LinesBoxes {
             children: take(&mut top_nesting_level.fragments_so_far),
             rect: Rect { start_corner, size },
             mode: containing_block.mode,
-        }))
+        }));
+
+        println!("end of line:");
+        println!("{:?}", self.boxes);
     }
 }
 
@@ -234,7 +247,10 @@ impl<'box_tree> PartialInlineBoxFragment<'box_tree> {
             children: take(&mut nesting_level.fragments_so_far),
             content_rect: Rect {
                 size: Vec2 {
-                    inline: *inline_position - self.start_corner.inline,
+                    inline: *inline_position - nesting_level.inline_start,
+                    // TODO: This is wrong; the block size should be given by the
+                    // height of the very first font encountered
+                    // https://drafts.csswg.org/css2/#strut
                     block: nesting_level.max_block_size_of_fragments_so_far,
                 },
                 start_corner: self.start_corner.clone(),

@@ -6,7 +6,7 @@ use crate::graphics_engine::renderer::RenderDevice;
 
 impl crate::dom::Document {
     pub fn paint_onto(&self, rdev: &mut RenderDevice, user_css: Option<&str>) {
-        let page_size: Size<CssPx> = Size::new(600., 800.);
+        let page_size: Size<CssPx> = Size::new(300., 800.);
         let fragments = self.layout(page_size, user_css);
         let containing_block = Rect {
             top_left: Vec2 {
@@ -31,7 +31,7 @@ impl crate::dom::Document {
 
 impl Fragment {
     fn paint_onto(&self, rdev: &mut RenderDevice, containing_block: &Rect<Length>) {
-        println!("{:?}", self);
+        //println!("{:?}", self);
 
         match self {
             Fragment::Box(b) => b.paint_onto(rdev, containing_block),

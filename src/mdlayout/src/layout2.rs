@@ -189,7 +189,7 @@ fn process_node<'dom>(
 
 fn render_inline_boxes(inline_boxes: &Vec<InlineBox>, rdev: &mut RenderDevice) {
     let x0 = Length::<CssPx>::new(0.2 * 96.0);
-    let y0 = Length::<CssPx>::new(1.0 * 96.0);
+    let y0 = Length::<CssPx>::new(2.0 * 96.0);
     let mut x = Length::<CssPx>::new(0.0);
     let mut y = Length::<CssPx>::new(0.0);
     for b in inline_boxes {

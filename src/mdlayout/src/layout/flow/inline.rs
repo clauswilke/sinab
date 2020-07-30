@@ -248,10 +248,11 @@ impl<'box_tree> PartialInlineBoxFragment<'box_tree> {
             content_rect: Rect {
                 size: Vec2 {
                     inline: *inline_position - nesting_level.inline_start,
-                    // TODO: This is wrong; the block size should be given by the
+                    // The block size should be given by the
                     // height of the very first font encountered
                     // https://drafts.csswg.org/css2/#strut
-                    block: nesting_level.max_block_size_of_fragments_so_far,
+                    // TODO: Use ascent + descent rather than font size
+                    block: self.style.font.font_size.0,
                 },
                 start_corner: self.start_corner.clone(),
             },
@@ -273,7 +274,10 @@ impl<'box_tree> PartialInlineBoxFragment<'box_tree> {
         self.parent_nesting_level
             .max_block_size_of_fragments_so_far
             .max_assign(
-                fragment.content_rect.size.block
+                // the block size of the line is given by the maximum size of fragments encountered,
+                // not by the block size of the content rect
+                nesting_level.max_block_size_of_fragments_so_far
+                    // TODO: what about padding, border, margin, should they be removed here?
                     + fragment.padding.block_sum()
                     + fragment.border.block_sum()
                     + fragment.margin.block_sum(),
@@ -315,11 +319,10 @@ impl TextRun {
             }
             // TODO: handle potential error nicely, don't just unwrap()
             let inline_size = shaped.get_advance_width().unwrap().into();
-            // TODO: set line_height from CSS
-            // https://www.w3.org/TR/CSS2/visudet.html#propdef-line-height
-            // 'normal':
-            // “set the used value to a "reasonable" value based on the font of the element.”
-            let line_height = self.parent_style.font.font_size.0 * 1.2;
+            let line_height =
+                self.parent_style.line_height.line_height.percentage_or_number_relative_to(
+                    self.parent_style.font.font_size.0
+                );
             let content_rect = Rect {
                 start_corner: Vec2 {
                     block: Length::zero(),

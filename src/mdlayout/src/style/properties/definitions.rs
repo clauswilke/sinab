@@ -13,6 +13,10 @@ properties! {
         font_family { "font-family", FontFamily, initial = FontFamily::GenericSans }
     }
 
+    inherited struct line_height {
+        line_height { "line-height", LengthOrPercentageOrNumber, initial = Number { value: 1.2 } }
+    }
+
     inherited struct color {
         // FIXME: support currentColor here
         color { "color", RGBA, initial = BLACK }

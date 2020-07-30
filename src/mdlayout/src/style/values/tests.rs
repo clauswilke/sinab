@@ -83,7 +83,14 @@ mod tests {
             parse_value!("'Times New Roman'", FontFamily),
             FontFamily::FamilyName("Times New Roman".to_string())
         )
+    }
 
-
+    #[test]
+    fn test_number() {
+        if let Number{ value } = parse_value!("1.5", Number) {
+            assert_eq!(value, 1.5);
+        } else {
+            assert!(false);
+        }
     }
 }

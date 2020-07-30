@@ -17,6 +17,15 @@ pub(crate) struct Percentage {
     unit_value: f32,
 }
 
+/// A numerical value, used e.g. in line-height
+/// https://drafts.csswg.org/css2/#value-def-number
+#[repr(transparent)]
+#[derive(Copy, Clone, SpecifiedAsComputed)]
+pub(crate) struct Number {
+    pub value: f32,
+}
+
+
 /// <https://drafts.csswg.org/css-values/#lengths>
 #[derive(Clone, Debug, PartialEq, FromVariants)]
 pub(in crate::style) enum SpecifiedLength {
@@ -48,6 +57,20 @@ pub(crate) enum LengthOrPercentageOrAuto {
     Length(Length),
     Percentage(Percentage),
     Auto,
+}
+
+#[derive(Clone, Debug, Parse, FromVariants)]
+pub(in crate::style) enum SpecifiedLengthOrPercentageOrNumber {
+    Length(SpecifiedLength),
+    Percentage(Percentage),
+    Number(Number),
+}
+
+#[derive(Copy, Clone, Debug, FromSpecified, FromVariants)]
+pub(crate) enum LengthOrPercentageOrNumber {
+    Length(Length),
+    Percentage(Percentage),
+    Number(Number),
 }
 
 #[derive(Copy, Clone, Debug, FromVariants, PartialEq)]
@@ -100,6 +123,14 @@ impl Parse for Percentage {
     fn parse<'i, 't>(parser: &mut Parser<'i, 't>) -> Result<Self, PropertyParseError<'i>> {
         Ok(Percentage {
             unit_value: parser.expect_percentage()?,
+        })
+    }
+}
+
+impl Parse for Number {
+    fn parse<'i, 't>(parser: &mut Parser<'i, 't>) -> Result<Self, PropertyParseError<'i>> {
+        Ok(Number {
+            value: parser.expect_number()?,
         })
     }
 }
@@ -173,6 +204,14 @@ impl ops::Mul<f32> for Length {
     }
 }
 
+impl ops::Mul<Number> for Length {
+    type Output = Self;
+
+    fn mul(self, other: Number) -> Self {
+        self * other.value
+    }
+}
+
 impl ops::Mul<Percentage> for Length {
     type Output = Self;
 
@@ -211,11 +250,28 @@ impl fmt::Debug for Percentage {
     }
 }
 
+impl fmt::Debug for Number {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        self.value.fmt(f)
+    }
+}
+
+
 impl LengthOrPercentage {
     pub(crate) fn percentage_relative_to(&self, reference: Length) -> Length {
         match *self {
             LengthOrPercentage::Length(l) => l,
             LengthOrPercentage::Percentage(p) => reference * p,
+        }
+    }
+}
+
+impl LengthOrPercentageOrNumber {
+    pub(crate) fn percentage_or_number_relative_to(&self, reference: Length) -> Length {
+        match *self {
+            LengthOrPercentageOrNumber::Length(l) => l,
+            LengthOrPercentageOrNumber::Percentage(p) => reference * p,
+            LengthOrPercentageOrNumber::Number(number) => reference * number,
         }
     }
 }

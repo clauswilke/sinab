@@ -142,8 +142,13 @@ impl InlineFormattingContext {
                 );
                 ifc.current_nesting_level = partial.parent_nesting_level
             } else {
+                println!("IFC layout finish line");
                 ifc.line_boxes
                     .finish_line(&mut ifc.current_nesting_level, containing_block);
+                /*
+                // TODO: Check whether inline_position needs to be reset here
+                ifc.inline_position = Length::zero();
+                 */
                 return FlowChildren {
                     fragments: ifc.line_boxes.boxes,
                     block_size: ifc.line_boxes.next_line_block_position,
@@ -182,7 +187,7 @@ impl LinesBoxes {
         }));
 
         println!("end of line:");
-        println!("{:?}", self.boxes);
+        println!("{:?}", self.boxes.last().unwrap());
     }
 }
 
@@ -277,10 +282,12 @@ impl<'box_tree> PartialInlineBoxFragment<'box_tree> {
                 // the block size of the line is given by the maximum size of fragments encountered,
                 // not by the block size of the content rect
                 nesting_level.max_block_size_of_fragments_so_far
-                    // TODO: what about padding, border, margin, should they be removed here?
+                    /*
+                    // Don't think that padding, border, margin affect max block size in inline context
                     + fragment.padding.block_sum()
                     + fragment.border.block_sum()
                     + fragment.margin.block_sum(),
+                     */
             );
         self.parent_nesting_level
             .fragments_so_far
@@ -290,11 +297,12 @@ impl<'box_tree> PartialInlineBoxFragment<'box_tree> {
 
 impl TextRun {
     fn layout(&self, ifc: &mut InlineFormattingContextState) {
-        let available = ifc.containing_block.inline_size - ifc.inline_position;
+        println!("TextRun: available: {:?}, position: {:?}, text: {:?}", ifc.containing_block.inline_size, ifc.inline_position, self.text);
         let mut chars = self.text.chars();
         loop {
+            let available = ifc.containing_block.inline_size - ifc.inline_position;
             let mut shaped = ShapedSegment::new( self.font.clone());
-            let mut last_break_opportunity = None;
+            let mut last_break_opportunity = Some((shaped.save(), chars.clone()));
             loop {
                 let next = chars.next();
                 if matches!(next, Some(' ') | None) {
@@ -312,7 +320,8 @@ impl TextRun {
                     if ch == ' ' {
                         last_break_opportunity = Some((shaped.save(), chars.clone()))
                     }
-                    shaped.append_char(ch).unwrap()
+                    // TODO: handle potential error nicely, don't just unwrap()
+                    shaped.append_char(ch).unwrap();
                 } else {
                     break;
                 }
@@ -333,6 +342,7 @@ impl TextRun {
                     inline: inline_size,
                 },
             };
+            println!("next segment: inline_size {:?} content_rect {:?} text {:?}", inline_size, content_rect, shaped);
             ifc.inline_position += inline_size;
             ifc.current_nesting_level
                 .max_block_size_of_fragments_so_far
@@ -359,6 +369,7 @@ impl TextRun {
                     partial.parent_nesting_level.inline_start = Length::zero();
                     nesting_level = &mut partial.parent_nesting_level;
                 }
+                println!("TextRun layout finish line");
                 ifc.line_boxes
                     .finish_line(nesting_level, ifc.containing_block);
                 ifc.inline_position = Length::zero();

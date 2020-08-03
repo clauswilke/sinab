@@ -358,17 +358,20 @@ impl TextRun {
                 break;
             } else {
                 // New line
-                ifc.current_nesting_level.inline_start = Length::zero();
                 let mut nesting_level = &mut ifc.current_nesting_level;
                 for partial in ifc.partial_inline_boxes_stack.iter_mut().rev() {
                     partial.finish_layout(nesting_level, &mut ifc.inline_position, true);
+                    nesting_level.inline_start = Length::zero();
+                    nesting_level.max_block_size_of_fragments_so_far = Length::zero();
                     partial.start_corner.inline = Length::zero();
                     partial.padding.inline_start = Length::zero();
                     partial.border.inline_start = Length::zero();
                     partial.margin.inline_start = Length::zero();
-                    partial.parent_nesting_level.inline_start = Length::zero();
                     nesting_level = &mut partial.parent_nesting_level;
                 }
+                nesting_level.inline_start = Length::zero();
+                // We don't zero `nesting_level.max_block_size_of_fragments_so_far` here, as its value
+                // is still needed in the `finish_line()` call.
                 println!("TextRun layout finish line");
                 ifc.line_boxes
                     .finish_line(nesting_level, ifc.containing_block);

@@ -5,7 +5,7 @@ extern crate cssparser;
 extern crate html5ever;
 
 #[macro_use]
-extern crate mdlayout_derive;
+extern crate sinab_derive;
 
 // order of modules follows the dependency graph; earlier
 // modules should not depend on later modules (not quite there yet)

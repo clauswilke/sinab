@@ -1,17 +1,17 @@
-#LIBDIR = mdlayout/target/release  # use with --release in cargo call below
-LIBDIR = mdlayout/target/debug
-STATLIB = $(LIBDIR)/libmdlayout.a
-PKG_LIBS = -L$(LIBDIR) -lmdlayout
+#LIBDIR = sinab/target/release  # use with --release in cargo call below
+LIBDIR = sinab/target/debug
+STATLIB = $(LIBDIR)/libsinab.a
+PKG_LIBS = -L$(LIBDIR) -lsinab
 
 all: C_clean
 
 $(SHLIB): $(STATLIB)
 
 $(STATLIB):
-	cargo build --lib --manifest-path=mdlayout/Cargo.toml
+	cargo build --lib --manifest-path=sinab/Cargo.toml
 
 C_clean:
 	rm -Rf $(SHLIB) $(STATLIB) #$(OBJECTS)
 
 clean:
-	rm -Rf $(SHLIB) $(STATLIB) $(OBJECTS) mdlayout/target
+	rm -Rf $(SHLIB) $(STATLIB) $(OBJECTS) sinab/target

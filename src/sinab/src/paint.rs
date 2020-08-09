@@ -1,8 +1,10 @@
+use crate::dom::*;
 use crate::geom::physical::{Rect, Vec2};
 use crate::geom::Length;
 use crate::layout::{BoxFragment, Fragment};
 use crate::primitives::{CssPx, Size};
 use crate::graphics_engine::renderer::RenderDevice;
+use crate::style::style_for_element;
 
 impl crate::dom::Document {
     pub fn paint_onto(&self, rdev: &mut RenderDevice, user_css: Option<&str>) {
@@ -102,4 +104,14 @@ impl BoxFragment {
             child.paint_onto(rdev, &content_rect)
         }
     }
+}
+
+
+pub fn render_html(text_input: &str, css_input: &str, mut rdev: RenderDevice) {
+    let document = Document::parse_html(text_input.as_bytes());
+    let author_styles = &document.parse_stylesheets(Some(css_input));
+    let root_element = document.root_element();
+    let style = style_for_element(author_styles, &document, root_element, None);
+
+    document.paint_onto(&mut rdev, Some(css_input));
 }

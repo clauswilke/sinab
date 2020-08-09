@@ -1,6 +1,6 @@
-Package: grdtext
-Title: Improved Text Rendering Support for 'Grid' Graphics
-Version: 0.5.0.9000
+Package: sinab
+Title: SINAB Is Not a Browser
+Version: 0.1.0
 Authors@R: 
     person(
       given = "Claus O.",

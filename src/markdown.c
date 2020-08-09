@@ -2,7 +2,7 @@
 #include <Rinternals.h>
 
 // Import C headers for rust API
-#include "mdlayout/mdlayout.h"
+#include "sinab/sinab.h"
 
 SEXP C_md_to_html(SEXP str) {
   R_xlen_t n = xlength(str);

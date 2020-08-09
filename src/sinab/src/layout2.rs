@@ -209,6 +209,7 @@ fn render_inline_boxes(inline_boxes: &Vec<InlineBox>, rdev: &mut RenderDevice) {
     }
 }
 
+/*
 pub fn render_html(text_input: &str, css_input: &str, mut rdev: RenderDevice) {
     let mut inline_boxes: Vec<InlineBox> = Vec::new();
     let document = Document::parse_html(text_input.as_bytes());
@@ -227,3 +228,4 @@ pub fn render_html(text_input: &str, css_input: &str, mut rdev: RenderDevice) {
     process_node(&mut inline_boxes, document.root_element(), &style, &context);
     render_inline_boxes(&inline_boxes, &mut rdev);
 }
+*/

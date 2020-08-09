@@ -1,6 +1,6 @@
-extern crate mdlayout;
+extern crate sinab;
 
-use mdlayout::test::test_dom;
+use sinab::test::test_dom;
 
 fn main() {
     //simple_css_parsing();

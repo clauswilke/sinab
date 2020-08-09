@@ -1,27 +1,34 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# gridtext rewrite
+# SINAB is not a browser
 
-An attempt to rewrite the gridtext package from scratch, with all the
-heavy lifting implemented in Rust.
+A basic html rendering engine for R, written in Rust. The purpose is not
+to write a browser, but rather to provide the ability to render simple,
+static html documents to an R graphics device.
 
 An initial rendering engine has been implemented, though it is for
 demonstration purposes only at this time:
 
 ``` r
-library(grdtext)
+library(sinab)
 library(grid)
 
 css <-
-'.brown { color:red; font-family: "Comic Sans MS"; }
-em { color:green; }
+'
+p { line-height: 1.5; background-color: #eee; }
+.box { background-color: skyblue; }
+.brown { color:red; font-family: "Comic Sans MS";}
+em { color:green;   background-color: cornsilk;}
+strong { background-color: lightsalmon; }
 strong em { color:blue; font-family: monospace; }
-strong .brown { color:brown; font-size: 24px; }'
+strong .brown { 
+  color:brown; font-size: 24px; background-color: skyblue;
+}'
 
 mdtext <-
-'The **quick <span class="brown">brown</span>
-*fox*** jumps *over* the <span style="color:#0000ff80">lazy
+'The **very quick <span class="brown">brown brown brown brown brown brown brown brown</span>
+*fox fox fox fox*** jumps *over* the <span style="color:#0000ff80">lazy
 dog.</span><br>The quick <span class="brown">brown</span> fox.'
 
 g <- render_markdown(mdtext, css)

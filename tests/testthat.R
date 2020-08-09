@@ -1,4 +1,4 @@
 library(testthat)
-library(grdtext)
+library(sinab)
 
-test_check("grdtext")
+test_check("sinab")

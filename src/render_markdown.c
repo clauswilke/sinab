@@ -4,7 +4,7 @@
 #include "renderer.h"
 
 // Import C headers for rust API
-#include "mdlayout/mdlayout.h"
+#include "sinab/sinab.h"
 
 SEXP C_render_markdown(SEXP text_str, SEXP css_str) {
   double ymax = rdev_device_height();

@@ -2,4 +2,4 @@
 
 export(md_to_html)
 export(render_markdown)
-useDynLib(grdtext, .registration = TRUE)
+useDynLib(sinab, .registration = TRUE)

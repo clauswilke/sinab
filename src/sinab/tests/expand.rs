@@ -3,7 +3,7 @@
 
 
 #[macro_use]
-extern crate mdlayout_derive;
+extern crate sinab_derive;
 
 
 trait StringFormat {

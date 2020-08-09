@@ -1,7 +1,7 @@
 # cases with rendering errors. in some (but not all) cases filled
 # boxes are too wide. not yet clear what the pattern is.
 
-library(grdtext)
+library(sinab)
 library(grid)
 
 css <-

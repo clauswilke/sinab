@@ -11,7 +11,7 @@ use std::rc::Rc;
 use std::ops::{Deref, DerefMut};
 
 use crate::primitives::*;
-use crate::style::values::{FontStyle, FontWeight};
+use crate::style::values::{Length, FontStyle, FontWeight};
 use crate::graphics_engine::font::Font;
 
 
@@ -43,7 +43,7 @@ extern {
 
 #[allow(dead_code)]
 #[derive(Copy, Clone, PartialEq)]
-pub enum Fontface {
+pub(crate) enum Fontface {
     Plain,
     Bold,
     Italics,
@@ -62,34 +62,34 @@ impl fmt::Display for Fontface {
 }
 
 #[derive(Debug)]
-pub struct GContextImpl {
+pub(crate) struct GContextImpl {
     gc_ptr: *mut C_GContext,
 }
 
 impl GContextImpl {
-    pub fn new() -> Self {
+    pub(crate) fn new() -> Self {
         Self {
             gc_ptr: unsafe { gcontext_new() }
         }
     }
-    pub fn as_ptr(&self) -> *const C_GContext {
+    pub(crate) fn as_ptr(&self) -> *const C_GContext {
         self.gc_ptr
     }
 
     // setters
-    pub fn set_color(&mut self, color: RGBA) {
+    pub(crate) fn set_color(&mut self, color: RGBA) {
         let ccolor = CString::new(color.to_string()).unwrap();
         unsafe { gcontext_set_color(self.gc_ptr, ccolor.as_ptr()); }
     }
-    pub fn set_fill(&mut self, color: RGBA) {
+    pub(crate) fn set_fill(&mut self, color: RGBA) {
         let ccolor = CString::new(color.to_string()).unwrap();
         unsafe { gcontext_set_fill(self.gc_ptr, ccolor.as_ptr()); }
     }
-    pub fn set_fontfamily(&mut self, fontfamily: &str) {
+    pub(crate) fn set_fontfamily(&mut self, fontfamily: &str) {
         let cfontfamily = CString::new(fontfamily).unwrap();
         unsafe { gcontext_set_fontfamily(self.gc_ptr, cfontfamily.as_ptr()); }
     }
-    pub fn set_fontface(&mut self, fontface: Fontface) {
+    pub(crate) fn set_fontface(&mut self, fontface: Fontface) {
         let cface:c_int = match fontface {
             Fontface::Plain => 1,
             Fontface::Bold => 2,
@@ -99,7 +99,7 @@ impl GContextImpl {
         unsafe { gcontext_set_fontface(self.gc_ptr, cface); }
     }
 
-    pub fn set_fontstyle(&mut self, style: FontStyle) {
+    pub(crate) fn set_fontstyle(&mut self, style: FontStyle) {
         match style {
             FontStyle::Italic | FontStyle::Oblique => match self.get_fontface() {
                 Fontface::Plain => self.set_fontface(Fontface::Italics),
@@ -110,7 +110,7 @@ impl GContextImpl {
         }
     }
 
-    pub fn set_fontweight(&mut self, weight: FontWeight) {
+    pub(crate) fn set_fontweight(&mut self, weight: FontWeight) {
         match weight {
             FontWeight::Bold => match self.get_fontface() {
                 Fontface::Plain => self.set_fontface(Fontface::Bold),
@@ -122,8 +122,8 @@ impl GContextImpl {
     }
 
     /// Sets the fontsize, in px
-    pub fn set_fontsize(&mut self, size: Length<CssPx>) {
-        let csize = (size.get() * 72.0 / 96.0) as c_double;
+    pub(crate) fn set_fontsize(&mut self, size: Length) {
+        let csize = (size.px * 72.0 / 96.0) as c_double;
         unsafe { gcontext_set_fontsize(self.gc_ptr, csize); }
     }
 
@@ -142,13 +142,13 @@ impl GContextImpl {
         c_str.to_str().unwrap()
     }
     */
-    pub fn get_fontfamily(&self) -> &str {
+    pub(crate) fn get_fontfamily(&self) -> &str {
         let c_str = unsafe {
             CStr::from_ptr(gcontext_fontfamily(self.gc_ptr))
         };
         c_str.to_str().unwrap()
     }
-    pub fn get_fontface(&self) -> Fontface {
+    pub(crate) fn get_fontface(&self) -> Fontface {
         let cface:c_int = unsafe {
             gcontext_fontface(self.gc_ptr)
         };
@@ -162,14 +162,14 @@ impl GContextImpl {
         }
     }
     /// Returns the current fontsize, in px
-    pub fn get_fontsize(&self) -> Length<CssPx> {
+    pub(crate) fn get_fontsize(&self) -> Length {
         let csize:c_double = unsafe {
             gcontext_fontsize(self.gc_ptr)
         };
 
-        Length::<CssPx>::new((csize as f32) * 96.0 / 72.0)
+        Length{ px: (csize as f32) * 96.0 / 72.0 }
     }
-    pub fn get_lineheight(&self) -> f64 {
+    pub(crate) fn get_lineheight(&self) -> f64 {
         let cheight:c_double = unsafe {
             gcontext_lineheight(self.gc_ptr)
         };
@@ -192,14 +192,14 @@ impl Drop for GContextImpl {
 }
 
 #[derive(Debug)]
-pub struct GContext(Rc<GContextImpl>);
+pub(crate) struct GContext(Rc<GContextImpl>);
 
 impl GContext {
-    pub fn new() -> Self {
+    pub(crate) fn new() -> Self {
         Self(Rc::new(GContextImpl::new()))
     }
 
-    pub fn new_from(&self) -> Self {
+    pub(crate) fn new_from(&self) -> Self {
         Self(Rc::new(self.deref().clone()))
     }
 }
@@ -238,17 +238,17 @@ pub struct RenderDevice {
 }
 
 impl RenderDevice {
-    pub fn new(rdev_ptr: *mut C_RenderDevice) -> Self {
+    pub(crate) fn new(rdev_ptr: *mut C_RenderDevice) -> Self {
         Self {
             rdev_ptr
         }
     }
 
-    pub(crate) fn draw_text(&mut self, label: &str, x: Length<CssPx>, y: Length<CssPx>, font: &Font, color: RGBA) {
+    pub(crate) fn draw_text(&mut self, label: &str, x: Length, y: Length, font: &Font, color: RGBA) {
         let clabel = CString::new(label).unwrap();
         // divide by 96.0 to convert px to in
-        let cx = (x.get() as c_double) / 96.0;
-        let cy = (y.get() as c_double) / 96.0;
+        let cx = (x.px as c_double) / 96.0;
+        let cy = (y.px as c_double) / 96.0;
 
         let mut gc = font.graphics_context();
         gc.set_color(color);
@@ -258,12 +258,12 @@ impl RenderDevice {
         }
     }
 
-    pub(crate) fn draw_rect(&mut self, x: Length<CssPx>, y: Length<CssPx>, width: Length<CssPx>, height: Length<CssPx>, fill: RGBA) {
+    pub(crate) fn draw_rect(&mut self, x: Length, y: Length, width: Length, height: Length, fill: RGBA) {
         // divide by 96.0 to convert px to in
-        let cx = (x.get() as c_double) / 96.0;
-        let cy = (y.get() as c_double) / 96.0;
-        let cwidth = (width.get() as c_double) / 96.0;
-        let cheight = (height.get() as c_double) / 96.0;
+        let cx = (x.px as c_double) / 96.0;
+        let cy = (y.px as c_double) / 96.0;
+        let cwidth = (width.px as c_double) / 96.0;
+        let cheight = (height.px as c_double) / 96.0;
 
         let mut gc = GContext::new();
         gc.set_color(RGBA(0, 0, 0, 0));

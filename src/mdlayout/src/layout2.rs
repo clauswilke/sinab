@@ -3,7 +3,7 @@ use crate::graphics_engine::font::*;
 use crate::style::values::*;
 use crate::style::{style_for_element, StyleSet, ComputedValues};
 
-use crate::primitives::{Length, CssPx, RGBA};
+use crate::primitives::RGBA;
 
 // for dom
 use crate::dom::*;
@@ -25,8 +25,8 @@ pub enum InlineBoxContent {
 
 struct InlineBox {
     pub content: InlineBoxContent,
-    pub width: Length<CssPx>,
-    pub linespacing: Length<CssPx>,
+    pub width: Length,
+    pub linespacing: Length,
     pub font: Font,
     pub color: RGBA,
 }
@@ -104,7 +104,7 @@ fn add_newline(boxes: &mut Vec<InlineBox>, font: &Font) {
 
     let b = InlineBox {
         content: InlineBoxContent::Linebreak,
-        width: Length::<CssPx>::new(0.0),
+        width: Length::zero(),
         linespacing: font.calculate_linespacing(1.2),
         font: font.clone(),
         color: RGBA(0, 0, 0, 0),
@@ -188,17 +188,17 @@ fn process_node<'dom>(
 }
 
 fn render_inline_boxes(inline_boxes: &Vec<InlineBox>, rdev: &mut RenderDevice) {
-    let x0 = Length::<CssPx>::new(0.2 * 96.0);
-    let y0 = Length::<CssPx>::new(2.0 * 96.0);
-    let mut x = Length::<CssPx>::new(0.0);
-    let mut y = Length::<CssPx>::new(0.0);
+    let x0 = Length{ px: 0.2 * 96.0 };
+    let y0 = Length{ px: 2.0 * 96.0 };
+    let mut x = Length::zero();
+    let mut y = Length::zero();
     for b in inline_boxes {
         match &b.content {
             InlineBoxContent::Space => {
                 x += b.width;
             },
             InlineBoxContent::Linebreak=> {
-                x = Length::<CssPx>::new(0.0);
+                x = Length::zero();
                 y += b.linespacing;
             },
             InlineBoxContent::Text(word) => {

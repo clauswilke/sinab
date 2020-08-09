@@ -262,20 +262,7 @@ impl<'a> TraversalHandler<'a> for BlockContainerBuilder<'a> {
 
             if let Some(text) = new_text_run_contents {
                 let parent_style = parent_style.clone();
-                let family = match &parent_style.font.font_family {
-                    FontFamily::GenericSans => "sans",
-                    FontFamily::GenericSerif => "serif",
-                    FontFamily::GenericMonospace => "mono",
-                    FontFamily::FamilyName(ref s) => s.as_str(),
-                    _ => "sans", // use sans for Fantasy and Cursive
-                };
-                let font =
-                    Font::new(
-                        family,
-                        parent_style.font.font_style,
-                        parent_style.font.font_weight,
-                        parent_style.font.font_size.0.into()
-                    );
+                let font = Font::new_from_computed_values(&parent_style);
                 inlines.push(Arc::new(InlineLevelBox::TextRun(TextRun {
                     parent_style,
                     text,

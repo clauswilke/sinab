@@ -7,15 +7,15 @@ use std::ffi::CString;
 use std::rc::Rc;
 use std::ops::{Deref, DerefMut};
 
-use crate::primitives::*;
 use crate::graphics_engine::renderer::*;
-use crate::style::values::{FontStyle, FontWeight};
+use crate::style::values::{Length, FontStyle, FontWeight, FontFamily};
+use crate::style::ComputedValues;
 
 #[derive(Copy, Clone)]
-pub struct StringMetrics {
-    pub ascent: Length<CssPx>,
-    pub descent: Length<CssPx>,
-    pub width: Length<CssPx>,
+pub(crate) struct StringMetrics {
+    pub ascent: Length,
+    pub descent: Length,
+    pub width: Length,
 }
 
 
@@ -24,10 +24,10 @@ pub(crate) struct FontImpl {
     name: String,
     style: FontStyle,
     weight: FontWeight,
-    size: Length<CssPx>,
-    ascent: Length<CssPx>,
-    descent: Length<CssPx>,
-    space_advance_width: Length<CssPx>,
+    size: Length,
+    ascent: Length,
+    descent: Length,
+    space_advance_width: Length,
     gc: GContext,
 }
 
@@ -50,13 +50,13 @@ impl FontImpl {
 
         StringMetrics {
             // multiply with 96.0 to convert in to px
-            ascent: Length::<CssPx>::new(96.0 * cascent as f32),
-            descent: Length::<CssPx>::new(96.0 * cdescent as f32),
-            width: Length::<CssPx>::new(96.0 * cwidth as f32),
+            ascent: Length{ px: 96.0 * cascent as f32 },
+            descent: Length{ px: 96.0 * cdescent as f32 },
+            width: Length{ px: 96.0 * cwidth as f32},
         }
     }
 
-    fn new(name: &str, style: FontStyle, weight: FontWeight, size: Length<CssPx>) -> FontImpl {
+    fn new(name: &str, style: FontStyle, weight: FontWeight, size: Length) -> FontImpl {
         let mut gc = GContext::new();
         gc.set_fontfamily(name);
         gc.set_fontstyle(style);
@@ -82,21 +82,21 @@ impl FontImpl {
         FontImpl::string_metrics_internal(label, &self.gc)
     }
 
-    pub(crate) fn get_ascent(&self) -> Length<CssPx> {
+    pub(crate) fn get_ascent(&self) -> Length {
         self.ascent
     }
 
-    pub(crate) fn get_descent(&self) -> Length<CssPx> {
+    pub(crate) fn get_descent(&self) -> Length {
         self.descent
     }
 
-    pub(crate) fn get_space_advance_width(&self) -> Length<CssPx> {
+    pub(crate) fn get_space_advance_width(&self) -> Length {
         self.space_advance_width
     }
 
     /// multiplies the font size with a scalar (e.g., 1.2) to calculate the line spacing
-    pub(crate) fn calculate_linespacing(&self, lineheight: f32) -> Length<CssPx> {
-        Length::<CssPx>::new(self.size.get() * lineheight)
+    pub(crate) fn calculate_linespacing(&self, lineheight: f32) -> Length {
+        Length{ px: self.size.px * lineheight }
     }
 
     pub(crate) fn graphics_context(&self) -> GContext {
@@ -108,8 +108,24 @@ impl FontImpl {
 pub(crate) struct Font(Rc<FontImpl>);
 
 impl Font {
-    pub(crate) fn new(name: &str, style: FontStyle, weight: FontWeight, size: Length<CssPx>) -> Font {
+    pub(crate) fn new(name: &str, style: FontStyle, weight: FontWeight, size: Length) -> Font {
         Font(Rc::new(FontImpl::new(name, style, weight, size)))
+    }
+
+    pub(crate) fn new_from_computed_values(style: &ComputedValues) -> Font {
+        let family = match &style.font.font_family {
+            FontFamily::GenericSans => "sans",
+            FontFamily::GenericSerif => "serif",
+            FontFamily::GenericMonospace => "mono",
+            FontFamily::FamilyName(ref s) => s.as_str(),
+            _ => "sans", // use sans for Fantasy and Cursive
+        };
+        Font::new(
+                family,
+                style.font.font_style,
+                style.font.font_weight,
+                style.font.font_size.0.into()
+        )
     }
 }
 

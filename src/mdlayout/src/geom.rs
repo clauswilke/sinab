@@ -332,9 +332,3 @@ impl From<physical::Rect<Length>> for crate::primitives::Rect<crate::primitives:
         }
     }
 }
-
-impl From<crate::primitives::Length<crate::primitives::CssPx>> for Length {
-    fn from(l: crate::primitives::Length<crate::primitives::CssPx>) -> Self {
-        Length { px: l.get() }
-    }
-}

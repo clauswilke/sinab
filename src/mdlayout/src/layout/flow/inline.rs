@@ -43,7 +43,8 @@ struct InlineNestingLevelState<'box_tree> {
     /// Fragments belonging to the current line. Once the line is completed,
     /// these will be moved.
     fragments_so_far: Vec<Fragment>,
-    /// Start position of this set of fragments, relative to the containing block
+    /// Start position of this set of fragments, relative to the containing block,
+    /// **not** relative to the containing nesting level.
     inline_start: Length,
     /// Maximum block size (i.e., height) of all fragments encountered so far.
     /// See spec for line height calculations: https://drafts.csswg.org/css2/#line-height
@@ -70,7 +71,7 @@ struct InlineFormattingContextState<'box_tree, 'cb> {
 
 struct LinesBoxes {
     boxes: Vec<Fragment>, // vector of lines; each line gets represented as one anonymous fragment
-    next_line_block_position: Length, // position of the next line to be completed
+    next_line_block_position: Length, // position of the next line we are currently assembling
 }
 
 impl InlineFormattingContext {
@@ -92,6 +93,7 @@ impl InlineFormattingContext {
                 remaining_boxes: self.inline_level_boxes.iter(),
                 fragments_so_far: Vec::with_capacity(self.inline_level_boxes.len()),
                 inline_start: Length::zero(),
+                // TODO: replace with ascent + descent of current font
                 max_block_size_of_fragments_so_far: Length::zero(),
             },
         };
@@ -132,28 +134,27 @@ impl InlineFormattingContext {
                         continue;
                     }
                 }
-            } else
-            // Reached the end of ifc.remaining_boxes
-            if let Some(mut partial) = ifc.partial_inline_boxes_stack.pop() {
-                partial.finish_layout(
-                    &mut ifc.current_nesting_level,
-                    &mut ifc.inline_position,
-                    false,
-                );
-                ifc.current_nesting_level = partial.parent_nesting_level
-            } else {
-                println!("IFC layout finish line");
-                ifc.line_boxes
-                    .finish_line(&mut ifc.current_nesting_level, containing_block);
-                /*
-                // TODO: Check whether inline_position needs to be reset here
-                ifc.inline_position = Length::zero();
-                 */
-                return FlowChildren {
-                    fragments: ifc.line_boxes.boxes,
-                    block_size: ifc.line_boxes.next_line_block_position,
-                    collapsible_margins_in_children: CollapsedBlockMargins::zero(),
-                };
+            } else { // no more boxes in the current nesting level
+                // are there partial boxes that need finishing?
+                if let Some(mut partial) = ifc.partial_inline_boxes_stack.pop() {
+                    // yes, finish partial boxes
+                    partial.finish_layout(
+                        &mut ifc.current_nesting_level,
+                        &mut ifc.inline_position,
+                        false,
+                    );
+                    ifc.current_nesting_level = partial.parent_nesting_level
+                } else {
+                    // no, finish current inline formatting context, we are done
+                    println!("IFC layout finish");
+                    ifc.line_boxes
+                        .finish_line(&mut ifc.current_nesting_level, containing_block);
+                    return FlowChildren {
+                        fragments: ifc.line_boxes.boxes,
+                        block_size: ifc.line_boxes.next_line_block_position,
+                        collapsible_margins_in_children: CollapsedBlockMargins::zero(),
+                    };
+                }
             }
         }
     }
@@ -233,6 +234,7 @@ impl InlineBox {
                     remaining_boxes: self.children.iter(),
                     fragments_so_far: Vec::with_capacity(self.children.len()),
                     inline_start: ifc.inline_position,
+                    // TODO: replace with ascent + descent of current font
                     max_block_size_of_fragments_so_far: Length::zero(),
                 },
             ),
@@ -358,6 +360,8 @@ impl TextRun {
                 break;
             } else {
                 // New line
+                // To complete a line, we need to iterate over all open boxes in reverse
+                // order and finish them up for this line
                 let mut nesting_level = &mut ifc.current_nesting_level;
                 for partial in ifc.partial_inline_boxes_stack.iter_mut().rev() {
                     partial.finish_layout(nesting_level, &mut ifc.inline_position, true);

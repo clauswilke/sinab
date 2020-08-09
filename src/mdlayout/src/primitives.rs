@@ -5,7 +5,6 @@ pub struct CssPx;
 
 pub use euclid::point2 as point;
 pub use euclid::rect;
-pub type Length<U> = euclid::Length<f32, U>;
 pub type Point<U> = euclid::Point2D<f32, U>;
 pub type Size<U> = euclid::Size2D<f32, U>;
 pub type Rect<U> = euclid::Rect<f32, U>;

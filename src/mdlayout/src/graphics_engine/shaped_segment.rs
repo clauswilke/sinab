@@ -1,23 +1,23 @@
 use crate::graphics_engine::font::{Font, FontError};
-use crate::primitives::{Length, CssPx};
+use crate::style::values::Length;
 
 /// A `ShapedSegment` contains a piece of shaped text in a given font. For now, though,
 /// no text shaping is actually done here. We simply hand the text to the `Font` object
 /// which has a function to provide the width of the shaped segment.
 
 #[derive(Clone)]
-pub struct ShapedSegment {
+pub(crate) struct ShapedSegment {
     pub(crate) font: Font,
     pub(crate) glyphs: String,
     // if we did actual font shaping we'd want to keep track of the width as we go,
     // but for now we just calculate it on demand; We use an Option to cache values
     // we've calculated
-    pub(crate) advance_width: Option<Length<CssPx>>,
+    pub(crate) advance_width: Option<Length>,
 }
 
-pub struct ShapedSegmentState {
+pub(crate) struct ShapedSegmentState {
     glyphs: usize,
-    advance_width: Option<Length<CssPx>>,
+    advance_width: Option<Length>,
 }
 
 impl std::fmt::Debug for ShapedSegment {
@@ -63,12 +63,12 @@ impl ShapedSegment {
         }
     }
 
-    pub fn restore(&mut self, state: &ShapedSegmentState) {
+    pub(crate) fn restore(&mut self, state: &ShapedSegmentState) {
         self.glyphs.truncate(state.glyphs);
         self.advance_width = state.advance_width;
     }
 
-    pub fn get_advance_width(&mut self) -> Result<Length<CssPx>, FontError> {
+    pub(crate) fn get_advance_width(&mut self) -> Result<Length, FontError> {
         if let Some(l) = self.advance_width {
             Ok(l)
         } else {

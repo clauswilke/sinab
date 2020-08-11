@@ -22,6 +22,10 @@ properties! {
         color { "color", RGBA, initial = BLACK }
     }
 
+    inherited struct white_space {
+        white_space { "white-space", WhiteSpace, initial = WhiteSpace::Normal }
+    }
+
     reset struct box_ {
         position { "position", Position, initial = Position::Static }
         float { "float", Float, initial = Float::None }

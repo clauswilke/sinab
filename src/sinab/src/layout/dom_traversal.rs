@@ -1,5 +1,5 @@
 use super::*;
-use crate::dom::{Document, NodeData, NodeId};
+use crate::dom::{Document, NodeData, NodeId, ElementData};
 use crate::style::StyleSet;
 use std::cell::{RefMut};
 
@@ -74,7 +74,8 @@ fn traverse_children_of<'dom>(
             NodeData::Text { contents } => {
                 handler.handle_text(contents, parent_element_style);
             }
-            NodeData::Element(_) => traverse_element(child, parent_element_style, context, handler),
+            NodeData::Element(ref elt) =>
+                traverse_element(child, parent_element_style, context, handler, elt),
         }
         next = context.document[child].next_sibling
     }
@@ -93,6 +94,7 @@ fn traverse_element<'dom>(
     parent_element_style: &ComputedValues,
     context: &'dom Context,
     handler: &mut impl TraversalHandler<'dom>,
+    element_data: &'dom ElementData,
 ) {
     let style = style_for_element(
         context.author_styles,
@@ -100,6 +102,17 @@ fn traverse_element<'dom>(
         element_id,
         Some(parent_element_style),
     );
+
+    // br tags need to be handled explicitly
+    match &element_data.name.local {
+        &local_name!("br") => {
+            // <br> has basically Display::None
+            context.unset_boxes_in_subtree(element_id);
+            println!("\n\nbreak tag!\n\n");
+        },
+        _ => {},
+    }
+
     match style.box_.display {
         Display::None => context.unset_boxes_in_subtree(element_id),
         Display::Contents => {

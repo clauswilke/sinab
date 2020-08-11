@@ -10,7 +10,7 @@ pub(crate) struct ShapedSegment {
     pub(crate) font: Font,
     pub(crate) glyphs: String,
     // if we did actual font shaping we'd want to keep track of the width as we go,
-    // but for now we just calculate it on demand; We use an Option to cache values
+    // but for now we just calculate it on demand; we use an Option to cache values
     // we've calculated
     pub(crate) advance_width: Option<Length>,
 }
@@ -77,5 +77,10 @@ impl ShapedSegment {
             self.advance_width = Some(width);
             Ok(width)
         }
+    }
+
+    /// Returns `true` if the current shaped segment is empty, otherwise `false`.
+    pub(crate) fn empty(&self) -> bool {
+        self.glyphs.len() == 0
     }
 }

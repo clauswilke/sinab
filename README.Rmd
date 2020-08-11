@@ -36,7 +36,7 @@ strong .brown {
 }'
 
 mdtext <-
-'The **very quick <span class="brown">brown brown brown brown brown brown brown brown</span>
+'The **very quick <span class="brown">brown brown brown brown brown brown brown</span>
 *fox fox fox fox*** jumps *over* the <span style="color:#0000ff80">lazy
 dog.</span><br>The quick <span class="brown">brown</span> fox.'
 

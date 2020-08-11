@@ -146,7 +146,6 @@ impl InlineFormattingContext {
                     ifc.current_nesting_level = partial.parent_nesting_level
                 } else {
                     // no, finish current inline formatting context, we are done
-                    println!("IFC layout finish");
                     ifc.line_boxes
                         .finish_line(&mut ifc.current_nesting_level, containing_block);
                     return FlowChildren {
@@ -186,9 +185,6 @@ impl LinesBoxes {
             rect: Rect { start_corner, size },
             mode: containing_block.mode,
         }));
-
-        println!("end of line:");
-        println!("{:?}", self.boxes.last().unwrap());
     }
 }
 
@@ -307,15 +303,15 @@ impl TextRun {
 
     /// Text layout with word wrap.
     fn layout_wrap(&self, ifc: &mut InlineFormattingContextState) {
-        println!("TextRun: available: {:?}, position: {:?}, text: {:?}", ifc.containing_block.inline_size, ifc.inline_position, self.text);
         let mut chars = self.text.chars();
-        loop {
+        loop { // loop over lines
+            let mut newline = false;
             let available = ifc.containing_block.inline_size - ifc.inline_position;
             let mut shaped = ShapedSegment::new( self.font.clone());
             let mut last_break_opportunity = Some((shaped.save(), chars.clone()));
-            loop {
+            loop { // loop over text within lines
                 let next = chars.next();
-                if matches!(next, Some(' ') | None) {
+                if matches!(next, Some(' ') | Some('\n') | None) {
                     // TODO: handle potential error nicely, don't just unwrap()
                     let inline_size: Length = shaped.get_advance_width().unwrap().into();
                     if inline_size > available {
@@ -327,6 +323,11 @@ impl TextRun {
                     }
                 }
                 if let Some(ch) = next {
+                    if ch == '\n' {
+                        shaped.strip_space();
+                        newline = true;
+                        break;
+                    }
                     if ch == ' ' {
                         last_break_opportunity = Some((shaped.save(), chars.clone()))
                     }
@@ -352,90 +353,6 @@ impl TextRun {
                     inline: inline_size,
                 },
             };
-            println!("next segment: inline_size {:?} content_rect {:?} text {:?}", inline_size, content_rect, shaped);
-            if !shaped.empty() {
-                // add the new segment if it is not empty. empty segments can arise
-                // if a line break occurs at the beginning of a text run, or if a
-                // newline character is encountered
-                ifc.inline_position += inline_size;
-                ifc.current_nesting_level
-                    .max_block_size_of_fragments_so_far
-                    .max_assign(line_height);
-                ifc.current_nesting_level
-                    .fragments_so_far
-                    .push(Fragment::Text(TextFragment {
-                        parent_style: self.parent_style.clone(),
-                        content_rect,
-                        text: shaped,
-                    }));
-            }
-            if chars.as_str().is_empty() {
-                break;
-            } else {
-                // New line
-                // To complete a line, we need to iterate over all open boxes in reverse
-                // order and finish them up for this line
-                let mut nesting_level = &mut ifc.current_nesting_level;
-                for partial in ifc.partial_inline_boxes_stack.iter_mut().rev() {
-                    partial.finish_layout(nesting_level, &mut ifc.inline_position, true);
-                    nesting_level.inline_start = Length::zero();
-                    nesting_level.max_block_size_of_fragments_so_far = Length::zero();
-                    partial.start_corner.inline = Length::zero();
-                    partial.padding.inline_start = Length::zero();
-                    partial.border.inline_start = Length::zero();
-                    partial.margin.inline_start = Length::zero();
-                    nesting_level = &mut partial.parent_nesting_level;
-                }
-                nesting_level.inline_start = Length::zero();
-                // We don't zero `nesting_level.max_block_size_of_fragments_so_far` here, as its value
-                // is still needed in the `finish_line()` call.
-                println!("TextRun layout finish line");
-                ifc.line_boxes
-                    .finish_line(nesting_level, ifc.containing_block);
-                ifc.inline_position = Length::zero();
-            }
-        }
-    }
-
-    /// Text layout without word wrap
-    fn layout_nowrap(&self, ifc: &mut InlineFormattingContextState) {
-        let mut chars = self.text.chars();
-        loop {
-            let mut newline = false;
-            let available = ifc.containing_block.inline_size - ifc.inline_position;
-            let mut shaped = ShapedSegment::new( self.font.clone());
-            let mut last_break_opportunity = Some((shaped.save(), chars.clone()));
-            loop {
-                let next = chars.next();
-                match next {
-                    None => break,
-                    Some('\n') => {
-                        newline = true;
-                        break;
-                    },
-                    Some(ch) => {
-                        // TODO: handle potential error nicely, don't just unwrap()
-                        shaped.append_char(ch).unwrap();
-                    }
-                }
-            }
-            // TODO: handle potential error nicely, don't just unwrap()
-            let inline_size = shaped.get_advance_width().unwrap().into();
-            let line_height =
-                self.parent_style.line_height.line_height.percentage_or_number_relative_to(
-                    self.parent_style.font.font_size.0
-                );
-            let content_rect = Rect {
-                start_corner: Vec2 {
-                    block: Length::zero(),
-                    inline: ifc.inline_position - ifc.current_nesting_level.inline_start,
-                },
-                size: Vec2 {
-                    block: line_height,
-                    inline: inline_size,
-                },
-            };
-            println!("next segment: inline_size {:?} content_rect {:?} text {:?}", inline_size, content_rect, shaped);
             if !shaped.empty() {
                 // add the new segment if it is not empty. empty segments can arise
                 // if a line break occurs at the beginning of a text run, or if a
@@ -472,7 +389,85 @@ impl TextRun {
                 nesting_level.inline_start = Length::zero();
                 // We don't zero `nesting_level.max_block_size_of_fragments_so_far` here, as its value
                 // is still needed in the `finish_line()` call.
-                println!("TextRun layout finish line");
+                ifc.line_boxes
+                    .finish_line(nesting_level, ifc.containing_block);
+                ifc.inline_position = Length::zero();
+            }
+        }
+    }
+
+    /// Text layout without word wrap
+    fn layout_nowrap(&self, ifc: &mut InlineFormattingContextState) {
+        let mut chars = self.text.chars();
+        loop {
+            let mut newline = false;
+            let mut shaped = ShapedSegment::new( self.font.clone());
+            loop {
+                let next = chars.next();
+                match next {
+                    None => break,
+                    Some('\n') => {
+                        newline = true;
+                        break;
+                    },
+                    Some(ch) => {
+                        // TODO: handle potential error nicely, don't just unwrap()
+                        shaped.append_char(ch).unwrap();
+                    }
+                }
+            }
+            // TODO: handle potential error nicely, don't just unwrap()
+            let inline_size = shaped.get_advance_width().unwrap().into();
+            let line_height =
+                self.parent_style.line_height.line_height.percentage_or_number_relative_to(
+                    self.parent_style.font.font_size.0
+                );
+            let content_rect = Rect {
+                start_corner: Vec2 {
+                    block: Length::zero(),
+                    inline: ifc.inline_position - ifc.current_nesting_level.inline_start,
+                },
+                size: Vec2 {
+                    block: line_height,
+                    inline: inline_size,
+                },
+            };
+            if !shaped.empty() {
+                // add the new segment if it is not empty. empty segments can arise
+                // if a line break occurs at the beginning of a text run, or if a
+                // newline character is encountered
+                ifc.inline_position += inline_size;
+                ifc.current_nesting_level
+                    .max_block_size_of_fragments_so_far
+                    .max_assign(line_height);
+                ifc.current_nesting_level
+                    .fragments_so_far
+                    .push(Fragment::Text(TextFragment {
+                        parent_style: self.parent_style.clone(),
+                        content_rect,
+                        text: shaped,
+                    }));
+            }
+            if chars.as_str().is_empty() && !newline {
+                break;
+            } else {
+                // New line
+                // To complete a line, we need to iterate over all open boxes in reverse
+                // order and finish them up for this line
+                let mut nesting_level = &mut ifc.current_nesting_level;
+                for partial in ifc.partial_inline_boxes_stack.iter_mut().rev() {
+                    partial.finish_layout(nesting_level, &mut ifc.inline_position, true);
+                    nesting_level.inline_start = Length::zero();
+                    nesting_level.max_block_size_of_fragments_so_far = Length::zero();
+                    partial.start_corner.inline = Length::zero();
+                    partial.padding.inline_start = Length::zero();
+                    partial.border.inline_start = Length::zero();
+                    partial.margin.inline_start = Length::zero();
+                    nesting_level = &mut partial.parent_nesting_level;
+                }
+                nesting_level.inline_start = Length::zero();
+                // We don't zero `nesting_level.max_block_size_of_fragments_so_far` here, as its value
+                // is still needed in the `finish_line()` call.
                 ifc.line_boxes
                     .finish_line(nesting_level, ifc.containing_block);
                 ifc.inline_position = Length::zero();

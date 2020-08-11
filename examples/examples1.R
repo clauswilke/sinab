@@ -7,7 +7,7 @@ p { line-height: 1.5; background-color: #eee; }
 .box { background-color: skyblue; }
 .brown { color:red; font-family: "Comic Sans MS";}
 em { color:green;   background-color: cornsilk;}
-strong { background-color: lightsalmon; }
+strong { background-color: lightsalmon; white-space: pre; }
 strong em { color:blue; font-family: monospace; }
 strong .brown { 
   color:brown; font-size: 24px; background-color: skyblue;

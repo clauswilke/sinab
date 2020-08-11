@@ -106,9 +106,12 @@ fn traverse_element<'dom>(
     // br tags need to be handled explicitly
     match &element_data.name.local {
         &local_name!("br") => {
-            // <br> has basically Display::None
+            // <br> is treated as if it had Display::None
             context.unset_boxes_in_subtree(element_id);
-            println!("\n\nbreak tag!\n\n");
+            // we create breaks by injecting a newline; the user agent style
+            // has to ensure this isn't collapsed.
+            handler.handle_text("\n", &style);
+            return;
         },
         _ => {},
     }

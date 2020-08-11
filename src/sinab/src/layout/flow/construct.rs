@@ -207,32 +207,30 @@ impl<'a> TraversalHandler<'a> for BlockContainerBuilder<'a> {
     }
 
     fn handle_text(&mut self, input: &str, parent_style: &Arc<ComputedValues>) {
+        match parent_style.white_space.white_space {
+            WhiteSpace::Normal | WhiteSpace::Nowrap => self.handle_text_collapse(input, parent_style),
+            WhiteSpace::Pre | WhiteSpace::PreWrap => self.handle_text_preserve(input, parent_style),
+            _ => unimplemented!(),
+        };
+    }
+
+}
+
+impl<'a> BlockContainerBuilder<'a> {
+    /// Handle text while collapsing whitespace.
+    fn handle_text_collapse(&mut self, input: &str, parent_style: &Arc<ComputedValues>) {
         let (leading_whitespace, mut input) = self.handle_leading_whitespace(input);
         if leading_whitespace || !input.is_empty() {
             // This text node should be pushed either to the next ongoing
             // inline level box with the parent style of that inline level box
             // that will be ended, or directly to the ongoing inline formatting
-            // context with the parent style of that builder.
+            // context with the parent style of that builder. The function
+            // BlockContainerBuilder::get_last_text() determines which it is.
             let inlines = self.current_inline_level_boxes();
-
-            fn last_text(inlines: &mut [Arc<InlineLevelBox>]) -> Option<&mut String> {
-                let last = inlines.last_mut()?;
-                if let InlineLevelBox::TextRun(_) = &**last {
-                    // We never clone text run boxes, so the refcount is 1 and unwrap succeeds:
-                    let last = Arc::get_mut(last).unwrap();
-                    if let InlineLevelBox::TextRun(TextRun { text, .. }) = last {
-                        Some(text)
-                    } else {
-                        unreachable!()
-                    }
-                } else {
-                    None
-                }
-            }
-
             let mut new_text_run_contents;
             let output;
-            if let Some(text) = last_text(inlines) {
+
+            if let Some(text) = BlockContainerBuilder::get_last_text(inlines) {
                 // Append to the existing text run
                 new_text_run_contents = None;
                 output = text;
@@ -241,6 +239,7 @@ impl<'a> TraversalHandler<'a> for BlockContainerBuilder<'a> {
                 output = new_text_run_contents.as_mut().unwrap();
             }
 
+            // append input to output, collapsing whitespace
             if leading_whitespace {
                 output.push(' ')
             }
@@ -260,6 +259,7 @@ impl<'a> TraversalHandler<'a> for BlockContainerBuilder<'a> {
                 }
             }
 
+            // Create new inline-level box if we didn't append to existing text run
             if let Some(text) = new_text_run_contents {
                 let parent_style = parent_style.clone();
                 let font = Font::new_from_computed_values(&parent_style);
@@ -271,9 +271,64 @@ impl<'a> TraversalHandler<'a> for BlockContainerBuilder<'a> {
             }
         }
     }
-}
 
-impl<'a> BlockContainerBuilder<'a> {
+    /// Handle text while preserving whitespace.
+    fn handle_text_preserve(&mut self, input: &str, parent_style: &Arc<ComputedValues>) {
+        // if input is empty there's nothing to be done
+        if !input.is_empty() {
+            // This text node should be pushed either to the next ongoing
+            // inline level box with the parent style of that inline level box
+            // that will be ended, or directly to the ongoing inline formatting
+            // context with the parent style of that builder. The function
+            // BlockContainerBuilder::get_last_text() determines which it is.
+            let inlines = self.current_inline_level_boxes();
+            let mut new_text_run_contents;
+            let output;
+
+            if let Some(text) = BlockContainerBuilder::get_last_text(inlines) {
+                // Append to the existing text run
+                new_text_run_contents = None;
+                output = text;
+            } else {
+                new_text_run_contents = Some(String::new());
+                output = new_text_run_contents.as_mut().unwrap();
+            }
+
+            // append text as is
+            output.extend(input.chars());
+
+            // Create new inline-level box if we didn't append to existing text run
+            if let Some(text) = new_text_run_contents {
+                let parent_style = parent_style.clone();
+                let font = Font::new_from_computed_values(&parent_style);
+                inlines.push(Arc::new(InlineLevelBox::TextRun(TextRun {
+                    parent_style,
+                    text,
+                    font,
+                })))
+            }
+        }
+    }
+
+    /// Determine whether a TextRun exists to which we can append
+    /// more text, and if so, return a reference to the containing string.
+    fn get_last_text(inlines: &mut [Arc<InlineLevelBox>]) -> Option<&mut String> {
+        let last = inlines.last_mut()?;
+
+        // If the last inline-level box is a text run then we can append more text
+        if let InlineLevelBox::TextRun(_) = &**last {
+            // We never clone text run boxes, so the refcount is 1 and unwrap succeeds:
+            let last = Arc::get_mut(last).unwrap();
+            if let InlineLevelBox::TextRun(TextRun { text, .. }) = last {
+                Some(text)
+            } else {
+                unreachable!()
+            }
+        } else {
+            None
+        }
+    }
+
     /// Returns:
     ///
     /// * Whether this text run has preserved (non-collapsible) leading whitespace
@@ -288,7 +343,7 @@ impl<'a> BlockContainerBuilder<'a> {
         let mut stack = Vec::new();
         let preserved = loop {
             match inline_level_boxes.next().map(|b| &**b) {
-                Some(InlineLevelBox::TextRun(r)) => break !r.text.ends_with(' '),
+                Some(InlineLevelBox::TextRun(r)) => break !r.text.ends_with(&[' ', '\n'][..]),
                 Some(InlineLevelBox::Atomic { .. }) => break false,
                 Some(InlineLevelBox::OutOfFlowAbsolutelyPositionedBox(_))
                 | Some(InlineLevelBox::OutOfFlowFloatBox(_)) => {}

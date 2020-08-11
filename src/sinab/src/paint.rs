@@ -8,7 +8,7 @@ use crate::style::style_for_element;
 
 impl crate::dom::Document {
     pub fn paint_onto(&self, rdev: &mut RenderDevice, user_css: Option<&str>) {
-        let page_size: Size<CssPx> = Size::new(300., 800.);
+        let page_size: Size<CssPx> = Size::new(400., 800.);
         let fragments = self.layout(page_size, user_css);
         let containing_block = Rect {
             top_left: Vec2 {

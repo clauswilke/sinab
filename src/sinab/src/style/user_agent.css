@@ -22,3 +22,5 @@ address, blockquote, center, dialog, div, figure, figcaption, footer, form,
 header, hr, legend, listing, main, p, plaintext, pre, xmp {
   display: block;
 }
+
+br { white-space: pre !important; }

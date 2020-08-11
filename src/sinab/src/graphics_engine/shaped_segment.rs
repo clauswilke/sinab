@@ -56,6 +56,14 @@ impl ShapedSegment {
         Ok(())
     }
 
+    /// Remove a trailing space if it exists.
+    pub(crate) fn strip_space(&mut self) {
+        if self.glyphs.ends_with(' ') {
+            self.advance_width = None; // removing a char invalidates advance_width
+            self.glyphs.pop();
+        }
+    }
+
     pub(crate) fn save(&self) -> ShapedSegmentState {
         ShapedSegmentState {
             glyphs: self.glyphs.len(),

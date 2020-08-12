@@ -93,7 +93,6 @@ impl InlineFormattingContext {
                 remaining_boxes: self.inline_level_boxes.iter(),
                 fragments_so_far: Vec::with_capacity(self.inline_level_boxes.len()),
                 inline_start: Length::zero(),
-                // TODO: replace with ascent + descent of current font
                 max_block_size_of_fragments_so_far: Length::zero(),
             },
         };
@@ -230,7 +229,6 @@ impl InlineBox {
                     remaining_boxes: self.children.iter(),
                     fragments_so_far: Vec::with_capacity(self.children.len()),
                     inline_start: ifc.inline_position,
-                    // TODO: replace with ascent + descent of current font
                     max_block_size_of_fragments_so_far: Length::zero(),
                 },
             ),
@@ -245,6 +243,7 @@ impl<'box_tree> PartialInlineBoxFragment<'box_tree> {
         inline_position: &mut Length,
         at_line_break: bool,
     ) {
+        let font = Font::new_from_computed_values(&*self.style);
         let mut fragment = BoxFragment {
             style: self.style.clone(),
             children: take(&mut nesting_level.fragments_so_far),
@@ -254,8 +253,7 @@ impl<'box_tree> PartialInlineBoxFragment<'box_tree> {
                     // The block size should be given by the
                     // height of the very first font encountered
                     // https://drafts.csswg.org/css2/#strut
-                    // TODO: Use ascent + descent rather than font size
-                    block: self.style.font.font_size.0,
+                    block: font.get_ascent() + font.get_descent(),
                 },
                 start_corner: self.start_corner.clone(),
             },

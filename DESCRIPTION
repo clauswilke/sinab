@@ -20,7 +20,7 @@ Authors@R:
       family = "Ramine", 
       role = "aut", 
       comment = "Contributor to the Victor project"
-    ) 
+    ))
 Description: Provides support for rendering a small subset of static 'HTML' and 'CSS' to an
     R graphics device. Conversion from 'Markdown' to 'HTML' is also supported. The rendering
     library is entirely written in Rust, and it is built on top of the experimental project

@@ -48,7 +48,9 @@ struct InlineNestingLevelState<'box_tree> {
     inline_start: Length,
     /// Maximum block size (i.e., height) of all fragments encountered so far.
     /// See spec for line height calculations: https://drafts.csswg.org/css2/#line-height
-    max_block_size_of_fragments_so_far: Length,
+    max_block_size_of_fragments_so_far: Length, // TODO: completely eliminate in favor of next two elements
+    max_block_ascent_of_fragments_so_far: Length,
+    max_block_descent_of_fragments_so_far: Length,
 }
 
 struct PartialInlineBoxFragment<'box_tree> {
@@ -94,6 +96,8 @@ impl InlineFormattingContext {
                 fragments_so_far: Vec::with_capacity(self.inline_level_boxes.len()),
                 inline_start: Length::zero(),
                 max_block_size_of_fragments_so_far: Length::zero(),
+                max_block_ascent_of_fragments_so_far: Length::zero(),
+                max_block_descent_of_fragments_so_far: Length::zero(),
             },
         };
         loop {
@@ -230,6 +234,8 @@ impl InlineBox {
                     fragments_so_far: Vec::with_capacity(self.children.len()),
                     inline_start: ifc.inline_position,
                     max_block_size_of_fragments_so_far: Length::zero(),
+                    max_block_ascent_of_fragments_so_far: Length::zero(),
+                    max_block_descent_of_fragments_so_far: Length::zero(),
                 },
             ),
         }
@@ -275,15 +281,7 @@ impl<'box_tree> PartialInlineBoxFragment<'box_tree> {
         self.parent_nesting_level
             .max_block_size_of_fragments_so_far
             .max_assign(
-                // the block size of the line is given by the maximum size of fragments encountered,
-                // not by the block size of the content rect
                 nesting_level.max_block_size_of_fragments_so_far
-                    /*
-                    // Don't think that padding, border, margin affect max block size in inline context
-                    + fragment.padding.block_sum()
-                    + fragment.border.block_sum()
-                    + fragment.margin.block_sum(),
-                     */
             );
         self.parent_nesting_level
             .fragments_so_far
@@ -310,8 +308,7 @@ impl TextRun {
             loop { // loop over text within lines
                 let next = chars.next();
                 if matches!(next, Some(' ') | Some('\n') | None) {
-                    // TODO: handle potential error nicely, don't just unwrap()
-                    let inline_size: Length = shaped.get_advance_width().unwrap().into();
+                    let inline_size: Length = shaped.get_advance_width().unwrap().into(); // TODO: handle potential error nicely, don't just unwrap()
                     if inline_size > available {
                         if let Some((state, iter)) = last_break_opportunity.take() {
                             shaped.restore(&state);
@@ -329,18 +326,13 @@ impl TextRun {
                     if ch == ' ' {
                         last_break_opportunity = Some((shaped.save(), chars.clone()))
                     }
-                    // TODO: handle potential error nicely, don't just unwrap()
-                    shaped.append_char(ch).unwrap();
+                    shaped.append_char(ch).unwrap(); // TODO: handle potential error nicely, don't just unwrap()
                 } else {
                     break;
                 }
             }
-            // TODO: handle potential error nicely, don't just unwrap()
-            let inline_size = shaped.get_advance_width().unwrap().into();
-            let line_height =
-                self.parent_style.line_height.line_height.percentage_or_number_relative_to(
-                    self.parent_style.font.font_size.0
-                );
+            let inline_size = shaped.get_advance_width().unwrap().into(); // TODO: handle potential error nicely, don't just unwrap()
+            let line_height = calculate_line_height(&*self.parent_style);
             let content_rect = Rect {
                 start_corner: Vec2 {
                     block: Length::zero(),
@@ -378,6 +370,8 @@ impl TextRun {
                     partial.finish_layout(nesting_level, &mut ifc.inline_position, true);
                     nesting_level.inline_start = Length::zero();
                     nesting_level.max_block_size_of_fragments_so_far = Length::zero();
+                    nesting_level.max_block_ascent_of_fragments_so_far = Length::zero();
+                    nesting_level.max_block_descent_of_fragments_so_far = Length::zero();
                     partial.start_corner.inline = Length::zero();
                     partial.padding.inline_start = Length::zero();
                     partial.border.inline_start = Length::zero();
@@ -385,8 +379,8 @@ impl TextRun {
                     nesting_level = &mut partial.parent_nesting_level;
                 }
                 nesting_level.inline_start = Length::zero();
-                // We don't zero `nesting_level.max_block_size_of_fragments_so_far` here, as its value
-                // is still needed in the `finish_line()` call.
+                // We don't zero `nesting_level.max_block_ascent/descent_of_fragments_so_far` here, as
+                // these values are still needed in the `finish_line()` call.
                 ifc.line_boxes
                     .finish_line(nesting_level, ifc.containing_block);
                 ifc.inline_position = Length::zero();
@@ -409,17 +403,12 @@ impl TextRun {
                         break;
                     },
                     Some(ch) => {
-                        // TODO: handle potential error nicely, don't just unwrap()
-                        shaped.append_char(ch).unwrap();
+                        shaped.append_char(ch).unwrap(); // TODO: handle potential error nicely, don't just unwrap()
                     }
                 }
             }
-            // TODO: handle potential error nicely, don't just unwrap()
-            let inline_size = shaped.get_advance_width().unwrap().into();
-            let line_height =
-                self.parent_style.line_height.line_height.percentage_or_number_relative_to(
-                    self.parent_style.font.font_size.0
-                );
+            let inline_size = shaped.get_advance_width().unwrap().into(); // TODO: handle potential error nicely, don't just unwrap()
+            let line_height = calculate_line_height(&*self.parent_style);
             let content_rect = Rect {
                 start_corner: Vec2 {
                     block: Length::zero(),
@@ -457,6 +446,8 @@ impl TextRun {
                     partial.finish_layout(nesting_level, &mut ifc.inline_position, true);
                     nesting_level.inline_start = Length::zero();
                     nesting_level.max_block_size_of_fragments_so_far = Length::zero();
+                    nesting_level.max_block_ascent_of_fragments_so_far = Length::zero();
+                    nesting_level.max_block_descent_of_fragments_so_far = Length::zero();
                     partial.start_corner.inline = Length::zero();
                     partial.padding.inline_start = Length::zero();
                     partial.border.inline_start = Length::zero();
@@ -464,8 +455,8 @@ impl TextRun {
                     nesting_level = &mut partial.parent_nesting_level;
                 }
                 nesting_level.inline_start = Length::zero();
-                // We don't zero `nesting_level.max_block_size_of_fragments_so_far` here, as its value
-                // is still needed in the `finish_line()` call.
+                // We don't zero `nesting_level.max_block_ascent/descent_of_fragments_so_far` here, as
+                // these values are still needed in the `finish_line()` call.
                 ifc.line_boxes
                     .finish_line(nesting_level, ifc.containing_block);
                 ifc.inline_position = Length::zero();
@@ -473,4 +464,24 @@ impl TextRun {
         }
     }
 
+}
+
+
+// convenience helper functions
+
+/// Calculate the true line height from line height and font size computed values
+fn calculate_line_height(style: &ComputedValues) -> Length {
+    style.line_height.line_height.percentage_or_number_relative_to(
+            style.font.font_size.0
+    )
+}
+
+/// Calculate the line ascent and descent (font ascent/descent + half leading)
+/// https://drafts.csswg.org/css2/#leading
+fn calculate_line_ascent_descent(style: &ComputedValues, font: &Font) -> (Length, Length) {
+    let line_height = calculate_line_height(style);
+    let font_ascent = font.get_ascent();
+    let font_descent = font.get_descent();
+    let leading = line_height - (font_ascent + font_descent);
+    (font_ascent + leading / 2., font_descent + leading / 2.)
 }

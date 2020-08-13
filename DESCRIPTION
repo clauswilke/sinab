@@ -2,16 +2,29 @@ Package: sinab
 Title: SINAB Is Not a Browser
 Version: 0.1.0
 Authors@R: 
-    person(
+    c(person(
       given = "Claus O.",
       family = "Wilke",
       role = c("aut", "cre"),
       email = "wilke@austin.utexas.edu",
       comment = c(ORCID = "0000-0002-7470-9261")
-    )
-Description: Provides support for rendering of formatted text using 'grid' graphics. Text can be
-    formatted via a minimal subset of 'Markdown', 'HTML', and inline 'CSS' directives, and it can be
-    rendered both with and without word wrap.
+    ),
+    person(
+      given = "Simon",
+      family = "Sapin",
+      role = "aut",
+      comment = "Author of the Victor project"
+    ),
+    person(
+      given = "Anthony", 
+      family = "Ramine", 
+      role = "aut", 
+      comment = "Contributor to the Victor project"
+    ) 
+Description: Provides support for rendering a small subset of static 'HTML' and 'CSS' to an
+    R graphics device. Conversion from 'Markdown' to 'HTML' is also supported. The rendering
+    library is entirely written in Rust, and it is built on top of the experimental project
+    Victor by Simon Sapin.
 License: MIT + file LICENSE
 Imports:
   grid,

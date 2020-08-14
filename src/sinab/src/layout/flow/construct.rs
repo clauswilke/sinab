@@ -114,7 +114,7 @@ impl BlockContainer {
             context,
             block_container_style,
             block_level_boxes: Default::default(),
-            ongoing_inline_formatting_context: Default::default(),
+            ongoing_inline_formatting_context: InlineFormattingContext::new(block_container_style),
             ongoing_inline_boxes_stack: Default::default(),
             anonymous_style: Default::default(),
             contains_floats: Default::default(),
@@ -566,9 +566,12 @@ impl<'a> BlockContainerBuilder<'a> {
 
         let box_ = IntermediateBlockLevelBox::SameFormattingContextBlock {
             style: anonymous_style.clone(),
-            contents: IntermediateBlockContainer::InlineFormattingContext(take(
-                &mut self.ongoing_inline_formatting_context,
-            )),
+            contents: IntermediateBlockContainer::InlineFormattingContext(
+                std::mem::replace(
+                    &mut self.ongoing_inline_formatting_context,
+                    InlineFormattingContext::new(self.block_container_style)
+                )
+            ),
         };
         self.block_level_boxes.push((box_, BoxSlot::dummy()))
     }

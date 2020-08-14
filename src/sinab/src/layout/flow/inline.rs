@@ -2,8 +2,9 @@ use super::*;
 use crate::graphics_engine::shaped_segment::ShapedSegment;
 use crate::graphics_engine::font::Font;
 
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub(in crate::layout) struct InlineFormattingContext {
+    pub(super) parent_style: Arc<ComputedValues>,
     pub(super) inline_level_boxes: Vec<Arc<InlineLevelBox>>,
 }
 
@@ -36,7 +37,8 @@ pub(in crate::layout) struct TextRun {
     pub font: Font,
 }
 
-/// A struct representing the current line as it is being assembled
+/// A struct representing the current inline box as it is being assembled.
+/// These get nested when inline boxes are nested into each other.
 struct InlineNestingLevelState<'box_tree> {
     /// Iterator over the boxes that haven't been processed yet.
     remaining_boxes: std::slice::Iter<'box_tree, Arc<InlineLevelBox>>,
@@ -46,9 +48,13 @@ struct InlineNestingLevelState<'box_tree> {
     /// Start position of this set of fragments, relative to the containing block,
     /// **not** relative to the containing nesting level.
     inline_start: Length,
+    /// Ascent height of the font (not the line).
+    block_ascent: Length,
+    /// Descent height of the font (not the line).
+    block_descent: Length,
     /// Maximum block size (i.e., height) of all fragments encountered so far.
     /// See spec for line height calculations: https://drafts.csswg.org/css2/#line-height
-    max_block_size_of_fragments_so_far: Length, // TODO: completely eliminate in favor of next two elements
+    //max_block_size_of_fragments_so_far: Length, // TODO: completely eliminate in favor of next two elements
     max_block_ascent_of_fragments_so_far: Length,
     max_block_descent_of_fragments_so_far: Length,
 }
@@ -59,6 +65,8 @@ struct PartialInlineBoxFragment<'box_tree> {
     padding: Sides<Length>,
     border: Sides<Length>,
     margin: Sides<Length>,
+    block_ascent: Length,
+    block_descent: Length,
     last_box_tree_fragment: bool,
     parent_nesting_level: InlineNestingLevelState<'box_tree>,
 }
@@ -66,6 +74,7 @@ struct PartialInlineBoxFragment<'box_tree> {
 struct InlineFormattingContextState<'box_tree, 'cb> {
     containing_block: &'cb ContainingBlock,
     line_boxes: LinesBoxes,
+    /// Current inline position given the boxes remaining on the stack
     inline_position: Length,
     partial_inline_boxes_stack: Vec<PartialInlineBoxFragment<'box_tree>>,
     current_nesting_level: InlineNestingLevelState<'box_tree>,
@@ -77,12 +86,22 @@ struct LinesBoxes {
 }
 
 impl InlineFormattingContext {
+    pub(super) fn new(parent_style: &Arc<ComputedValues>) -> InlineFormattingContext {
+        InlineFormattingContext {
+            parent_style: parent_style.clone(),
+            inline_level_boxes: Default::default(),
+        }
+    }
+
     pub(super) fn layout<'a>(
         &'a self,
         containing_block: &ContainingBlock,
         tree_rank: usize,
         absolutely_positioned_fragments: &mut Vec<AbsolutelyPositionedFragment<'a>>,
     ) -> FlowChildren {
+        let font = Font::new_from_computed_values(&self.parent_style);
+        let block_ascent = font.get_ascent();
+        let block_descent = font.get_descent();
         let mut ifc = InlineFormattingContextState {
             containing_block,
             partial_inline_boxes_stack: Vec::new(),
@@ -95,7 +114,9 @@ impl InlineFormattingContext {
                 remaining_boxes: self.inline_level_boxes.iter(),
                 fragments_so_far: Vec::with_capacity(self.inline_level_boxes.len()),
                 inline_start: Length::zero(),
-                max_block_size_of_fragments_so_far: Length::zero(),
+                block_ascent,
+                block_descent,
+                //max_block_size_of_fragments_so_far: Length::zero(),
                 max_block_ascent_of_fragments_so_far: Length::zero(),
                 max_block_descent_of_fragments_so_far: Length::zero(),
             },
@@ -175,14 +196,32 @@ impl LinesBoxes {
             inline: Length::zero(),
             block: self.next_line_block_position,
         };
+        let max_block_ascent = std::mem::replace(
+            &mut top_nesting_level.max_block_ascent_of_fragments_so_far,
+            Length::zero(),
+        );
+        let max_block_descent = std::mem::replace(
+            &mut top_nesting_level.max_block_descent_of_fragments_so_far,
+            Length::zero(),
+        );
+        //let _ = std::mem::replace(
+        //    &mut top_nesting_level.max_block_size_of_fragments_so_far,
+        //    Length::zero(),
+        //);
         let size = Vec2 {
             inline: containing_block.inline_size,
-            block: std::mem::replace(
-                &mut top_nesting_level.max_block_size_of_fragments_so_far,
-                Length::zero(),
-            ),
+            block: max_block_ascent + max_block_descent,
         };
         self.next_line_block_position += size.block;
+        
+        // calculate block adjustment required if some fragments have excess block ascent
+        let block_adjustment =
+            max_block_ascent - top_nesting_level.block_ascent;
+        for fragment in &mut top_nesting_level.fragments_so_far.iter_mut() {
+            fragment.translate_block(block_adjustment);
+        }
+
+        // create an anonymous fragment containing the next line and push onto stack of lines
         self.boxes.push(Fragment::Anonymous(AnonymousFragment {
             children: take(&mut top_nesting_level.fragments_so_far),
             rect: Rect { start_corner, size },
@@ -197,6 +236,9 @@ impl InlineBox {
         ifc: &mut InlineFormattingContextState<'box_tree, '_>,
     ) -> PartialInlineBoxFragment<'box_tree> {
         let style = self.style.clone();
+        let font = Font::new_from_computed_values(&style);
+        let block_ascent = font.get_ascent();
+        let block_descent = font.get_descent();
         let cbis = ifc.containing_block.inline_size;
         let mut padding = style.padding().percentages_relative_to(cbis);
         let mut border = style.border_width().percentages_relative_to(cbis);
@@ -212,7 +254,7 @@ impl InlineBox {
             margin.inline_start = Length::zero();
         }
         let mut start_corner = Vec2 {
-            block: padding.block_start + border.block_start + margin.block_start,
+            block: Length::zero(), // padding.block_start + border.block_start + margin.block_start,
             inline: ifc.inline_position - ifc.current_nesting_level.inline_start,
         };
         start_corner += &relative_adjustement(
@@ -226,6 +268,8 @@ impl InlineBox {
             padding,
             border,
             margin,
+            block_ascent,
+            block_descent,
             last_box_tree_fragment: self.last_fragment,
             parent_nesting_level: std::mem::replace(
                 &mut ifc.current_nesting_level,
@@ -233,7 +277,9 @@ impl InlineBox {
                     remaining_boxes: self.children.iter(),
                     fragments_so_far: Vec::with_capacity(self.children.len()),
                     inline_start: ifc.inline_position,
-                    max_block_size_of_fragments_so_far: Length::zero(),
+                    block_ascent,
+                    block_descent,
+                    //max_block_size_of_fragments_so_far: Length::zero(),
                     max_block_ascent_of_fragments_so_far: Length::zero(),
                     max_block_descent_of_fragments_so_far: Length::zero(),
                 },
@@ -249,7 +295,11 @@ impl<'box_tree> PartialInlineBoxFragment<'box_tree> {
         inline_position: &mut Length,
         at_line_break: bool,
     ) {
-        let font = Font::new_from_computed_values(&*self.style);
+        // Calculate the block adjustment necessary if different font sizes are nested
+        let block_adjustment = self.parent_nesting_level.block_ascent - self.block_ascent;
+        let mut start_corner = self.start_corner.clone();
+        start_corner.block += block_adjustment;
+
         let mut fragment = BoxFragment {
             style: self.style.clone(),
             children: take(&mut nesting_level.fragments_so_far),
@@ -259,9 +309,9 @@ impl<'box_tree> PartialInlineBoxFragment<'box_tree> {
                     // The block size should be given by the
                     // height of the very first font encountered
                     // https://drafts.csswg.org/css2/#strut
-                    block: font.get_ascent() + font.get_descent(),
+                    block: self.block_ascent + self.block_descent,
                 },
-                start_corner: self.start_corner.clone(),
+                start_corner,
             },
             padding: self.padding.clone(),
             border: self.border.clone(),
@@ -278,10 +328,20 @@ impl<'box_tree> PartialInlineBoxFragment<'box_tree> {
             fragment.border.inline_end = Length::zero();
             fragment.margin.inline_end = Length::zero();
         }
+        //self.parent_nesting_level
+        //    .max_block_size_of_fragments_so_far
+        //    .max_assign(
+        //        nesting_level.max_block_size_of_fragments_so_far
+        //    );
         self.parent_nesting_level
-            .max_block_size_of_fragments_so_far
+            .max_block_ascent_of_fragments_so_far
             .max_assign(
-                nesting_level.max_block_size_of_fragments_so_far
+                nesting_level.max_block_ascent_of_fragments_so_far
+            );
+        self.parent_nesting_level
+            .max_block_descent_of_fragments_so_far
+            .max_assign(
+                nesting_level.max_block_descent_of_fragments_so_far
             );
         self.parent_nesting_level
             .fragments_so_far
@@ -332,14 +392,14 @@ impl TextRun {
                 }
             }
             let inline_size = shaped.get_advance_width().unwrap().into(); // TODO: handle potential error nicely, don't just unwrap()
-            let line_height = calculate_line_height(&*self.parent_style);
+            let line_ascent_descent = calculate_line_ascent_descent(&*self.parent_style, &self.font);
             let content_rect = Rect {
                 start_corner: Vec2 {
                     block: Length::zero(),
                     inline: ifc.inline_position - ifc.current_nesting_level.inline_start,
                 },
                 size: Vec2 {
-                    block: line_height,
+                    block: line_ascent_descent.0 + line_ascent_descent.1,
                     inline: inline_size,
                 },
             };
@@ -348,9 +408,15 @@ impl TextRun {
                 // if a line break occurs at the beginning of a text run, or if a
                 // newline character is encountered
                 ifc.inline_position += inline_size;
+                //ifc.current_nesting_level
+                //    .max_block_size_of_fragments_so_far
+                //    .max_assign(line_ascent_descent.0 + line_ascent_descent.1);
                 ifc.current_nesting_level
-                    .max_block_size_of_fragments_so_far
-                    .max_assign(line_height);
+                    .max_block_ascent_of_fragments_so_far
+                    .max_assign(line_ascent_descent.0);
+                ifc.current_nesting_level
+                    .max_block_descent_of_fragments_so_far
+                    .max_assign(line_ascent_descent.1);
                 ifc.current_nesting_level
                     .fragments_so_far
                     .push(Fragment::Text(TextFragment {
@@ -369,7 +435,7 @@ impl TextRun {
                 for partial in ifc.partial_inline_boxes_stack.iter_mut().rev() {
                     partial.finish_layout(nesting_level, &mut ifc.inline_position, true);
                     nesting_level.inline_start = Length::zero();
-                    nesting_level.max_block_size_of_fragments_so_far = Length::zero();
+                    //nesting_level.max_block_size_of_fragments_so_far = Length::zero();
                     nesting_level.max_block_ascent_of_fragments_so_far = Length::zero();
                     nesting_level.max_block_descent_of_fragments_so_far = Length::zero();
                     partial.start_corner.inline = Length::zero();
@@ -408,14 +474,14 @@ impl TextRun {
                 }
             }
             let inline_size = shaped.get_advance_width().unwrap().into(); // TODO: handle potential error nicely, don't just unwrap()
-            let line_height = calculate_line_height(&*self.parent_style);
+            let line_ascent_descent = calculate_line_ascent_descent(&*self.parent_style, &self.font);
             let content_rect = Rect {
                 start_corner: Vec2 {
                     block: Length::zero(),
                     inline: ifc.inline_position - ifc.current_nesting_level.inline_start,
                 },
                 size: Vec2 {
-                    block: line_height,
+                    block: line_ascent_descent.0 + line_ascent_descent.1,
                     inline: inline_size,
                 },
             };
@@ -424,9 +490,15 @@ impl TextRun {
                 // if a line break occurs at the beginning of a text run, or if a
                 // newline character is encountered
                 ifc.inline_position += inline_size;
+                //ifc.current_nesting_level
+                //    .max_block_size_of_fragments_so_far
+                //    .max_assign(line_ascent_descent.0 + line_ascent_descent.1);
                 ifc.current_nesting_level
-                    .max_block_size_of_fragments_so_far
-                    .max_assign(line_height);
+                    .max_block_ascent_of_fragments_so_far
+                    .max_assign(line_ascent_descent.0);
+                ifc.current_nesting_level
+                    .max_block_descent_of_fragments_so_far
+                    .max_assign(line_ascent_descent.1);
                 ifc.current_nesting_level
                     .fragments_so_far
                     .push(Fragment::Text(TextFragment {
@@ -445,7 +517,7 @@ impl TextRun {
                 for partial in ifc.partial_inline_boxes_stack.iter_mut().rev() {
                     partial.finish_layout(nesting_level, &mut ifc.inline_position, true);
                     nesting_level.inline_start = Length::zero();
-                    nesting_level.max_block_size_of_fragments_so_far = Length::zero();
+                    //nesting_level.max_block_size_of_fragments_so_far = Length::zero();
                     nesting_level.max_block_ascent_of_fragments_so_far = Length::zero();
                     nesting_level.max_block_descent_of_fragments_so_far = Length::zero();
                     partial.start_corner.inline = Length::zero();
@@ -463,23 +535,18 @@ impl TextRun {
             }
         }
     }
-
 }
 
 
 // convenience helper functions
 
-/// Calculate the true line height from line height and font size computed values
-fn calculate_line_height(style: &ComputedValues) -> Length {
-    style.line_height.line_height.percentage_or_number_relative_to(
-            style.font.font_size.0
-    )
-}
 
 /// Calculate the line ascent and descent (font ascent/descent + half leading)
 /// https://drafts.csswg.org/css2/#leading
 fn calculate_line_ascent_descent(style: &ComputedValues, font: &Font) -> (Length, Length) {
-    let line_height = calculate_line_height(style);
+    let line_height = style.line_height.line_height.percentage_or_number_relative_to(
+        style.font.font_size.0
+    );
     let font_ascent = font.get_ascent();
     let font_descent = font.get_descent();
     let leading = line_height - (font_ascent + font_descent);

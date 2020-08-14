@@ -149,3 +149,21 @@ impl CollapsedMargin {
         self.max_positive + self.min_negative
     }
 }
+
+
+impl Fragment {
+    /// Shift a fragment by the provided block amount.
+    pub fn translate_block(&mut self, block: Length) {
+        match self {
+            Fragment::Box(ref mut b) => {
+                b.content_rect.start_corner.block += block;
+            },
+            Fragment::Anonymous(ref mut a) => {
+                a.rect.start_corner.block += block;
+            },
+            Fragment::Text(ref mut t) => {
+                t.content_rect.start_corner.block += block;
+            },
+        }
+    }
+}

@@ -7,3 +7,11 @@ pub(crate) enum WhiteSpace {
     PreLine,
     BreakSpaces,
 }
+
+#[derive(Copy, Clone, Debug, Parse, SpecifiedAsComputed, PartialEq)]
+pub(crate) enum TextAlign {
+    Left,
+    Right,
+    Center,
+    Justify,
+}

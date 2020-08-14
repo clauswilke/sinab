@@ -24,3 +24,9 @@ header, hr, legend, listing, main, p, plaintext, pre, xmp {
 }
 
 br { white-space: pre !important; }
+
+sub { vertical-align: sub; font-size: 0.8em; }
+sup { vertical-align: super; font-size: 0.8em; }
+
+pre { white-space: pre; }
+code { font-family: monospace; }

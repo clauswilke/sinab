@@ -90,6 +90,10 @@ impl FontImpl {
         self.descent
     }
 
+    /// Returns the value of 1ex. It is appropriate to use 0.5em instead of a lookup.
+    /// https://drafts.csswg.org/css-values-3/#font-relative-length
+    pub(crate) fn get_ex(&self) -> Length { self.size * 0.5 }
+
     pub(crate) fn get_space_advance_width(&self) -> Length {
         self.space_advance_width
     }

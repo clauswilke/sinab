@@ -11,13 +11,14 @@ mod fonts;
 mod fontfamily;
 mod generic;
 mod length;
-mod white_space;
+mod line;
+mod text;
 mod writing_modes;
 mod tests; // testing module for values
 
 pub(super) use self::{background::*, generic::*};
 pub(crate) use self::{
-    border::*, box_::*, color::*, fonts::*, fontfamily::*, length::*, white_space::*, writing_modes::*
+    border::*, box_::*, color::*, fonts::*, fontfamily::*, length::*, line::*, text::*, writing_modes::*
 };
 
 pub(super) trait Parse: Sized {

@@ -207,7 +207,7 @@ impl<'a> TraversalHandler<'a> for BlockContainerBuilder<'a> {
     }
 
     fn handle_text(&mut self, input: &str, parent_style: &Arc<ComputedValues>) {
-        match parent_style.white_space.white_space {
+        match parent_style.text_inherited.white_space {
             WhiteSpace::Normal | WhiteSpace::Nowrap => self.handle_text_collapse(input, parent_style),
             WhiteSpace::Pre | WhiteSpace::PreWrap => self.handle_text_preserve(input, parent_style),
             _ => unimplemented!(),

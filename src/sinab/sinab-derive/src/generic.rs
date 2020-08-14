@@ -1,3 +1,6 @@
+/// This macro automatically implements the `From` trait (`std::convert::From`) for
+/// enums that have one or more variants with a single unnamed field. The types of
+/// such fields must satisfy the `From` trait.
 #[proc_macro_derive(FromVariants)]
 pub fn derive_from_variants(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);

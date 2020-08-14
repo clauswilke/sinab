@@ -13,8 +13,12 @@ properties! {
         font_family { "font-family", FontFamily, initial = FontFamily::GenericSans }
     }
 
-    inherited struct line_height {
+    inherited struct line_inherited {
         line_height { "line-height", LengthOrPercentageOrNumber, initial = Number { value: 1.2 } }
+    }
+
+    reset struct line_reset {
+        vertical_align { "vertical-align", VerticalAlign, initial = VerticalAlign::Baseline }
     }
 
     inherited struct color {
@@ -22,7 +26,8 @@ properties! {
         color { "color", RGBA, initial = BLACK }
     }
 
-    inherited struct white_space {
+    inherited struct text_inherited {
+        text_align { "text-align", TextAlign, initial = TextAlign::Left }
         white_space { "white-space", WhiteSpace, initial = WhiteSpace::Normal }
     }
 

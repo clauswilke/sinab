@@ -411,35 +411,38 @@ impl TextRun {
     /// Text layout with word wrap.
     fn layout_wrap(&self, ifc: &mut InlineFormattingContextState) {
         let mut chars = self.text.chars();
+        let mut shaped = ShapedSegment::new(self.font.clone());
+        let mut last_break_opportunity = Some((shaped.save(), chars.clone()));
         loop { // loop over lines
             let mut newline = false;
             let available = ifc.containing_block.inline_size - ifc.inline_position;
-            let mut shaped = ShapedSegment::new( self.font.clone());
-            let mut last_break_opportunity = Some((shaped.save(), chars.clone()));
             loop { // loop over text within lines
                 let next = chars.next();
                 if matches!(next, Some(' ') | Some('\n') | None) {
                     let inline_size: Length = shaped.get_advance_width().unwrap().into(); // TODO: handle potential error nicely, don't just unwrap()
                     if inline_size > available {
+                        // if we have a previous break opportunity we use it,
+                        // otherwise we line-break and create an overflowing
+                        // line.
                         if let Some((state, iter)) = last_break_opportunity.take() {
                             shaped.restore(&state);
                             chars = iter;
                         }
-                        break;
+                        break; // linebreak, next text doesn't fit
                     }
                 }
                 if let Some(ch) = next {
                     if ch == '\n' {
                         shaped.strip_space();
                         newline = true;
-                        break;
+                        break; // linebreak, \n encountered
                     }
                     if ch == ' ' {
                         last_break_opportunity = Some((shaped.save(), chars.clone()))
                     }
                     shaped.append_char(ch).unwrap(); // TODO: handle potential error nicely, don't just unwrap()
                 } else {
-                    break;
+                    break; // end of text run, non linebreak
                 }
             }
             let inline_size = shaped.get_advance_width().unwrap().into(); // TODO: handle potential error nicely, don't just unwrap()
@@ -454,11 +457,10 @@ impl TextRun {
                     inline: inline_size,
                 },
             };
-            if !shaped.empty() {
-                // add the new segment if it is not empty. empty segments can arise
-                // if a line break occurs at the beginning of a text run, or if a
-                // newline character is encountered
-                ifc.inline_position += inline_size;
+            // Advance inline position and add the segment only if it is not
+            // empty. Empty segments can arise if a line break occurs at the
+            // beginning of a text run, or if a newline character is encountered
+            if !shaped.empty() || newline {
                 ifc.current_nesting_level
                     .max_block_ascent_of_fragments_so_far
                     .max_assign(
@@ -469,19 +471,26 @@ impl TextRun {
                     .max_assign(
                         line_ascent_descent.1 + ifc.current_nesting_level.block_baseline_adjustment
                     );
+            }
+            if !shaped.empty() {
+                ifc.inline_position += inline_size;
                 ifc.current_nesting_level
                     .fragments_so_far
                     .push(Fragment::Text(TextFragment {
                         parent_style: self.parent_style.clone(),
                         content_rect,
-                        text: shaped,
+                        text: std::mem::replace(
+                            &mut shaped,
+                            ShapedSegment::new(self.font.clone())
+                        )
                     }));
             }
-            if chars.as_str().is_empty() && !newline {
-                break;
-            } else {
+            if !chars.as_str().is_empty() || newline {
                 // line break; finish the line and start a new one
                 ifc.finish_line();
+                last_break_opportunity = None;
+            } else {
+                break; // end of text run
             }
         }
     }
@@ -497,6 +506,7 @@ impl TextRun {
                 match next {
                     None => break,
                     Some('\n') => {
+                        println!("newline");
                         newline = true;
                         break;
                     },
@@ -517,11 +527,10 @@ impl TextRun {
                     inline: inline_size,
                 },
             };
-            if !shaped.empty() {
-                // add the new segment if it is not empty. empty segments can arise
-                // if a line break occurs at the beginning of a text run, or if a
-                // newline character is encountered
-                ifc.inline_position += inline_size;
+            // Advance inline position and add the segment only if it is not
+            // empty. Empty segments can arise if a line break occurs at the
+            // beginning of a text run, or if a newline character is encountered
+            if !shaped.empty() || newline {
                 ifc.current_nesting_level
                     .max_block_ascent_of_fragments_so_far
                     .max_assign(
@@ -532,6 +541,9 @@ impl TextRun {
                     .max_assign(
                         line_ascent_descent.1 + ifc.current_nesting_level.block_baseline_adjustment
                     );
+            }
+            if !shaped.empty() {
+                ifc.inline_position += inline_size;
                 ifc.current_nesting_level
                     .fragments_so_far
                     .push(Fragment::Text(TextFragment {
@@ -540,11 +552,11 @@ impl TextRun {
                         text: shaped,
                     }));
             }
-            if chars.as_str().is_empty() && !newline {
-                break;
-            } else {
+            if !chars.as_str().is_empty() || newline {
                 // line break; finish the line and start a new one
                 ifc.finish_line();
+            } else {
+                break;
             }
         }
     }

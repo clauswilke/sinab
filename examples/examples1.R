@@ -4,7 +4,7 @@ library(grid)
 mdtext <-
 'The **very quick <span class="brown">brown brown brown brown brown
 brown</span> *fox fox fox fox*** jumps *over* the <span style="color:#0000ff80">lazy
-dog.</span><br>The quick <span class="brown">brown</span> fox.'
+dog.</span><br><br>The quick <span class="brown">brown</span> fox.'
 
 css <-
 '
@@ -41,7 +41,7 @@ est laborum."
 
 g <- render_markdown(
   mdtext,
-  css = "p{font-family:serif; background-color:#eee; text-align:center;}"
+  css = "p{font-family:serif; background-color:#eee; text-align:left;}"
 )
 grid.newpage()
 grid.draw(g)

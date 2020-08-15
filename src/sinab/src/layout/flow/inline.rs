@@ -577,6 +577,17 @@ fn calculate_baseline_shift(
         },
         //VerticalAlign::Bottom => { },
         //VerticalAlign::TextBottom => { },
+        VerticalAlign::Length(shift) => {
+            -shift
+        },
+        VerticalAlign::Percentage(shift_percent) => {
+            // Percent is calculated relative to the line height of the element itself
+            // https://www.w3.org/TR/CSS22/visudet.html#propdef-vertical-align
+            let line_height = style.line_inherited.line_height.percentage_or_number_relative_to(
+                style.font.font_size.0
+            );
+            -line_height * shift_percent
+        },
         _ => { // VerticalAlign::Baseline and cases that are not implemented
             Length::zero()
         }

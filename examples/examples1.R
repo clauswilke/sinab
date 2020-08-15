@@ -12,7 +12,7 @@ p      { font-family: serif; line-height: 1.2; background-color: #eee; }
 .box   { background-color: skyblue; }
 .brown { color:red; font-family: "Comic Sans MS";}
 em     { color:green; background-color: cornsilk;
-         vertical-align: super; line-height: 2.0; }
+         vertical-align: -20%; line-height: 2.0; }
 strong { background-color: lightsalmon; }
 strong em { color:blue; font-family: monospace; }
 strong .brown { 

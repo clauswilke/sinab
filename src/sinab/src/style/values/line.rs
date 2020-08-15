@@ -1,4 +1,20 @@
-#[derive(Copy, Clone, Debug, Parse, SpecifiedAsComputed, PartialEq)]
+use super::{Length, SpecifiedLength, Percentage, SpecifiedValue};
+
+#[derive(Clone, Debug, Parse, FromVariants)]
+pub(in crate::style) enum SpecifiedVerticalAlign {
+    Baseline,
+    Sub,
+    Super,
+    Top,
+    TextTop,
+    Middle,
+    Bottom,
+    TextBottom,
+    Length(SpecifiedLength),
+    Percentage(Percentage),
+}
+
+#[derive(Clone, Debug, FromSpecified, FromVariants)]
 pub(crate) enum VerticalAlign {
     Baseline,
     Sub,
@@ -8,6 +24,6 @@ pub(crate) enum VerticalAlign {
     Middle,
     Bottom,
     TextBottom,
-    // TODO: Percentage and Length are missing
-    // https://drafts.csswg.org/css2/#propdef-vertical-align
+    Length(Length),
+    Percentage(Percentage),
 }

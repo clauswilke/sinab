@@ -506,7 +506,6 @@ impl TextRun {
                 match next {
                     None => break,
                     Some('\n') => {
-                        println!("newline");
                         newline = true;
                         break;
                     },

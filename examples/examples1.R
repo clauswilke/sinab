@@ -8,11 +8,12 @@ dog.</span><br>The quick <span class="brown">brown</span> fox.'
 
 css <-
 '
-p      { font-family: serif; line-height: 1.2; background-color: #eee; }
+p      { font-family: serif; line-height: 1.2; background-color: #eee;
+         text-align: left; }
 .box   { background-color: skyblue; }
 .brown { color:red; font-family: "Comic Sans MS";}
 em     { color:green; background-color: cornsilk;
-         vertical-align: -20%; line-height: 2.0; }
+         vertical-align: super; margin-right: 10px; }
 strong { background-color: lightsalmon; }
 strong em { color:blue; font-family: monospace; }
 strong .brown { 
@@ -23,6 +24,11 @@ g <- render_markdown(mdtext, css)
 grid.newpage()
 grid.draw(g)
 
+agg_png("~/Desktop/test.png", width = 4*480, height = 4*480, res = 7*72)
+g <- render_markdown(mdtext, css)
+grid.newpage()
+grid.draw(g)
+dev.off()
 
 mdtext <- "Lorem ipsum dolor sit amet, consectetur adipiscing
 elit, sed do eiusmod tempor incididunt ut labore et dolore magna
@@ -33,7 +39,10 @@ dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat
 non proident, sunt in culpa qui officia deserunt mollit anim id
 est laborum."
 
-g <- render_markdown(mdtext, css)
+g <- render_markdown(
+  mdtext,
+  css = "p{font-family:serif; background-color:#eee; text-align:center;}"
+)
 grid.newpage()
 grid.draw(g)
 
@@ -73,4 +82,5 @@ p {background-color: #def; margin-top: 5px;}"
 g <- render_markdown(mdtext, css)
 grid.newpage()
 grid.draw(g)
+
 

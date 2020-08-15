@@ -111,7 +111,5 @@ pub fn render_html(text_input: &str, css_input: &str, mut rdev: RenderDevice) {
     let document = Document::parse_html(text_input.as_bytes());
     let author_styles = &document.parse_stylesheets(Some(css_input));
     let root_element = document.root_element();
-    let style = style_for_element(author_styles, &document, root_element, None);
-
     document.paint_onto(&mut rdev, Some(css_input));
 }

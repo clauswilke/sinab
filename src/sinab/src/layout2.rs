@@ -1,3 +1,5 @@
+// this code is now obsolete and should eventually be deleted in its entirety
+/*
 use crate::graphics_engine::renderer::*;
 use crate::graphics_engine::font::*;
 use crate::style::values::*;
@@ -209,7 +211,6 @@ fn render_inline_boxes(inline_boxes: &Vec<InlineBox>, rdev: &mut RenderDevice) {
     }
 }
 
-/*
 pub fn render_html(text_input: &str, css_input: &str, mut rdev: RenderDevice) {
     let mut inline_boxes: Vec<InlineBox> = Vec::new();
     let document = Document::parse_html(text_input.as_bytes());

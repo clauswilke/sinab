@@ -1,4 +1,4 @@
-use super::{Length, SpecifiedLength, Percentage, SpecifiedValue};
+use super::{Percentage};
 
 #[derive(Copy, Clone, Debug, Parse, SpecifiedAsComputed, PartialEq)]
 pub(crate) enum WhiteSpace {
@@ -10,7 +10,7 @@ pub(crate) enum WhiteSpace {
     BreakSpaces,
 }
 
-#[derive(Clone, Debug, Parse, FromVariants)]
+#[derive(Copy, Clone, Debug, Parse, FromVariants)]
 pub(in crate::style) enum SpecifiedTextAlign {
     Left,
     Right,
@@ -19,7 +19,7 @@ pub(in crate::style) enum SpecifiedTextAlign {
     Percentage(Percentage),
 }
 
-#[derive(Clone, Debug, FromSpecified, FromVariants)]
+#[derive(Copy, Clone, Debug, FromSpecified, FromVariants)]
 pub(crate) enum TextAlign {
     Left,
     Right,

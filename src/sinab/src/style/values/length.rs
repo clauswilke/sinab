@@ -14,7 +14,7 @@ pub(crate) struct Length {
 #[repr(transparent)]
 #[derive(Copy, Clone, SpecifiedAsComputed)]
 pub(crate) struct Percentage {
-    unit_value: f32,
+    pub unit_value: f32,
 }
 
 /// A numerical value, used e.g. in line-height
@@ -27,13 +27,13 @@ pub(crate) struct Number {
 
 
 /// <https://drafts.csswg.org/css-values/#lengths>
-#[derive(Clone, Debug, PartialEq, FromVariants)]
+#[derive(Copy, Clone, Debug, PartialEq, FromVariants)]
 pub(in crate::style) enum SpecifiedLength {
     Absolute(Length),
     Em(f32),
 }
 
-#[derive(Clone, Debug, Parse, FromVariants)]
+#[derive(Copy, Clone, Debug, Parse, FromVariants)]
 pub(in crate::style) enum SpecifiedLengthOrPercentage {
     Length(SpecifiedLength),
     Percentage(Percentage),
@@ -45,7 +45,7 @@ pub(crate) enum LengthOrPercentage {
     Percentage(Percentage),
 }
 
-#[derive(Clone, Debug, Parse, FromVariants)]
+#[derive(Copy, Clone, Debug, Parse, FromVariants)]
 pub(in crate::style) enum SpecifiedLengthOrPercentageOrAuto {
     Length(SpecifiedLength),
     Percentage(Percentage),
@@ -59,7 +59,7 @@ pub(crate) enum LengthOrPercentageOrAuto {
     Auto,
 }
 
-#[derive(Clone, Debug, Parse, FromVariants)]
+#[derive(Copy, Clone, Debug, Parse, FromVariants)]
 pub(in crate::style) enum SpecifiedLengthOrPercentageOrNumber {
     Length(SpecifiedLength),
     Percentage(Percentage),

@@ -1,4 +1,4 @@
-use super::{Length, SpecifiedLength, Percentage, SpecifiedValue};
+use super::{Length, SpecifiedLength, Percentage};
 
 #[derive(Clone, Debug, Parse, FromVariants)]
 pub(in crate::style) enum SpecifiedVerticalAlign {

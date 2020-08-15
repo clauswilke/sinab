@@ -78,7 +78,9 @@ struct PartialInlineBoxFragment<'box_tree> {
 struct InlineFormattingContextState<'box_tree, 'cb> {
     containing_block: &'cb ContainingBlock,
     line_boxes: LinesBoxes,
-    /// Current inline position given the boxes remaining on the stack
+    /// Alignment setting for text in this inline formatting context.
+    text_align: TextAlign,
+    /// Current inline position given the boxes remaining on the stack.
     inline_position: Length,
     partial_inline_boxes_stack: Vec<PartialInlineBoxFragment<'box_tree>>,
     current_nesting_level: InlineNestingLevelState<'box_tree>,
@@ -114,6 +116,7 @@ impl InlineFormattingContext {
                 boxes: Vec::new(),
                 next_line_block_position: Length::zero(),
             },
+            text_align: self.parent_style.text_inherited.text_align,
             inline_position: Length::zero(),
             current_nesting_level: InlineNestingLevelState {
                 remaining_boxes: self.inline_level_boxes.iter(),
@@ -176,8 +179,9 @@ impl InlineFormattingContext {
                     ifc.current_nesting_level = partial.parent_nesting_level
                 } else {
                     // no, finish current inline formatting context, we are done
-                    ifc.line_boxes
-                        .finish_line(&mut ifc.current_nesting_level, containing_block);
+                    ifc.finish_line();
+                    //ifc.line_boxes
+                    //    .finish_line(&mut ifc.current_nesting_level, containing_block);
                     return FlowChildren {
                         fragments: ifc.line_boxes.boxes,
                         block_size: ifc.line_boxes.next_line_block_position,
@@ -189,6 +193,39 @@ impl InlineFormattingContext {
     }
 }
 
+impl<'box_tree, 'cb> InlineFormattingContextState<'box_tree, 'cb> {
+    /// Finish off the current line and reset.
+    fn finish_line(&mut self) {
+        // To complete a line, we need to iterate over all open boxes in reverse
+        // order and finish them up for this line
+        let mut nesting_level = &mut self.current_nesting_level;
+        for partial in self.partial_inline_boxes_stack.iter_mut().rev() {
+            // if there are any boxes to finish then we are at a line break
+            partial.finish_layout(nesting_level, &mut self.inline_position, true);
+            nesting_level.inline_start = Length::zero();
+            nesting_level.max_block_ascent_of_fragments_so_far = Length::zero();
+            nesting_level.max_block_descent_of_fragments_so_far = Length::zero();
+            partial.start_corner.inline = Length::zero();
+            partial.padding.inline_start = Length::zero();
+            partial.border.inline_start = Length::zero();
+            partial.margin.inline_start = Length::zero();
+            nesting_level = &mut partial.parent_nesting_level;
+        }
+        nesting_level.inline_start = Length::zero();
+        // We don't zero `nesting_level.max_block_ascent/descent_of_fragments_so_far` here, as
+        // these values are still needed in the `finish_line()` call.
+        //ifc.finish_line(nesting_level);
+        self.line_boxes
+            .finish_line(
+                nesting_level,
+                self.containing_block,
+                &self.inline_position,
+                &self.text_align,
+            );
+        self.inline_position = Length::zero();
+    }
+}
+
 impl LinesBoxes {
     /// Takes all the fragments that have accumulated on the stack
     /// (`top_nesting_level.fragments_so_far`), sticks them into an anonymous
@@ -197,9 +234,23 @@ impl LinesBoxes {
         &mut self,
         top_nesting_level: &mut InlineNestingLevelState,
         containing_block: &ContainingBlock,
+        inline_position: &Length,
+        text_align: &TextAlign,
     ) {
+        // available line length minus used line length
+        let inline_delta = containing_block.inline_size - *inline_position;
+        // fractional shift
+        let p = match text_align {
+            TextAlign::Left => 0.0,
+            TextAlign::Right => 1.0,
+            TextAlign::Center => 0.5,
+            // Justify is not implemented, use TextAlign::Left instead
+            TextAlign::Justify => 0.0, // TODO: properly implement Justify
+            TextAlign::Percentage(p) => p.unit_value,
+        };
+
         let start_corner = Vec2 {
-            inline: Length::zero(),
+            inline: inline_delta * p,
             block: self.next_line_block_position,
         };
         let max_block_ascent = std::mem::replace(
@@ -429,27 +480,8 @@ impl TextRun {
             if chars.as_str().is_empty() && !newline {
                 break;
             } else {
-                // New line
-                // To complete a line, we need to iterate over all open boxes in reverse
-                // order and finish them up for this line
-                let mut nesting_level = &mut ifc.current_nesting_level;
-                for partial in ifc.partial_inline_boxes_stack.iter_mut().rev() {
-                    partial.finish_layout(nesting_level, &mut ifc.inline_position, true);
-                    nesting_level.inline_start = Length::zero();
-                    nesting_level.max_block_ascent_of_fragments_so_far = Length::zero();
-                    nesting_level.max_block_descent_of_fragments_so_far = Length::zero();
-                    partial.start_corner.inline = Length::zero();
-                    partial.padding.inline_start = Length::zero();
-                    partial.border.inline_start = Length::zero();
-                    partial.margin.inline_start = Length::zero();
-                    nesting_level = &mut partial.parent_nesting_level;
-                }
-                nesting_level.inline_start = Length::zero();
-                // We don't zero `nesting_level.max_block_ascent/descent_of_fragments_so_far` here, as
-                // these values are still needed in the `finish_line()` call.
-                ifc.line_boxes
-                    .finish_line(nesting_level, ifc.containing_block);
-                ifc.inline_position = Length::zero();
+                // line break; finish the line and start a new one
+                ifc.finish_line();
             }
         }
     }
@@ -511,27 +543,8 @@ impl TextRun {
             if chars.as_str().is_empty() && !newline {
                 break;
             } else {
-                // New line
-                // To complete a line, we need to iterate over all open boxes in reverse
-                // order and finish them up for this line
-                let mut nesting_level = &mut ifc.current_nesting_level;
-                for partial in ifc.partial_inline_boxes_stack.iter_mut().rev() {
-                    partial.finish_layout(nesting_level, &mut ifc.inline_position, true);
-                    nesting_level.inline_start = Length::zero();
-                    nesting_level.max_block_ascent_of_fragments_so_far = Length::zero();
-                    nesting_level.max_block_descent_of_fragments_so_far = Length::zero();
-                    partial.start_corner.inline = Length::zero();
-                    partial.padding.inline_start = Length::zero();
-                    partial.border.inline_start = Length::zero();
-                    partial.margin.inline_start = Length::zero();
-                    nesting_level = &mut partial.parent_nesting_level;
-                }
-                nesting_level.inline_start = Length::zero();
-                // We don't zero `nesting_level.max_block_ascent/descent_of_fragments_so_far` here, as
-                // these values are still needed in the `finish_line()` call.
-                ifc.line_boxes
-                    .finish_line(nesting_level, ifc.containing_block);
-                ifc.inline_position = Length::zero();
+                // line break; finish the line and start a new one
+                ifc.finish_line();
             }
         }
     }

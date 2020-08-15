@@ -25,20 +25,19 @@ library(grid)
 
 css <-
 '
-p { line-height: 1.5; background-color: #eee; }
-.box { background-color: skyblue; }
-.brown { color:red; font-family: "Comic Sans MS";}
-em { color:green;   background-color: cornsilk;}
-strong { background-color: lightsalmon; }
-strong em { color:blue; font-family: monospace; }
-strong .brown { 
-  color:brown; font-size: 24px; background-color: skyblue;
-}'
+p       { line-height: 1.2; background-color: #eee; }
+.box    { background-color: skyblue; }
+.brown  { color: red; font-family: "Comic Sans MS"; }
+em      { color:green; background-color: cornsilk; }
+strong  { background-color: lightsalmon; }
+strong em     { color:blue; font-family: monospace; }
+strong .brown { color:brown; font-size: 24px; background-color: skyblue; }
+'
 
 mdtext <-
-'The **very quick <span class="brown">brown brown brown brown brown brown brown</span>
+'The **very quick <span class="brown">brown brown brown brown brown brown</span>
 *fox fox fox fox*** jumps *over* the <span style="color:#0000ff80">lazy
-dog.</span><br>The quick <span class="brown">brown</span> fox.'
+dog.</span><br>The quick <span class="brown">brown<sup>6</sup></span> fox<sup>4</sup>.'
 
 g <- render_markdown(mdtext, css)
 grid.newpage()

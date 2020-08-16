@@ -7,39 +7,87 @@ A basic html rendering engine for R, written in Rust. The purpose is not
 to write a browser, but rather to provide the ability to render simple,
 static html documents to an R graphics device.
 
-An initial rendering engine has been implemented, though its feature set
-remains extremely limited at this time.
+## Installation
+
+This package needs to be compiled from source and requires a working
+Rust toolchain (i.e.,
+[Cargo](https://doc.rust-lang.org/cargo/getting-started/installation.html)).
+If you have Cargo up and running, the following should work to install
+this package:
+
+``` r
+remotes::install_github("clauswilke/sinab")
+```
+
+## Examples
+
+This project is in the early proof-of-concept stage. Expect most things
+to be broken.
+
+The main function provided by this package is `html_grob()`, which takes
+as input some Markdown or HTML text and associated CSS and renders it
+using the grid graphics system.
 
 ``` r
 library(sinab)
 library(grid)
 
-css <-
-'
-p       { line-height: 1.2; background-color: #eee; }
-.box    { background-color: skyblue; }
-.brown  { color: red; font-family: "Comic Sans MS"; }
-em      { color:green; background-color: cornsilk; }
-strong  { background-color: lightsalmon; }
-strong em     { color:blue; font-family: monospace; }
-strong .brown { color:brown; font-size: 24px; background-color: skyblue; }
-'
+mdtext <- "
+Here are a few examples of word-wrapped and non-word-wrapped text. First
+regular text pre-formatted:
+<pre>
+The quick brown
+  fox jumps over
+    the lazy dog.
+</pre>
+Now some inline code: `x <- 10; y <- 200; z <- 2*x + y;`
+It gets wrapped.
 
-mdtext <-
-'The **very quick <span class="brown">brown brown brown brown brown brown</span>
-*fox fox fox fox*** jumps *over* the <span style="color:#0000ff80">lazy
-dog.</span><br>The quick <span class="brown">brown<sup>6</sup></span> fox<sup>4</sup>.'
+We can also write block code. Notice how the long comment runs beyond
+the box limits:
+
+    x <- 10
+    y <- 200
+    z <- 2*x + y;  # and a really really long comment
+"
+
+css <- '
+pre { background-color: #eee;
+      padding: 6px;
+      border-left: 5px solid #888; }
+p   { background-color: #def;
+      margin: 16px 0px 4px 0px;
+      padding: 4px; }
+code { border: 1px solid #aaa; 
+       padding: 2px; }
+pre code { border: none;
+           padding: 0px; }
+'
 
 g <- html_grob(
-  mdtext,
-  x = unit(0.2, "npc"), y = unit(0.8, "npc"), width = unit(0.6, "npc"),
-  css = css
+  mdtext, css = css,
+  x = unit(0.1, "npc"), y = unit(1, "npc"), width = unit(4, "inches"),
 )
 grid.newpage()
 grid.draw(g)
 ```
 
-<img src="man/figures/README-unnamed-chunk-2-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-3-1.png" width="100%" />
+
+If the grob width is specified as a relative unit, then the grob is
+reactive and reflows as the graphics window is resized. (Try this
+example interactively.)
+
+``` r
+g <- html_grob(
+  mdtext, css = css,
+  x = unit(0.1, "npc"), y = unit(1, "npc"), width = unit(0.8, "npc"),
+)
+grid.newpage()
+grid.draw(g)
+```
+
+<img src="man/figures/README-unnamed-chunk-4-1.png" width="100%" />
 
 Simple markdown-to-html conversion is also implemented:
 
@@ -56,7 +104,7 @@ md_to_html("This is *a* **test**.")
     implemented.
 
   - **Will you support Javascript?**  
-    Probably not. The goal for Sinab is rendering of static pages.
+    Probably not. The goal for Sinab is to render static pages.
     Interactivity doesn’t work well with R graphics devices.
 
   - **Is MathML supported?**  
@@ -80,8 +128,8 @@ file <- tempfile(fileext = ".png")
 png(file, width = 1920, height = 1920, res = 288, type = "quartz")
 microbenchmark::microbenchmark(render_markdown(text), times = 10L)
 #> Unit: milliseconds
-#>                   expr      min       lq     mean   median      uq     max
-#>  render_markdown(text) 669.7875 678.8132 686.3323 683.1862 689.057 713.574
+#>                   expr      min       lq     mean   median       uq      max
+#>  render_markdown(text) 672.2259 674.2396 679.2829 674.9762 681.4806 698.7876
 #>  neval
 #>     10
 invisible(dev.off())
@@ -89,8 +137,8 @@ invisible(dev.off())
 ragg::agg_png(file, width = 1920, height = 1920, res = 288)
 microbenchmark::microbenchmark(render_markdown(text), times = 10L)
 #> Unit: milliseconds
-#>                   expr     min       lq     mean   median       uq     max
-#>  render_markdown(text) 1.82094 1.939645 2.556686 2.042078 2.121244 7.41368
+#>                   expr      min       lq     mean   median       uq      max
+#>  render_markdown(text) 1.781354 1.894065 2.414148 1.949443 2.025862 6.593019
 #>  neval
 #>     10
 invisible(dev.off())

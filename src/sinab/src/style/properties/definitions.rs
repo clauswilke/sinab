@@ -129,6 +129,20 @@ properties! {
             color: border_left_color,
             width: border_left_width,
         }
+        "border" => BorderFourSides {
+            style_top: border_top_style,
+            style_right: border_right_style,
+            style_bottom: border_bottom_style,
+            style_left: border_left_style,
+            color_top: border_top_color,
+            color_right: border_right_color,
+            color_bottom: border_bottom_color,
+            color_left: border_left_color,
+            width_top: border_top_width,
+            width_right: border_right_width,
+            width_bottom: border_bottom_width,
+            width_left: border_left_width,
+        }
         "background" => Background {
             color: background_color,
         }

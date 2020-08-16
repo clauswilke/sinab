@@ -177,10 +177,25 @@ SEXP gpar_gcontext(const GContext *gc) {
   PROTECT(fontface = ScalarInteger(gc->fontface));
   PROTECT(fontsize = ScalarReal(gc->fontsize));
   PROTECT(lineheight = ScalarReal(gc->lineheight));
-  PROTECT(linetype = ScalarInteger(gc->linetype));
   PROTECT(linewidth = ScalarReal(gc->linewidth));
-  PROTECT(lineend = mkString("butt"));
-  
+
+  /* create some custom line types that better much
+   * what browsers do.
+   */
+  switch(gc->linetype) {
+  case 2: /* dashed, 2 units on, 1 off */
+    PROTECT(linetype = mkString("21"));
+    PROTECT(lineend = mkString("butt"));
+    break;
+  case 3: /* dotted, 1 unit on, 1 off, rounded */
+    PROTECT(linetype = mkString("11"));
+    PROTECT(lineend = mkString("butt"));
+    break;
+  default:
+    PROTECT(linetype = ScalarInteger(gc->linetype));
+    PROTECT(lineend = mkString("butt"));
+  } 
+    
   /* call */
   PROTECT(grid = get_namespace("grid"));
   PROTECT(fun = findFun(install("gpar"), grid));

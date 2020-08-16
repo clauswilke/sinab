@@ -11,7 +11,7 @@ pub(crate) enum LineStyle {
     Dashed,
 }
 
-#[derive(Debug, Parse)]
+#[derive(Copy, Clone, Debug, Parse)]
 enum ParsedLineWidth {
     Thin,
     Medium,
@@ -19,7 +19,7 @@ enum ParsedLineWidth {
     Other(SpecifiedLengthOrPercentage),
 }
 
-#[derive(Debug, Clone)]
+#[derive(Copy, Clone, Debug)]
 pub(in crate::style) struct SpecifiedLineWidth(pub SpecifiedLengthOrPercentage);
 
 #[derive(Copy, Clone, Debug, FromSpecified)]
@@ -52,7 +52,7 @@ impl super::Parse for SpecifiedLineWidth {
 
 macro_rules! parse_one_or_more {
     ($type: ty { $( $field: ident, )+ }) => {
-        impl crate::style::values::Parse for BorderSide {
+        impl crate::style::values::Parse for $type {
             fn parse<'i, 't>(parser: &mut Parser<'i, 't>)
                 -> Result<Self, PropertyParseError<'i>>
             {
@@ -91,4 +91,41 @@ pub(in crate::style) struct BorderSide {
     pub style: Option<LineStyle>,
     pub color: Option<Color>,
     pub width: Option<SpecifiedLineWidth>,
+}
+
+#[derive(Debug, Default)]
+pub(in crate::style) struct BorderFourSides {
+    pub style_top: Option<LineStyle>,
+    pub style_right: Option<LineStyle>,
+    pub style_bottom: Option<LineStyle>,
+    pub style_left: Option<LineStyle>,
+    pub color_top: Option<Color>,
+    pub color_right: Option<Color>,
+    pub color_bottom: Option<Color>,
+    pub color_left: Option<Color>,
+    pub width_top: Option<SpecifiedLineWidth>,
+    pub width_right: Option<SpecifiedLineWidth>,
+    pub width_bottom: Option<SpecifiedLineWidth>,
+    pub width_left: Option<SpecifiedLineWidth>,
+}
+
+
+impl super::Parse for BorderFourSides {
+    fn parse<'i, 't>(parser: &mut Parser<'i, 't>) -> Result<Self, PropertyParseError<'i>> {
+        let border = BorderSide::parse(parser)?;
+        Ok(BorderFourSides {
+            style_top: border.style.clone(),
+            style_right: border.style.clone(),
+            style_bottom: border.style.clone(),
+            style_left: border.style.clone(),
+            color_top: border.color.clone(),
+            color_right: border.color.clone(),
+            color_bottom: border.color.clone(),
+            color_left: border.color.clone(),
+            width_top: border.width.clone(),
+            width_right: border.width.clone(),
+            width_bottom: border.width.clone(),
+            width_left: border.width.clone(),
+        })
+    }
 }

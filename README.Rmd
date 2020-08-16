@@ -66,7 +66,21 @@ Probably not. The goal for Sinab is rendering of static pages. Interactivity doe
 Not at this time.
 
 * **Why is rendering so slow?**  
-The Sinab library itself is actually quite fast. Slowness comes mostly from R graphics devices. In particular, text shaping is extremely slow on some graphics devices. For faster rendering, try one of the graphics devices provided by the ragg library, such as `agg_png()`.
+The Sinab library itself is actually quite fast. Slowness comes mostly from R graphics devices. In particular, text shaping can be extremely slow. For faster rendering, try one of the graphics devices provided by the ragg library, such as `agg_png()`. The following benchmark highlights the importance of the graphics device. The agg device is 250 times faster than the quartz device! All this extra time is spent text shaping.
+
+```{r}
+text <- paste(rep("Hello", 50), collapse = " ")
+
+file <- tempfile(fileext = ".png")
+png(file, width = 1920, height = 1920, res = 288, type = "quartz")
+microbenchmark::microbenchmark(render_markdown(text), times = 10L)
+invisible(dev.off())
+
+ragg::agg_png(file, width = 1920, height = 1920, res = 288)
+microbenchmark::microbenchmark(render_markdown(text), times = 10L)
+invisible(dev.off())
+
+```
 
 * **Why aren't you supporting links (i.e., the `<a>` tag)?**  
 This is a limitation of the current R graphics device API. There is simply no way to create a link in an R graphics device. Once this feature gets added, it will be easy to support it in Sinab.

@@ -3,10 +3,12 @@ use crate::style::errors::PropertyParseError;
 use cssparser::{Color, Parser};
 
 /// https://drafts.csswg.org/css-backgrounds/#typedef-line-style
-#[derive(Copy, Clone, Debug, Parse, SpecifiedAsComputed)]
+#[derive(Copy, Clone, Debug, Parse, SpecifiedAsComputed, PartialEq)]
 pub(crate) enum LineStyle {
     None,
     Solid,
+    Dotted,
+    Dashed,
 }
 
 #[derive(Debug, Parse)]

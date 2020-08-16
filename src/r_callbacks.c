@@ -95,6 +95,35 @@ SEXP rect_grob(SEXP x, SEXP y, SEXP width, SEXP height, SEXP hjust, SEXP vjust, 
   return out;
 }
 
+/* Call grid::linesGrob() */
+SEXP lines_grob(SEXP x, SEXP y, SEXP gp) {
+  SEXP out, grid, fun, call, s;
+  
+  PROTECT(grid = get_namespace("grid"));
+  PROTECT(fun = findFun(install("linesGrob"), grid));
+  
+  PROTECT(call = allocVector(LANGSXP, 4)); 
+  SETCAR(call, fun);  
+  
+  s = CDR(call);
+  SETCAR(s, x);
+  SET_TAG(s, install("x"));
+  
+  s = CDR(s);
+  SETCAR(s, y);
+  SET_TAG(s, install("y"));
+  
+  s = CDR(s);
+  SETCAR(s, gp);
+  SET_TAG(s, install("gp"));
+  
+  out = eval(call, R_GlobalEnv);
+  
+  UNPROTECT(3);
+  return out;
+}
+
+
 /* Call grid::unit(x, "inches") */
 SEXP unit_in(SEXP x) {
   SEXP out, grid, fun, call, s, unit;
@@ -138,7 +167,8 @@ SEXP gpar_empty() {
 
 SEXP gpar_gcontext(const GContext *gc) {
   SEXP out, grid, fun, call, s;
-  SEXP col, fill, fontfamily, fontface, fontsize, lineheight;
+  SEXP col, fill, fontfamily, fontface, fontsize, lineheight,
+       linetype, linewidth, lineend;
   
   /* arguments */
   PROTECT(col = mkString(gc->color));
@@ -147,11 +177,14 @@ SEXP gpar_gcontext(const GContext *gc) {
   PROTECT(fontface = ScalarInteger(gc->fontface));
   PROTECT(fontsize = ScalarReal(gc->fontsize));
   PROTECT(lineheight = ScalarReal(gc->lineheight));
+  PROTECT(linetype = ScalarInteger(gc->linetype));
+  PROTECT(linewidth = ScalarReal(gc->linewidth));
+  PROTECT(lineend = mkString("butt"));
   
   /* call */
   PROTECT(grid = get_namespace("grid"));
   PROTECT(fun = findFun(install("gpar"), grid));
-  PROTECT(call = allocVector(LANGSXP, 7)); 
+  PROTECT(call = allocVector(LANGSXP, 10)); 
   SETCAR(call, fun);  
   
   s = CDR(call);
@@ -178,9 +211,21 @@ SEXP gpar_gcontext(const GContext *gc) {
   SETCAR(s, lineheight);
   SET_TAG(s, install("lineheight"));
 
+  s = CDR(s);
+  SETCAR(s, linetype);
+  SET_TAG(s, install("lty"));
+  
+  s = CDR(s);
+  SETCAR(s, linewidth);
+  SET_TAG(s, install("lwd"));
+  
+  s = CDR(s);
+  SETCAR(s, lineend);
+  SET_TAG(s, install("lineend"));
+  
   out = eval(call, R_GlobalEnv);
   
-  UNPROTECT(9);
+  UNPROTECT(12);
   return out;
 }
 

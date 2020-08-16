@@ -4,7 +4,7 @@
 \alias{render_markdown}
 \title{Render HTML or Markdown to a list of grid grobs}
 \usage{
-render_markdown(text, css, width_in = 5, height_in = 5)
+render_markdown(text, css = "", width_in = 5, height_in = 5)
 }
 \arguments{
 \item{text}{HTML or Markdown to render}

@@ -19,6 +19,8 @@ GContext* gcontext_new() {
   gc->fontface = 1;
   gc->fontsize = 12;
   gc->lineheight = 1.2;
+  gc->linetype = 1;
+  gc->linewidth = 1.;
   return gc;
 }
 
@@ -36,6 +38,8 @@ GContext* gcontext_clone(GContext* source) {
   gc->fontface = source->fontface;
   gc->fontsize = source->fontsize;
   gc->lineheight = source->lineheight;
+  gc->linetype = source->linetype;
+  gc->linewidth = source->linewidth;
   return gc;
 }
 
@@ -97,3 +101,18 @@ double gcontext_lineheight(GContext* gc) {
   return gc->lineheight;
 }
 
+void gcontext_set_linetype(GContext* gc, int linetype) {
+  gc->linetype = linetype;
+}
+
+int gcontext_linetype(GContext* gc) {
+  return gc->linetype;
+}
+
+void gcontext_set_linewidth(GContext* gc, double linewidth) {
+  gc->linewidth = linewidth;
+}
+
+double gcontext_linewidth(GContext* gc) {
+  return gc->linewidth;
+}

@@ -50,3 +50,15 @@ test_that("rect_grob()", {
   g2$name <- g1$name # all grobs have a unique name
   expect_identical(g1, g2)
 })
+
+test_that("lines_grob()", {
+  x <- c(0, 1, 1, 0)
+  y <- c(0, 0, 1, 1)
+  gp <- grid::gpar(color = "red")
+  g1 <- .Call(lines_grob, x, y, gp)
+  g2 <- grid::linesGrob(
+    x, y, gp = gp
+  )
+  g2$name <- g1$name # all grobs have a unique name
+  expect_identical(g1, g2)
+})

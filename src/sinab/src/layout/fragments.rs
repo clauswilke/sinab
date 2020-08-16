@@ -69,6 +69,11 @@ impl BoxFragment {
             .inflate(&self.padding)
             .inflate(&self.border)
     }
+
+    pub fn padding_rect(&self) -> Rect<Length> {
+        self.content_rect
+            .inflate(&self.padding)
+    }
 }
 
 impl std::fmt::Debug for BoxFragment {

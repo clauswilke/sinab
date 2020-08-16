@@ -21,6 +21,7 @@ static const R_CallMethodDef CallEntries[] = {
   {"gpar_empty", (DL_FUNC) &gpar_empty, 0},
   {"text_grob", (DL_FUNC) &text_grob, 6},
   {"rect_grob", (DL_FUNC) &rect_grob, 7},
+  {"lines_grob", (DL_FUNC) &lines_grob, 3},
   {"unit_in", (DL_FUNC) &unit_in, 1},
   {"test_gpar_gcontext", (DL_FUNC) &test_gpar_gcontext, 0},
   {"run_testthat_tests", (DL_FUNC) &run_testthat_tests, 0},

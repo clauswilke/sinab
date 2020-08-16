@@ -36,6 +36,12 @@ typedef struct {
                           *  plain = 1, bold = 2,
                           *  italic = 3, bold italic = 4 
                           */
+  int linetype;          /* Line type:
+                          * blank = 0, solid = 1,
+                          * dashed = 2, dotted = 3
+                          * dotdash = 4, longdash = 5, twodash = 6
+                          */
+  double linewidth;      /* Line width, in pt (1/72. inch) */
   char fontfamily[STRING_BUFFER_SIZE];  /* Font family */
 } GContext;
 
@@ -49,6 +55,7 @@ extern RenderDevice* rdev_new(double y0);
 extern SEXP rdev_release(RenderDevice*); 
 extern void rdev_draw_text(RenderDevice*, const char* label, double x, double y, const GContext *);
 extern void rdev_draw_rect(RenderDevice*, double x, double y, double width, double height, const GContext *);
+extern void rdev_draw_line(RenderDevice*, const double *x, const double *y, unsigned int n, const GContext *);
 extern void rdev_string_metrics(const char* label, const GContext *,
                                 double *ascent, double *descent, double *width);
 double rdev_device_height();
@@ -74,10 +81,15 @@ extern void gcontext_set_fontsize(GContext*, double);
 extern double gcontext_fontsize(GContext*);
 extern void gcontext_set_lineheight(GContext*, double);
 extern double gcontext_lineheight(GContext*);
+extern void gcontext_set_linetype(GContext*, int);
+extern int gcontext_linetype(GContext*);
+extern void gcontext_set_linewidth(GContext*, double);
+extern double gcontext_linewidth(GContext*);
 
 /* r-callbacks.c */
 extern SEXP text_grob(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP rect_grob(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
+extern SEXP lines_grob(SEXP, SEXP, SEXP);
 extern SEXP gpar_empty();
 extern SEXP gpar_gcontext(const GContext *);
 extern SEXP unit_in(SEXP);

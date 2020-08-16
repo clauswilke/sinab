@@ -1,7 +1,7 @@
 #![allow(dead_code)]
 extern crate libc;
 
-use libc::{c_char, c_double, c_int};
+use libc::{c_char, c_double, c_int, c_uint};
 use std::ffi::{CString, CStr};
 use std::fmt;
 use std::panic::UnwindSafe;
@@ -11,9 +11,9 @@ use std::rc::Rc;
 use std::ops::{Deref, DerefMut};
 
 use crate::primitives::*;
-use crate::style::values::{Length, FontStyle, FontWeight};
+use crate::style::values::{Length, FontStyle, FontWeight, LineStyle};
 use crate::graphics_engine::font::Font;
-
+use crate::geom::physical::*;
 
 #[repr(C)]
 pub struct C_GContext { _private: [u8; 0] }
@@ -31,6 +31,8 @@ extern {
     fn gcontext_set_fontface(gc: *mut C_GContext, fontface: c_int);
     fn gcontext_set_fontsize(gc: *mut C_GContext, fontsize: c_double);
     fn gcontext_set_lineheight(gc: *mut C_GContext, lineheight: c_double);
+    fn gcontext_set_linetype(gc: *mut C_GContext, linetype: c_int);
+    fn gcontext_set_linewidth(gc: *mut C_GContext, linewidth: c_double);
 
     // getters
     fn gcontext_color(gc: *mut C_GContext) -> *const c_char;
@@ -39,6 +41,8 @@ extern {
     fn gcontext_fontface(gc: *mut C_GContext) -> c_int;
     fn gcontext_fontsize(gc: *mut C_GContext) -> c_double;
     fn gcontext_lineheight(gc: *mut C_GContext) -> c_double;
+    fn gcontext_linetype(gc: *mut C_GContext) -> c_int;
+    fn gcontext_linewidth(gc: *mut C_GContext) -> c_double;
 }
 
 #[allow(dead_code)]
@@ -125,6 +129,23 @@ impl GContextImpl {
     pub(crate) fn set_fontsize(&mut self, size: Length) {
         let csize = (size.px * 72.0 / 96.0) as c_double;
         unsafe { gcontext_set_fontsize(self.gc_ptr, csize); }
+    }
+
+    // linestyle in CSS is linetype (lty) in R
+    pub(crate) fn set_linestyle(&mut self, style: LineStyle) {
+        let ctype:c_int = match style {
+            LineStyle::None => 0,
+            LineStyle::Solid => 1,
+            LineStyle::Dashed => 2,
+            LineStyle::Dotted => 3,
+        };
+        unsafe { gcontext_set_linetype(self.gc_ptr, ctype); }
+    }
+
+    pub(crate) fn set_linewidth(&mut self, width: Length) {
+        // linewidth is specified in px
+        let cwidth = width.px as c_double;
+        unsafe { gcontext_set_linewidth(self.gc_ptr, cwidth); }
     }
 
     // getters
@@ -230,6 +251,8 @@ pub struct C_RenderDevice { _private: [u8; 0] }
 extern {
     fn rdev_draw_text(rdev_ptr: *mut C_RenderDevice, label: *const c_char, x: c_double, y: c_double, gc: *const C_GContext);
     fn rdev_draw_rect(rdev_ptr: *mut C_RenderDevice, x: c_double, y: c_double, width: c_double, height: c_double, gc: *const C_GContext);
+    fn rdev_draw_line(rdev_ptr: *mut C_RenderDevice, x: *const c_double, y: *const c_double, n: c_uint, gc: *const C_GContext);
+
     pub(super) fn rdev_string_metrics(label: *const c_char, gc: *const C_GContext, ascent: &mut c_double, descent: &mut c_double, width: &mut c_double);
 }
 
@@ -273,6 +296,28 @@ impl RenderDevice {
             rdev_draw_rect(self.rdev_ptr, cx, cy, cwidth, cheight,gc.as_ptr());
         }
     }
+
+    pub(crate) fn draw_line(&mut self, points: Vec<Vec2<Length>>, color: RGBA, width: Length, style: LineStyle) {
+        let n = points.len();
+        let mut cx = Vec::<c_double>::with_capacity(n);
+        let mut cy = Vec::<c_double>::with_capacity(n);
+
+        for p in points.iter() {
+            // divide by 96.0 to convert px to in
+            cx.push((p.x.px as c_double) / 96.0);
+            cy.push((p.y.px as c_double) / 96.0);
+        }
+
+        let mut gc = GContext::new();
+        gc.set_color(color);
+        gc.set_linestyle(style);
+        gc.set_linewidth(width);
+
+        unsafe {
+            rdev_draw_line(self.rdev_ptr, cx.as_ptr(), cy.as_ptr(), n as c_uint, gc.as_ptr());
+        }
+    }
+
 }
 
 // Mark as UnwindSafe so we can catch errors with panic::catch_unwind()

@@ -64,10 +64,37 @@ md_to_html("This is *a* **test**.")
 
   - **Why is rendering so slow?**  
     The Sinab library itself is actually quite fast. Slowness comes
-    mostly from R graphics devices. In particular, text shaping is
-    extremely slow on some graphics devices. For faster rendering, try
-    one of the graphics devices provided by the ragg library, such as
-    `agg_png()`.
+    mostly from R graphics devices. In particular, text shaping can be
+    extremely slow. For faster rendering, try one of the graphics
+    devices provided by the ragg library, such as `agg_png()`. The
+    following benchmark highlights the importance of the graphics
+    device. The agg device is 250 times faster than the quartz device\!
+    All this extra time is spent text shaping.
+
+<!-- end list -->
+
+``` r
+text <- paste(rep("Hello", 50), collapse = " ")
+
+file <- tempfile(fileext = ".png")
+png(file, width = 1920, height = 1920, res = 288, type = "quartz")
+microbenchmark::microbenchmark(render_markdown(text), times = 10L)
+#> Unit: milliseconds
+#>                   expr      min       lq     mean   median      uq     max
+#>  render_markdown(text) 669.7875 678.8132 686.3323 683.1862 689.057 713.574
+#>  neval
+#>     10
+invisible(dev.off())
+
+ragg::agg_png(file, width = 1920, height = 1920, res = 288)
+microbenchmark::microbenchmark(render_markdown(text), times = 10L)
+#> Unit: milliseconds
+#>                   expr     min       lq     mean   median       uq     max
+#>  render_markdown(text) 1.82094 1.939645 2.556686 2.042078 2.121244 7.41368
+#>  neval
+#>     10
+invisible(dev.off())
+```
 
   - **Why aren’t you supporting links (i.e., the `<a>` tag)?**  
     This is a limitation of the current R graphics device API. There is

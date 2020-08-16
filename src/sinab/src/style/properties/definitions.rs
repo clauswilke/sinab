@@ -45,33 +45,33 @@ properties! {
 
     reset struct margin {
         margin_top { "margin-top", LengthOrPercentageOrAuto, initial = Length::zero() }
-        margin_left { "margin-left", LengthOrPercentageOrAuto, initial = Length::zero() }
-        margin_bottom { "margin-bottom", LengthOrPercentageOrAuto, initial = Length::zero() }
         margin_right { "margin-right", LengthOrPercentageOrAuto, initial = Length::zero() }
+        margin_bottom { "margin-bottom", LengthOrPercentageOrAuto, initial = Length::zero() }
+        margin_left { "margin-left", LengthOrPercentageOrAuto, initial = Length::zero() }
     }
 
     reset struct padding {
         padding_top { "padding-top", LengthOrPercentage, initial = Length::zero() }
-        padding_left { "padding-left", LengthOrPercentage, initial = Length::zero() }
-        padding_bottom { "padding-bottom", LengthOrPercentage, initial = Length::zero() }
         padding_right { "padding-right", LengthOrPercentage, initial = Length::zero() }
+        padding_bottom { "padding-bottom", LengthOrPercentage, initial = Length::zero() }
+        padding_left { "padding-left", LengthOrPercentage, initial = Length::zero() }
     }
 
     reset struct border {
         border_top_color { "border-top-color", Color, initial = Color::CurrentColor }
-        border_left_color { "border-left-color", Color, initial = Color::CurrentColor }
-        border_bottom_color { "border-bottom-color", Color, initial = Color::CurrentColor }
         border_right_color { "border-color-right", Color, initial = Color::CurrentColor }
+        border_bottom_color { "border-bottom-color", Color, initial = Color::CurrentColor }
+        border_left_color { "border-left-color", Color, initial = Color::CurrentColor }
 
         border_top_style { "border-top-style", LineStyle, initial = LineStyle::None }
-        border_left_style { "border-left-style", LineStyle, initial = LineStyle::None }
-        border_bottom_style { "border-bottom-style", LineStyle, initial = LineStyle::None }
         border_right_style { "border-right-style", LineStyle, initial = LineStyle::None }
+        border_bottom_style { "border-bottom-style", LineStyle, initial = LineStyle::None }
+        border_left_style { "border-left-style", LineStyle, initial = LineStyle::None }
 
         border_top_width { "border-top-width", LineWidth, initial = LineWidth::MEDIUM }
-        border_left_width { "border-left-width", LineWidth, initial = LineWidth::MEDIUM }
-        border_bottom_width { "border-bottom-width", LineWidth, initial = LineWidth::MEDIUM }
         border_right_width { "border-right-width", LineWidth, initial = LineWidth::MEDIUM }
+        border_bottom_width { "border-bottom-width", LineWidth, initial = LineWidth::MEDIUM }
+        border_left_width { "border-left-width", LineWidth, initial = LineWidth::MEDIUM }
     }
 
     reset struct background {
@@ -113,6 +113,21 @@ properties! {
             style: border_top_style,
             color: border_top_color,
             width: border_top_width,
+        }
+        "border-right" => BorderSide {
+            style: border_right_style,
+            color: border_right_color,
+            width: border_right_width,
+        }
+        "border-bottom" => BorderSide {
+            style: border_bottom_style,
+            color: border_bottom_color,
+            width: border_bottom_width,
+        }
+        "border-left" => BorderSide {
+            style: border_left_style,
+            color: border_left_color,
+            width: border_left_width,
         }
         "background" => Background {
             color: background_color,

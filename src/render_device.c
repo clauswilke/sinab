@@ -115,6 +115,32 @@ void rdev_draw_rect(RenderDevice* rdev, double x, double y, double width, double
   UNPROTECT(12);
 }
 
+// n: number of points specified by *x, *y
+void rdev_draw_line(RenderDevice* rdev, const double *x, const double *y, unsigned int n, const GContext *gc) {
+  SEXP sx, sy, sxu, syu, gp, grob;
+  
+  PROTECT(sx = allocVector(REALSXP, n));
+  PROTECT(sy = allocVector(REALSXP, n));
+  
+  // copy coordinates into R vectors, inverting y coordinate system
+  double y0 = rdev->y0;
+  double* px = REAL(sx);
+  double* py = REAL(sy);
+  for (int i = 0; i < n; ++i) {
+    px[i] = x[i];
+    py[i] = y0 - y[i];
+  }
+  
+  PROTECT(sxu = unit_in(sx));
+  PROTECT(syu = unit_in(sy));
+  PROTECT(gp = gpar_gcontext(gc));
+    
+  PROTECT(grob = lines_grob(sxu, syu, gp));
+    
+  rdev_add_SEXP(rdev, grob);
+    
+  UNPROTECT(6);
+}
 
 /* Calls GEStrMetric() and returns results in 
  * variables ascent, descent, width. These values are returned

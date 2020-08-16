@@ -1,4 +1,4 @@
-pub use std::os::raw::c_char;
+pub use std::os::raw::{c_char, c_int, c_double};
 
 use std::ffi::{CStr, CString};
 use std::str::Utf8Error;
@@ -23,7 +23,7 @@ pub fn str_to_cstring(s: &str) -> *mut c_char {
 /// Delete a string created with `str_to_c_char()`. Can be called from C on
 /// a string returned from rust.
 #[no_mangle]
-pub extern "C" fn mdl_free_cstring(s: *mut c_char) {
+pub extern "C" fn sinab_free_cstring(s: *mut c_char) {
     unsafe {
         if s.is_null() {
             return;

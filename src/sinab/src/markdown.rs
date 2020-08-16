@@ -5,7 +5,7 @@ use pulldown_cmark::{html, Options, Parser};
 
 /// External C interface to `md_to_html()`.
 #[no_mangle]
-pub extern "C" fn mdl_md_to_html(text: *const c_char) -> *mut c_char {
+pub extern "C" fn sinab_md_to_html(text: *const c_char) -> *mut c_char {
     let html_output = match cstring_to_str(text) {
         Ok(s) => md_to_html(s),
         Err(..) => "".to_string(),

@@ -4,11 +4,17 @@ use crate::graphics_engine::renderer::*;
 use crate::utils::c_helper::*;
 use crate::markdown::md_to_html;
 use crate::paint::render_html;
+use crate::primitives::*;
 
 use std::panic;
 
 #[no_mangle]
-pub extern "C" fn mdl_test_renderer(rdev_ptr: *mut C_RenderDevice, text: *const c_char, css: *const c_char) {
+pub extern "C" fn sinab_test_renderer(
+    rdev_ptr: *mut C_RenderDevice,
+    text: *const c_char,
+    css: *const c_char,
+    width_px: c_double,
+    height_px: c_double ) {
     let rdev = RenderDevice::new(rdev_ptr);
     let text_input = match cstring_to_str(text) {
         Ok(s) => md_to_html(s),
@@ -19,47 +25,13 @@ pub extern "C" fn mdl_test_renderer(rdev_ptr: *mut C_RenderDevice, text: *const 
         Err(..) => "",
     };
 
+    let page_size: Size<CssPx> = Size::new(width_px as f32, height_px as f32);
+
     let result = panic::catch_unwind(move || {
-        render_html(text_input.as_str(), css_input, rdev);
+        render_html(text_input.as_str(), css_input, rdev, page_size);
     });
 
     if result.is_err() {
         println!("Rust error: {:?}", result);
     }
 }
-
-use crate::dom::*;
-
-fn process_nodes(node_id: NodeId, document: &Document) {
-    let node = &document[node_id];
-    let mut eltname = "".to_string();
-
-    if let NodeData::Element(ElementData{ref name, ..}) = node.data {
-        eltname = name.local.to_string();
-        println!("<{}>", eltname);
-    }
-
-    println!("{:?}", node.data);
-
-    if let Some(child_id) = node.first_child {
-        for nid in document.node_and_following_siblings(child_id) {
-            process_nodes(nid, document);
-        }
-
-    }
-
-    if eltname != "" {
-        println!("</{}>", eltname);
-    }
-
-}
-
-
-pub fn test_dom() {
-    let input = "<p>Hello, <em>world!</em> How is it going?</p><strong><em><span>test</span></em></strong>";
-
-    let document = Document::parse_html(input.as_bytes());
-
-    process_nodes(document.root_element(), &document)
-}
-

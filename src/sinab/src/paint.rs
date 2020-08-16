@@ -7,8 +7,7 @@ use crate::graphics_engine::renderer::RenderDevice;
 use crate::style::style_for_element;
 
 impl crate::dom::Document {
-    pub fn paint_onto(&self, rdev: &mut RenderDevice, user_css: Option<&str>) {
-        let page_size: Size<CssPx> = Size::new(400., 800.);
+    pub fn paint_onto(&self, rdev: &mut RenderDevice, user_css: Option<&str>, page_size: Size<CssPx>) {
         let fragments = self.layout(page_size, user_css);
         let containing_block = Rect {
             top_left: Vec2 {
@@ -107,9 +106,9 @@ impl BoxFragment {
 }
 
 
-pub fn render_html(text_input: &str, css_input: &str, mut rdev: RenderDevice) {
+pub fn render_html(text_input: &str, css_input: &str, mut rdev: RenderDevice, page_size: Size<CssPx>) {
     let document = Document::parse_html(text_input.as_bytes());
     let author_styles = &document.parse_stylesheets(Some(css_input));
     let root_element = document.root_element();
-    document.paint_onto(&mut rdev, Some(css_input));
+    document.paint_onto(&mut rdev, Some(css_input), page_size);
 }

@@ -418,7 +418,7 @@ impl TextRun {
             let available = ifc.containing_block.inline_size - ifc.inline_position;
             loop { // loop over text within lines
                 let next = chars.next();
-                if matches!(next, Some(' ') | Some('\n') | None) {
+                if matches!(next, Some(' ') | Some('\n') | Some('-') | None) {
                     let inline_size: Length = shaped.get_advance_width().unwrap().into(); // TODO: handle potential error nicely, don't just unwrap()
                     if inline_size > available {
                         // if we have a previous break opportunity we use it,
@@ -437,10 +437,13 @@ impl TextRun {
                         newline = true;
                         break; // linebreak, \n encountered
                     }
-                    if ch == ' ' {
+                    if ch == ' ' { // break opportunity for space is before the space
                         last_break_opportunity = Some((shaped.save(), chars.clone()))
                     }
                     shaped.append_char(ch).unwrap(); // TODO: handle potential error nicely, don't just unwrap()
+                    if ch == '-' { // break opportunity for hyphen is after the hyphen
+                        last_break_opportunity = Some((shaped.save(), chars.clone()))
+                    }
                 } else {
                     break; // end of text run, non linebreak
                 }

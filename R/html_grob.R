@@ -33,6 +33,9 @@ html_grob <- function(text, x = unit(0.1, "npc"), y = unit(0.9, "npc"),
 
 #' @export
 makeContext.html_grob <- function(x) {
+  x$width_inch <- current_width(x, x$width)
+  x$height_inch <- current_height(x, x$height)
+  
   vp <- viewport(x$x, x$y, just = c(x$hjust, 1-x$vjust))
   if (is.null(x$vp)) {
     x$vp <- vp
@@ -44,11 +47,29 @@ makeContext.html_grob <- function(x) {
 
 #' @export
 makeContent.html_grob <- function(x) {
-  # not currently needed, but likely at a later stage
-  width <- current_width(x, x$width)
-  height <- current_height(x, x$height)
-  
-  grobs <- render_markdown(x$text, x$css, width, height)
+  grobs <- render_markdown(x$text, x$css, x$width_inch, x$height_inch)
   
   setChildren(x, grobs)
+}
+
+
+
+#' @export
+heightDetails.html_grob <- function(x) {
+  unit(x$height_inch, "inches")
+}
+
+#' @export
+widthDetails.html_grob <- function(x) {
+  unit(x$width_inch, "inches")
+}
+
+#' @export
+ascentDetails.html_grob <- function(x) {
+  unit(x$height_inch, "inches")
+}
+
+#' @export
+descentDetails.html_grob <- function(x) {
+  unit(0, "inches")
 }

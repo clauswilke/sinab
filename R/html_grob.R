@@ -34,6 +34,8 @@ html_grob <- function(text, x = unit(0.1, "npc"), y = unit(0.9, "npc"),
 #' @export
 makeContext.html_grob <- function(x) {
   x$width_inch <- current_width(x, x$width)
+  # for now, we're using the specified height,
+  # not the calculated height
   x$height_inch <- current_height(x, x$height)
   
   vp <- viewport(x$x, x$y, just = c(x$hjust, 1-x$vjust))

@@ -128,8 +128,8 @@ file <- tempfile(fileext = ".png")
 png(file, width = 1920, height = 1920, res = 288, type = "quartz")
 microbenchmark::microbenchmark(render_markdown(text), times = 10L)
 #> Unit: milliseconds
-#>                   expr      min       lq     mean   median       uq      max
-#>  render_markdown(text) 672.2259 674.2396 679.2829 674.9762 681.4806 698.7876
+#>                   expr      min       lq     mean  median       uq     max
+#>  render_markdown(text) 677.8801 688.0131 700.9535 695.802 717.6722 727.584
 #>  neval
 #>     10
 invisible(dev.off())
@@ -138,7 +138,7 @@ ragg::agg_png(file, width = 1920, height = 1920, res = 288)
 microbenchmark::microbenchmark(render_markdown(text), times = 10L)
 #> Unit: milliseconds
 #>                   expr      min       lq     mean   median       uq      max
-#>  render_markdown(text) 1.781354 1.894065 2.414148 1.949443 2.025862 6.593019
+#>  render_markdown(text) 1.745371 1.908843 2.444105 2.002768 2.273038 6.195388
 #>  neval
 #>     10
 invisible(dev.off())
@@ -148,6 +148,13 @@ invisible(dev.off())
     This is a limitation of the current R graphics device API. There is
     simply no way to create a link in an R graphics device. Once this
     feature gets added, it will be easy to support it in Sinab.
+
+  - **Why do my colors look wrong?**  
+    Sinab uses the color names defined by CSS, which in some cases are
+    different from the color names that R uses. The most obvious example
+    is probably “green”, which corresponds to \#00ff00 in R but \#008000
+    in CSS. If you want to be certain that you get the colors you want,
+    specify them with hex codes in RGB format.
 
 ## Acknowledgments
 

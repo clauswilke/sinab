@@ -126,6 +126,9 @@ invisible(dev.off())
 * **Why aren't you supporting links (i.e., the `<a>` tag)?**  
 This is a limitation of the current R graphics device API. There is simply no way to create a link in an R graphics device. Once this feature gets added, it will be easy to support it in Sinab.
 
+* **Why do my colors look wrong?**  
+Sinab uses the color names defined by CSS, which in some cases are different from the color names that R uses. The most obvious example is probably "green", which corresponds to #00ff00 in R but #008000 in CSS. If you want to be certain that you get the colors you want, specify them with hex codes in RGB format.
+
 ## Acknowledgments
 
 The actual HTML/CSS parsing and rendering code is written in Rust, and it draws heavily from software developed for the Servo project. HTML parsing is done with [html5ever](https://github.com/servo/html5ever), CSS parsing is done with [cssparser](https://github.com/servo/rust-cssparser), and CSS selectors are implemented using the [selectors](https://github.com/servo/servo/tree/master/components/selectors) crate. DOM, layout, and rendering is using custom code that is in no small part based on the experimental [Victor](https://github.com/SimonSapin/victor) project written by Simon Sapin.

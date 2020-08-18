@@ -55,7 +55,11 @@ p { text-align: center; padding-top: 2px; }
 '
 
 mpg %>%
-  mutate(facet_label = glue('<p class = "drv-{drv}">{class}</p>')) %>%
+  mutate(
+    # set id attribute as a shortcut to get ggplot to sort
+    # alphabetically by class rather than by drive train
+    facet_label = glue('<p id = "{class}" class = "drv-{drv}">{class}</p>')
+  ) %>%
   ggplot(aes(cty, hwy)) + 
   geom_point() +
   facet_wrap(~facet_label) +

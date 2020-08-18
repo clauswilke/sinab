@@ -3,7 +3,6 @@
 S3method(ascentDetails,html_grob)
 S3method(descentDetails,html_grob)
 S3method(heightDetails,html_grob)
-S3method(makeContent,html_grob)
 S3method(makeContext,html_grob)
 S3method(widthDetails,html_grob)
 export(html_grob)

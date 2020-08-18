@@ -64,15 +64,22 @@ impl AnonymousFragment {
 }
 
 impl BoxFragment {
+    pub fn padding_rect(&self) -> Rect<Length> {
+        self.content_rect
+            .inflate(&self.padding)
+    }
+
     pub fn border_rect(&self) -> Rect<Length> {
         self.content_rect
             .inflate(&self.padding)
             .inflate(&self.border)
     }
 
-    pub fn padding_rect(&self) -> Rect<Length> {
+    pub fn margin_rect(&self) -> Rect<Length> {
         self.content_rect
             .inflate(&self.padding)
+            .inflate(&self.border)
+            .inflate(&self.margin)
     }
 }
 

@@ -42,16 +42,23 @@ impl Fragment {
                     .rect
                     .to_physical(a.mode, containing_block)
                     .translate(&containing_block.top_left);
+                // record bounding box
+                rdev.record_bbox(&rect);
+                // draw children
                 for child in &a.children {
                     child.paint_onto(rdev, &rect)
                 }
             }
             Fragment::Text(t) => {
-                let mut origin = t
+                let rect = t
                     .content_rect
                     .to_physical(t.parent_style.writing_mode(), containing_block)
-                    .translate(&containing_block.top_left)
-                    .top_left;
+                    .translate(&containing_block.top_left);
+                let mut origin = rect.top_left.clone();
+
+                // record bounding box
+                rdev.record_bbox(&rect);
+
                 // Distance from top edge to baseline
                 let ascender: Length = t.text.font.get_ascent().into();
                 origin.y += ascender;
@@ -63,16 +70,6 @@ impl Fragment {
                     &t.text.font,
                     t.parent_style.color.color.into()
                 );
-                /*
-                page.set_color(&t.parent_style.color.color.into());
-                page.show_text(&TextRun {
-                    segment: &t.text,
-                    font_size: t.parent_style.font.font_size.0.into(),
-                    origin: origin.into(),
-                })
-                .unwrap();
-
-                 */
             }
         }
     }
@@ -80,6 +77,12 @@ impl Fragment {
 
 impl BoxFragment {
     fn paint_onto(&self, rdev: &mut RenderDevice, containing_block: &Rect<Length>) {
+        // `marging_rect` includes padding, borders, and margins
+        let margin_rect = self
+            .margin_rect()
+            .to_physical(self.style.writing_mode(), containing_block)
+            .translate(&containing_block.top_left);
+
         // `border_rect` includes both padding and borders
         let border_rect = self
             .border_rect()
@@ -97,6 +100,9 @@ impl BoxFragment {
             .content_rect
             .to_physical(self.style.writing_mode(), containing_block)
             .translate(&containing_block.top_left);
+
+        // bounding box
+        rdev.record_bbox(&margin_rect);
 
         // background
         let background_color = self.style.to_rgba(self.style.background.background_color);
@@ -132,7 +138,7 @@ impl BoxFragment {
             v.push(p2);
             let border_color = self.style.to_rgba(self.style.border.border_top_color);
             rdev.draw_line(
-                v, border_color.into(), border_top_width, self.style.border.border_top_style
+                &v, border_color.into(), border_top_width, self.style.border.border_top_style
             );
         }
 
@@ -148,7 +154,7 @@ impl BoxFragment {
             v.push(p2);
             let border_color = self.style.to_rgba(self.style.border.border_right_color);
             rdev.draw_line(
-                v, border_color.into(), border_right_width, self.style.border.border_right_style
+                &v, border_color.into(), border_right_width, self.style.border.border_right_style
             );
         }
 
@@ -164,7 +170,7 @@ impl BoxFragment {
             v.push(p1);
             let border_color = self.style.to_rgba(self.style.border.border_bottom_color);
             rdev.draw_line(
-                v, border_color.into(), border_bottom_width, self.style.border.border_bottom_style
+                &v, border_color.into(), border_bottom_width, self.style.border.border_bottom_style
             );
         }
 
@@ -180,10 +186,9 @@ impl BoxFragment {
             v.push(p1);
             let border_color = self.style.to_rgba(self.style.border.border_left_color);
             rdev.draw_line(
-                v, border_color.into(), border_left_width, self.style.border.border_left_style
+                &v, border_color.into(), border_left_width, self.style.border.border_left_style
             );
         }
-
 
         // content
         for child in &self.children {

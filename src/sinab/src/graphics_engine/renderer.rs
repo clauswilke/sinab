@@ -10,7 +10,7 @@ use std::panic::UnwindSafe;
 use std::rc::Rc;
 use std::ops::{Deref, DerefMut};
 
-use crate::primitives::*;
+use crate::primitives::RGBA;
 use crate::style::values::{Length, FontStyle, FontWeight, LineStyle};
 use crate::graphics_engine::font::Font;
 use crate::geom::physical::*;
@@ -253,6 +253,8 @@ extern {
     fn rdev_draw_rect(rdev_ptr: *mut C_RenderDevice, x: c_double, y: c_double, width: c_double, height: c_double, gc: *const C_GContext);
     fn rdev_draw_line(rdev_ptr: *mut C_RenderDevice, x: *const c_double, y: *const c_double, n: c_uint, gc: *const C_GContext);
 
+    fn rdev_record_bbox(rdev_ptr: *mut C_RenderDevice, xmin: c_double, ymin: c_double, xmax: c_double, ymax: c_double);
+
     pub(super) fn rdev_string_metrics(label: *const c_char, gc: *const C_GContext, ascent: &mut c_double, descent: &mut c_double, width: &mut c_double);
 }
 
@@ -297,7 +299,7 @@ impl RenderDevice {
         }
     }
 
-    pub(crate) fn draw_line(&mut self, points: Vec<Vec2<Length>>, color: RGBA, width: Length, style: LineStyle) {
+    pub(crate) fn draw_line(&mut self, points: &Vec<Vec2<Length>>, color: RGBA, width: Length, style: LineStyle) {
         let n = points.len();
         let mut cx = Vec::<c_double>::with_capacity(n);
         let mut cy = Vec::<c_double>::with_capacity(n);
@@ -314,7 +316,18 @@ impl RenderDevice {
         gc.set_linewidth(width);
 
         unsafe {
-            rdev_draw_line(self.rdev_ptr, cx.as_ptr(), cy.as_ptr(), n as c_uint, gc.as_ptr());
+            rdev_draw_line(self.rdev_ptr,cx.as_ptr(), cy.as_ptr(), n as c_uint, gc.as_ptr());
+        }
+    }
+
+    pub(crate) fn record_bbox(&mut self, bbox: &Rect<Length>) {
+        let xmin = (bbox.top_left.x.px as c_double) / 96.0;
+        let ymin = (bbox.top_left.y.px as c_double) / 96.0;
+        let xmax = xmin + (bbox.size.x.px as c_double) / 96.0;
+        let ymax = ymin + (bbox.size.y.px as c_double) / 96.0;
+
+        unsafe {
+            rdev_record_bbox(self.rdev_ptr, xmin, ymin, xmax, ymax);
         }
     }
 

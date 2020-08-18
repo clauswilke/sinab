@@ -11,6 +11,14 @@ RenderDevice* rdev_new(double y0) {
   rdev->size = 0;
   
   rdev->y0 = y0;
+
+  /* initialize bounding box; initially it is not set. */  
+  rdev->bb_ymin = 0;
+  rdev->bb_ymax = 0;
+  rdev->bb_xmin = 0;
+  rdev->bb_xmax = 0;
+  rdev->bb_set = false;
+  
   return rdev;
 }
 
@@ -21,20 +29,43 @@ SEXP rdev_release(RenderDevice* rdev) {
    */
   SEXP grobs_old, grobs_new, cl;
   grobs_old = rdev->grobs;
-  PROTECT(grobs_new = allocVector(VECSXP, rdev->size));
+  grobs_new = PROTECT(allocVector(VECSXP, rdev->size));
   
   for (R_xlen_t i = 0; i < rdev->size; i++) {
     SET_VECTOR_ELT(grobs_new, i, VECTOR_ELT(grobs_old, i));
   }
   
   R_ReleaseObject(grobs_old);
-  Free(rdev);
+  
+  /* if bounding box is set, record in an attribute */
+  if (rdev->bb_set) {
+    SEXP bb_xmin, bb_ymin, bb_xmax, bb_ymax, bbox;
+    bb_xmin = PROTECT(ScalarReal(rdev->bb_xmin));
+    bb_ymin = PROTECT(ScalarReal(rdev->bb_ymin));
+    bb_xmax = PROTECT(ScalarReal(rdev->bb_xmax));
+    bb_ymax = PROTECT(ScalarReal(rdev->bb_ymax));
+    
+    const char *names[] = {"xmin", "ymin", "xmax", "ymax", ""};
+    bbox = PROTECT(Rf_mkNamed(VECSXP, names));
+    SET_VECTOR_ELT(bbox, 0, bb_xmin);
+    SET_VECTOR_ELT(bbox, 1, bb_ymin);
+    SET_VECTOR_ELT(bbox, 2, bb_xmax);
+    SET_VECTOR_ELT(bbox, 3, bb_ymax);
+
+    setAttrib(grobs_new, install("bbox"), bbox);
+    UNPROTECT(5);
+  }
   
   /* set class to "gList" */
-  PROTECT(cl = mkString("gList"));
+  cl = PROTECT(mkString("gList"));
   classgets(grobs_new, cl);
-  UNPROTECT(2);
 
+  /* release rdev object, we're done */
+  Free(rdev);
+  
+  /* unprotect remaining objects */
+  UNPROTECT(2);
+  
   return grobs_new;
 }
 
@@ -140,6 +171,46 @@ void rdev_draw_line(RenderDevice* rdev, const double *x, const double *y, unsign
   rdev_add_SEXP(rdev, grob);
     
   UNPROTECT(6);
+}
+
+
+/* Bounding boxes are recorded manually, rather than automatically
+ * upon drawing rectangles or lines or text, so that the client code
+ * has full control over what counts towards the bounding box (e.g.
+ * this allows margins to count towards bounding boxes, or margins
+ * to be negative).
+ */
+
+void rdev_record_bbox(RenderDevice* rdev, double xmin, double ymin, double xmax, double ymax) {
+  /* invert y axis */
+  ymin = rdev->y0 - ymin;
+  ymax = rdev->y0 - ymax;
+  
+  /* make sure min values are always smaller than max values */
+  if (xmin > xmax) {
+    double tmp = xmin;
+    xmin = xmax;
+    xmax = tmp;
+  }
+  if (ymin > ymax) {
+    double tmp = ymin;
+    ymin = ymax;
+    ymax = tmp;
+  }
+  
+  if (rdev->bb_set) {
+    /* bounding box exists already, enlarge if necessary */
+    if (xmin < rdev->bb_xmin) rdev->bb_xmin = xmin;
+    if (ymin < rdev->bb_ymin) rdev->bb_ymin = ymin;
+    if (xmax > rdev->bb_xmax) rdev->bb_xmax = xmax;
+    if (ymax > rdev->bb_ymax) rdev->bb_ymax = ymax;
+  } else {
+    rdev->bb_xmin = xmin;
+    rdev->bb_ymin = ymin;
+    rdev->bb_xmax = xmax;
+    rdev->bb_ymax = ymax;
+    rdev->bb_set = true;
+  }
 }
 
 /* Calls GEStrMetric() and returns results in 

@@ -9,6 +9,9 @@ extern "C" {
 #include <Rinternals.h>
 #include <R_ext/GraphicsEngine.h>
 
+/* for bool data type */
+#include <stdbool.h>
+
 /* 
  * Grid renderer object.
  */
@@ -18,6 +21,8 @@ typedef struct {
   R_xlen_t size;      /* current number of rendered grobs */
   R_xlen_t capacity;  /* capacity of the grobs vector; always >= size */
   double y0;          /* y reference value, used to invert coordinate system */
+  double bb_xmin, bb_ymin, bb_xmax, bb_ymax; /* bounding box */
+  bool bb_set;        /* has bounding box been set at least once or not? */
 } RenderDevice;
 
 /* 
@@ -56,6 +61,7 @@ extern SEXP rdev_release(RenderDevice*);
 extern void rdev_draw_text(RenderDevice*, const char* label, double x, double y, const GContext *);
 extern void rdev_draw_rect(RenderDevice*, double x, double y, double width, double height, const GContext *);
 extern void rdev_draw_line(RenderDevice*, const double *x, const double *y, unsigned int n, const GContext *);
+extern void rdev_record_bbox(RenderDevice*, double xmin, double ymin, double xmax, double ymax);
 extern void rdev_string_metrics(const char* label, const GContext *,
                                 double *ascent, double *descent, double *width);
 double rdev_device_height();

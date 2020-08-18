@@ -2,6 +2,7 @@ library(ggplot2)
 library(dplyr)
 library(glue)
 library(rlang)
+library(sinab)
 
 element_html <- function(css = NULL, family = NULL, face = NULL, size = NULL, colour = NULL, fill = NULL,
                          linetype = NULL, linewidth = NULL, hjust = NULL, vjust = NULL, lineheight = NULL,
@@ -63,3 +64,6 @@ mpg %>%
     strip.background = element_blank(),
     strip.text = element_html(css = css)
   )
+
+
+

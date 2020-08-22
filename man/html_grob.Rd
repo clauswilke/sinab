@@ -2,6 +2,7 @@
 % Please edit documentation in R/html_grob.R
 \name{html_grob}
 \alias{html_grob}
+\alias{draw_html}
 \title{Render HTML or Markdown}
 \usage{
 html_grob(
@@ -9,27 +10,47 @@ html_grob(
   x = unit(0.1, "npc"),
   y = unit(0.9, "npc"),
   width = unit(0.8, "npc"),
-  height = unit(0.8, "npc"),
+  height = NULL,
   hjust = 0,
   vjust = 1,
   css = "",
+  default.units = "npc",
   vp = NULL
 )
+
+draw_html(..., newpage = TRUE)
 }
 \arguments{
 \item{text}{HTML or Markdown text to render}
 
 \item{x, y}{x and y position}
 
-\item{width, height}{width and height}
+\item{width, height}{Width and height. A value of \code{NULL} means
+take up the available space as needed.}
 
 \item{hjust, vjust}{horizontal and vertical justification relative
-to `x` and `y`}
+to \code{x} and \code{y}}
 
 \item{css}{CSS specification to use for rendering}
 
+\item{default.units}{Units of \code{x}, \code{y}, \code{width}, \code{height} if
+these are provided only as numerical values.}
+
 \item{vp}{viewport}
+
+\item{...}{Parameters forwarded to \code{html_grob()}.}
+
+\item{newpage}{Logical indicating whether \code{\link[=grid.newpage]{grid.newpage()}} should
+be called before drawing.}
+}
+\value{
+\code{html_grob()}: A grid grob representing the rendered html text.
+
+\code{draw_html()}: Nothing. The function is only called for its side effects.
 }
 \description{
-Render HTML or Markdown
+Render HTML or Markdown. The function \code{html_grob()} returns a grid
+grob that can be drawn with \code{\link[=grid.draw]{grid.draw()}}, and the function
+\code{draw_html()} renders the HTML directly to the current graphics
+device.
 }

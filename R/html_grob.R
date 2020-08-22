@@ -1,6 +1,9 @@
 #' Render HTML or Markdown
 #' 
-#' Render HTML or Markdown
+#' Render HTML or Markdown. The function `html_grob()` returns a grid
+#' grob that can be drawn with [grid.draw()], and the function
+#' `draw_html()` renders the HTML directly to the current graphics
+#' device.
 #' @param text HTML or Markdown text to render
 #' @param x,y x and y position
 #' @param width,height Width and height. A value of `NULL` means
@@ -8,11 +11,15 @@
 #' @param hjust,vjust horizontal and vertical justification relative
 #'  to `x` and `y`
 #' @param css CSS specification to use for rendering
+#' @param default.units	Units of `x`, `y`, `width`, `height` if
+#'  these are provided only as numerical values.
 #' @param vp viewport
+#' @return `html_grob()`: A grid grob representing the rendered html text.
 #' @export
 html_grob <- function(text, x = unit(0.1, "npc"), y = unit(0.9, "npc"),
                       width = unit(0.8, "npc"), height = NULL,
-                      hjust = 0, vjust = 1, css = "", vp = NULL) {
+                      hjust = 0, vjust = 1, css = "", 
+                      default.units = "npc", vp = NULL) {
   # make sure x, y, width, height are units
   x <- with_unit(x, default.units)
   y <- with_unit(y, default.units)
@@ -45,6 +52,21 @@ html_grob <- function(text, x = unit(0.1, "npc"), y = unit(0.9, "npc"),
     cl = "html_grob"
   )
 }
+
+#' @rdname html_grob
+#' @param ... Parameters forwarded to `html_grob()`.
+#' @param newpage Logical indicating whether [grid.newpage()] should
+#'   be called before drawing.
+#' @return `draw_html()`: Nothing. The function is only called for its side effects.
+#' @export
+draw_html <- function(..., newpage = TRUE) {
+  if (isTRUE(newpage)) {
+    grid.newpage()
+  }
+  grid.draw(html_grob(...))
+  invisible()
+}
+
 
 #' @export
 makeContext.html_grob <- function(x) {

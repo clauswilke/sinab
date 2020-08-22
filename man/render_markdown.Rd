@@ -9,7 +9,7 @@ render_markdown(text, css = "", width_in = 5, height_in = 5)
 \arguments{
 \item{text}{HTML or Markdown to render}
 
-\item{css}{The CSS to use when rendering `text`}
+\item{css}{The CSS to use when rendering \code{text}}
 
 \item{width_in}{Width of the drawing area, in inches}
 

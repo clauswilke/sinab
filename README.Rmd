@@ -32,7 +32,7 @@ remotes::install_github("clauswilke/sinab")
 
 This project is in the early proof-of-concept stage. Expect most things to be broken.
 
-The main function provided by this package is `html_grob()`, which takes as input some Markdown or HTML text and associated CSS and renders it using the grid graphics system.
+The main function provided by this package is `html_grob()`, which takes as input some Markdown or HTML text and associated CSS and renders it using the grid graphics system. The convenience function `draw_html()` uses `html_grob()` to generate the grob and then draws it with `grid::grid.draw()`.
 
 ```{r}
 library(sinab)
@@ -70,23 +70,20 @@ pre code { border: none;
            padding: 0px; }
 '
 
-g <- html_grob(
+# can also use `html_grob()` to obtain a grid grob for later drawing
+draw_html(
   mdtext, css = css,
   x = unit(0.1, "npc"), y = unit(1, "npc"), width = unit(4, "inches"),
 )
-grid.newpage()
-grid.draw(g)
 ```
 
 If the grob width is specified as a relative unit, then the grob is reactive and reflows as the graphics window is resized. (Try this example interactively.)
 
 ```{r}
-g <- html_grob(
+draw_html(
   mdtext, css = css,
   x = unit(0.1, "npc"), y = unit(1, "npc"), width = unit(0.8, "npc"),
 )
-grid.newpage()
-grid.draw(g)
 ```
 
 Simple markdown-to-html conversion is also implemented:

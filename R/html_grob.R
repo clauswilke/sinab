@@ -16,8 +16,8 @@
 #' @param vp viewport
 #' @return `html_grob()`: A grid grob representing the rendered html text.
 #' @export
-html_grob <- function(text, x = unit(0.1, "npc"), y = unit(0.9, "npc"),
-                      width = unit(0.8, "npc"), height = NULL,
+html_grob <- function(text, x = unit(0.05, "npc"), y = unit(0.95, "npc"),
+                      width = unit(0.9, "npc"), height = NULL,
                       hjust = 0, vjust = 1, css = "", 
                       default.units = "npc", vp = NULL) {
   # make sure x, y, width, height are units

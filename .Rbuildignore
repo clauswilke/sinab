@@ -3,3 +3,7 @@
 ^README\.Rmd$
 ^examples$
 ^src/sinab/\.idea$
+^vignettes/supported_CSS\.Rmd$
+^_pkgdown\.yml$
+^docs$
+^pkgdown$

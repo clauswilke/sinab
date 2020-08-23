@@ -1,0 +1,14 @@
+destination: docs
+
+reference:
+- title: Rendering
+  desc: Rendering HTML and Markdown
+  contents:
+  - html_grob
+  - draw_html
+  - render_markdown
+
+- title: Utils
+  desc: Various utility functions
+  contents:
+  - md_to_html

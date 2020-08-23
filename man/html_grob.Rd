@@ -7,9 +7,9 @@
 \usage{
 html_grob(
   text,
-  x = unit(0.1, "npc"),
-  y = unit(0.9, "npc"),
-  width = unit(0.8, "npc"),
+  x = unit(0.05, "npc"),
+  y = unit(0.95, "npc"),
+  width = unit(0.9, "npc"),
   height = NULL,
   hjust = 0,
   vjust = 1,

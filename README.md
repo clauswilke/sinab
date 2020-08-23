@@ -122,15 +122,17 @@ FAQ
     png(file, width = 1920, height = 1920, res = 288, type = "quartz")
     microbenchmark::microbenchmark(render_markdown(text), times = 10L)
     #> Unit: milliseconds
-    #>                   expr      min       lq     mean  median       uq    max neval
-    #>  render_markdown(text) 714.2249 782.3504 1117.376 842.621 1119.572 2991.8    10
+    #>                   expr      min       lq     mean   median       uq      max
+    #>  render_markdown(text) 682.9493 695.6088 716.4719 705.4663 709.5829 813.0615
+    #>  neval
+    #>     10
     invisible(dev.off())
 
     ragg::agg_png(file, width = 1920, height = 1920, res = 288)
     microbenchmark::microbenchmark(render_markdown(text), times = 10L)
     #> Unit: milliseconds
-    #>                   expr      min       lq     mean  median       uq      max
-    #>  render_markdown(text) 1.757393 1.965449 7.200562 2.12594 2.375721 53.15111
+    #>                   expr      min       lq     mean   median       uq      max
+    #>  render_markdown(text) 1.938574 2.243822 2.975472 2.345219 2.770318 8.363529
     #>  neval
     #>     10
     invisible(dev.off())

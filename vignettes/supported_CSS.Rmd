@@ -1,0 +1,241 @@
+---
+title: "Supported CSS properties"
+author: "Claus O. Wilke"
+date: "`r Sys.Date()`"
+output: 
+  rmarkdown::html_vignette:
+    toc: true
+vignette: >
+  %\VignetteIndexEntry{Supported CSS properties}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  fig.width = 3,
+  fig.height = 3,
+  collapse = TRUE,
+  comment = "#>"
+)
+
+library(sinab)
+```
+
+## Selectors
+
+Most CSS selectors are supported, including the universal selector, type selectors, class selectors, ID selectors, and attribute selectors. Selector lists and combinators also work.
+
+However, pseudo elements are not available at this time.
+
+**Example:**
+
+```{r CSS-selectors, fig.width = 5, fig.height = 1.8 }
+css <- '
+* { padding: 4px; }
+.class { color: navy; }
+#id { background-color: skyblue; }
+[attribute] { border: solid 1px navy; }
+em { background-color: lavender; }
+span > em { font-size: 30px; }
+'
+
+text <- '<p class = "class">The quick <span id = "id">brown fox</span>
+jumps over the <span attribute = "value">lazy dog.</span></p><br>
+<p id = "id">The quick <em>brown fox</em> jumps over the
+<span><em>lazy dog.</em></span></p>'
+
+draw_html(text, css = css)
+```
+
+
+## CSS-wide keywords
+
+The keywords `initial` and `inherit` are supported for all CSS properties. `initial` resets the property to its initial value, and `inherit` inherits it from the parent element.
+
+```{r CSS-wide-keywords, fig.height = 1.5 }
+css <- '
+body {
+  background-color: #aaa;
+}
+div {
+  text-align: center;
+  margin: 10px;
+  background-color: skyblue;
+}
+p {
+  /* override an inheritied property */
+  text-align: initial;
+  /* inherit a not-normally inherited property */
+  margin: inherit;
+  background-color: cornsilk;
+}
+'
+
+text <- '<div>Lorem ipsum dolor sit amet, consectetur
+elit.<p>This is a nested paragraph.</p></div>'
+
+draw_html(text, css = css)
+```
+
+## Text
+
+### CSS property `text-align`
+
+**Supported syntax:**
+
+`text-align: left|right|center|`*`% value`*`|initial|inherit;`
+
+**Property values:**
+
+-------------------------------------------------------------
+Value          Description
+-------------- ----------------------------------------------
+`left`         Aligns text to the left.
+
+`right`        Aligns text to the right.
+
+`center`       Centers the text.
+
+*`% value`*    Aligns the text to the enclosing box by percent.
+               `0%` is equivalent to `left`, `50%` is
+               equivalent to `center`, `100%` is equivalent
+               to `right`. This is a Sinab CSS extensions
+               needed to mirror the behavior of `hjust` and
+               `vjust` in R.
+               
+
+`initial`      Sets the property to its default value.
+
+`inherit`      Inherits the propterty from the parent
+               element.
+-------------------------------------------------------------
+
+**Example:**
+
+```{r CSS-property-text-align, fig.width = 4, fig.height = 2.5 }
+css <- '
+p { margin: 20px 40px; background-color: #eee; }
+.left { text-align: left; }
+.center { text-align: center; }
+.right { text-align: right; }
+.percent { text-align: 20%; }
+'
+
+text <- '
+<p class = "left">The quick brown fox.</p>
+<p class = "center">The quick brown fox.</p>
+<p class = "right">The quick brown fox.</p>
+<p class = "percent">The quick brown fox.</p>
+'
+
+draw_html(text, css = css)
+```
+
+
+### CSS property `vertical-align`
+
+**Supported syntax:**
+
+`vertical-align: baseline|`*`length`*`|`*`% value`*`|sub|super|middle|initial|inherit;`
+
+**Property values:**
+
+-------------------------------------------------------------
+Value          Description
+-------------- ----------------------------------------------
+`baseline`     Aligns to the text baseline.
+
+*`length`*     Shifts baseline by the amount specified.
+
+*`% value`*    Shifts baseline by the amount specified as
+               percent relative to the lineheight of the
+               element itself.
+
+`sub`          Aligns to 1ex below the baseline.
+
+`super`        Aligns to 1ex above the baseline.
+
+`middle`       Aligns the vertical midpoint of the box with
+               the baseline of the parent box plus half the
+               x-height of the parent.
+
+`initial`      Sets the property to its default value.
+
+`inherit`      Inherits the propterty from the parent
+               element.
+-------------------------------------------------------------
+
+**Example:**
+
+```{r CSS-property-vertical-align, fig.height = 1.8 }
+css <- '
+.sub { background-color: #80808040; }
+.sub > span { vertical-align: sub; background-color: inherit; }
+.super { background-color: #00800030; }
+.super > span { vertical-align: super; background-color: inherit; }
+.length { background-color: #0000FF20; }
+.length > span { vertical-align: 0.4cm; background-color: inherit; }
+.middle { background-color: #80804040; }
+.middle > span { vertical-align: middle; font-size: 2em; background-color: inherit; }
+p { line-height: 1.4; }
+'
+
+text <- '<p><span class = "sub">The quick <span>brown</span> fox.</span><br>
+<span class = "super">The quick <span>brown</span> fox.</span><br>
+<span class = "length">The quick <span>brown</span> fox.</span><br>
+<span class = "middle">The quick <span>brown</span> fox.</span></p>'
+
+draw_html(text, css = css)
+```
+
+### CSS property `white-space`
+
+
+**Supported syntax:**
+
+`white-space: normal|nowrap|pre|initial|inherit;`
+
+**Property values:**
+
+-------------------------------------------------------------
+Value          Description
+-------------- ----------------------------------------------
+`normal`       Default whitespace handling. White space collapses,
+               text wraps.
+
+`nowrap`       White space collapses, but text doesn't wrap.
+
+`pre`          White space doesn't collapse, text doesn't wrap.
+
+`initial`      Sets the property to its default value.
+
+`inherit`      Inherits the propterty from the parent
+               element.
+-------------------------------------------------------------
+
+**Example:**
+
+```{r CSS-property-white-space, fig.height = 2.5 }
+css <- '
+p { background-color: #eee; margin: 10px; }
+.nowrap { white-space: nowrap; }
+.pre { white-space: pre; }
+'
+
+text <- '
+<p>The quick brown fox jumps over the lazy dog.
+The quick
+  brown
+    fox.</p>
+<p class = "nowrap">The quick brown fox jumps over the lazy dog.
+The quick
+  brown
+    fox.</p>
+<p class = "pre">The quick brown fox jumps over the lazy dog.
+The quick
+  brown
+    fox.</p>'
+
+draw_html(text, css = css)
+```

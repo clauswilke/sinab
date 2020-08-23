@@ -14,7 +14,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-# SINAB is not a browser
+# Sinab is not a browser
 
 A basic html rendering engine for R, written in Rust. The purpose is not to write a browser, but rather to provide the ability to render simple, static html documents to an R graphics device.
 

@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-SINAB is not a browser
+Sinab is not a browser
 ======================
 
 A basic html rendering engine for R, written in Rust. The purpose is not
@@ -123,7 +123,7 @@ FAQ
     microbenchmark::microbenchmark(render_markdown(text), times = 10L)
     #> Unit: milliseconds
     #>                   expr      min       lq     mean   median       uq      max
-    #>  render_markdown(text) 696.5793 716.9816 721.3353 722.9139 728.0985 735.6004
+    #>  render_markdown(text) 666.5395 673.3485 702.9015 683.9743 691.5869 871.0132
     #>  neval
     #>     10
     invisible(dev.off())
@@ -132,7 +132,7 @@ FAQ
     microbenchmark::microbenchmark(render_markdown(text), times = 10L)
     #> Unit: milliseconds
     #>                   expr      min       lq     mean   median       uq      max
-    #>  render_markdown(text) 1.678939 1.832483 2.442608 1.909963 2.173765 6.750135
+    #>  render_markdown(text) 1.769662 1.869095 2.945586 2.523093 2.612955 8.689195
     #>  neval
     #>     10
     invisible(dev.off())

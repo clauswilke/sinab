@@ -200,5 +200,37 @@ impl BoxFragment {
 
 pub fn render_html(text_input: &str, css_input: &str, mut rdev: RenderDevice, page_size: Size<CssPx>) {
     let document = Document::parse_html(text_input.as_bytes());
+
+    // for debug purposes only
+    //print_nodes(document.root_element(), &document);
+
     document.paint_onto(&mut rdev, Some(css_input), page_size);
+}
+
+
+// debug code for testing
+use crate::dom::*;
+use std::ops::Index;
+
+fn print_nodes(node_id: NodeId, document: &Document) {
+    let node = &document[node_id];
+    let mut eltname = "".to_string();
+
+    if let NodeData::Element(ElementData{ref name, ..}) = node.data {
+        eltname = name.local.to_string();
+        println!("<{}>", eltname);
+    }
+
+    println!("{:?}", node.data);
+
+    if let Some(child_id) = node.first_child {
+        for nid in document.node_and_following_siblings(child_id) {
+            print_nodes(nid, document);
+        }
+
+    }
+
+    if eltname != "" {
+        println!("</{}>", eltname);
+    }
 }

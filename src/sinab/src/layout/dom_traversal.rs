@@ -106,8 +106,12 @@ fn traverse_element<'dom>(
     // br tags need to be handled explicitly
     match &element_data.name.local {
         &local_name!("br") => {
-            // <br> is treated as if it had Display::None
-            context.unset_boxes_in_subtree(element_id);
+            // The following line seems to make sense but caused crashes
+            // that are gone after commenting out. Not sure what's right here.
+            // It's possible that `unset_boxes_in_subtree()` has issues with
+            // dom traversal in corner cases.
+            //context.unset_boxes_in_subtree(element_id);
+
             // we create breaks by injecting a newline; the user agent style
             // has to ensure this isn't collapsed.
             handler.handle_text("\n", &style);

@@ -107,9 +107,9 @@ fn traverse_element<'dom>(
     match &element_data.name.local {
         &local_name!("br") => {
             // The following line seems to make sense but caused crashes
-            // that are gone after commenting out. Not sure what's right here.
-            // It's possible that `unset_boxes_in_subtree()` has issues with
-            // dom traversal in corner cases.
+            // that are gone after commenting out (issue #9). Not sure what's
+            // right here. It's possible that `unset_boxes_in_subtree()` has
+            // a logic error that causes incorrect dom traversal in corner cases.
             //context.unset_boxes_in_subtree(element_id);
 
             // we create breaks by injecting a newline; the user agent style
@@ -334,10 +334,14 @@ impl Context<'_> {
     /// Removes all layout data by setting `layout_data.pseudo_elements` and
     /// `layout_data.self_box` to `None` in the entire subtree belonging to
     /// `base_element`.
+    ///
+    /// The traversal algorithm may have problems and should be reviewed carefully.
+    /// It has let to crashes in some applications.
     fn unset_boxes_in_subtree(&self, base_element: NodeId) {
         let mut node_id = base_element;
         loop {
             let node = &self.document[node_id];
+            // unset element box and descent into children
             if let Some(element_data) = node.as_element() {
                 let mut layout_data = element_data.layout_data.borrow_mut();
                 layout_data.pseudo_elements = None;
@@ -351,6 +355,10 @@ impl Context<'_> {
                     }
                 }
             }
+            // ???
+            // Is this part correct? It's supposed to ascend back up from child trees,
+            // but it appears that in some cases it enters an infinite loop or causes
+            // elements to be traversed twice.
             let mut next_is_a_sibling_of = node_id;
             node_id = loop {
                 if let Some(sibling) = self.document[next_is_a_sibling_of].next_sibling {

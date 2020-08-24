@@ -9,7 +9,8 @@ test_that("gpar_gcontext()", {
   y <- grid::gpar(
     col = "red", fill = "#F0F0F0F0",
     fontfamily = "Helvetica", fontface = 1L,
-    fontsize = 12, lineheight = 1.2
+    fontsize = 12, lineheight = 1.2,
+    lty = 0L, lwd = 0, lineend = "butt"
   )
   expect_identical(x, y)
 })

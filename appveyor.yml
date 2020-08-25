@@ -14,6 +14,10 @@ install:
         $Env:PATH += ';C:\msys64\usr\bin'
   - appveyor DownloadFile -Url https://win.rustup.rs/ -FileName rustup-init.exe
   - rustup-init.exe -y --default-host x86_64-pc-windows-gnu --default-toolchain stable
+  - rustup target add x86_64-pc-windows-msvc
+  - rustup target add x86_64-pc-windows-gnu
+  - rustup target add i686-pc-windows-msvc
+  - rustup target add i686-pc-windows-gnu
   - set PATH=%PATH%;C:\Users\appveyor\.cargo\bin
   - rustc -Vv
   - cargo -V

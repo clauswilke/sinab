@@ -97,6 +97,7 @@
 <div class="sourceCode" id="cb3"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true"></a>rustup<span class="op">-</span>init.exe <span class="op">-</span>y <span class="op">--</span>default<span class="op">-</span>host x86_<span class="dv">64</span><span class="op">-</span>pc<span class="op">-</span>windows<span class="op">-</span>gnu <span class="op">--</span>default<span class="op">-</span>toolchain stable</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true"></a>set PATH=<span class="op">%PATH%</span>;\<span class="op">%USERPROFILE%</span>\.cargo\bin</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true"></a>rustup target add i686<span class="op">-</span>pc<span class="op">-</span>windows<span class="op">-</span>gnu</span></code></pre></div>
+<p>(If the last line gives you trouble, try restarting your Command window.)</p>
 </li>
 </ul>
 <p>If you are using Rust regularly on Windows but normally build for the Visual Studio target (<code>x86_64-pc-windows-msvc</code>), then you may have to run the following two commands to successfully build this R package on your machine:</p>
@@ -180,7 +181,7 @@ The Sinab library itself is actually quite fast. Slowness comes mostly from R gr
 <span id="cb8-6"><a href="#cb8-6" aria-hidden="true"></a>microbenchmark<span class="op">::</span><span class="kw">microbenchmark</span>(<span class="kw">render_markdown</span>(text), <span class="dt">times =</span> n)</span>
 <span id="cb8-7"><a href="#cb8-7" aria-hidden="true"></a><span class="co">#&gt; Unit: milliseconds</span></span>
 <span id="cb8-8"><a href="#cb8-8" aria-hidden="true"></a><span class="co">#&gt;                   expr      min       lq     mean   median       uq      max</span></span>
-<span id="cb8-9"><a href="#cb8-9" aria-hidden="true"></a><span class="co">#&gt;  render_markdown(text) 699.2977 716.9569 735.9368 724.2383 734.1424 854.7847</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true"></a><span class="co">#&gt;  render_markdown(text) 686.8674 701.3941 721.3239 706.1497 764.0637 770.4617</span></span>
 <span id="cb8-10"><a href="#cb8-10" aria-hidden="true"></a><span class="co">#&gt;  neval</span></span>
 <span id="cb8-11"><a href="#cb8-11" aria-hidden="true"></a><span class="co">#&gt;     10</span></span>
 <span id="cb8-12"><a href="#cb8-12" aria-hidden="true"></a><span class="kw">invisible</span>(<span class="kw">dev.off</span>())</span>
@@ -188,8 +189,8 @@ The Sinab library itself is actually quite fast. Slowness comes mostly from R gr
 <span id="cb8-14"><a href="#cb8-14" aria-hidden="true"></a>ragg<span class="op">::</span><span class="kw">agg_png</span>(file, <span class="dt">width =</span> <span class="dv">1920</span>, <span class="dt">height =</span> <span class="dv">1920</span>, <span class="dt">res =</span> <span class="dv">288</span>)</span>
 <span id="cb8-15"><a href="#cb8-15" aria-hidden="true"></a>microbenchmark<span class="op">::</span><span class="kw">microbenchmark</span>(<span class="kw">render_markdown</span>(text), <span class="dt">times =</span> n)</span>
 <span id="cb8-16"><a href="#cb8-16" aria-hidden="true"></a><span class="co">#&gt; Unit: milliseconds</span></span>
-<span id="cb8-17"><a href="#cb8-17" aria-hidden="true"></a><span class="co">#&gt;                   expr      min       lq    mean   median       uq      max</span></span>
-<span id="cb8-18"><a href="#cb8-18" aria-hidden="true"></a><span class="co">#&gt;  render_markdown(text) 1.698806 1.707026 2.24312 1.765782 1.973735 6.204743</span></span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true"></a><span class="co">#&gt;                   expr      min       lq     mean   median       uq      max</span></span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true"></a><span class="co">#&gt;  render_markdown(text) 1.611935 1.646656 2.201182 1.688756 1.761462 6.798409</span></span>
 <span id="cb8-19"><a href="#cb8-19" aria-hidden="true"></a><span class="co">#&gt;  neval</span></span>
 <span id="cb8-20"><a href="#cb8-20" aria-hidden="true"></a><span class="co">#&gt;     10</span></span>
 <span id="cb8-21"><a href="#cb8-21" aria-hidden="true"></a><span class="kw">invisible</span>(<span class="kw">dev.off</span>())</span></code></pre></div>

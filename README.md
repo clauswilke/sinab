@@ -52,6 +52,9 @@ On Windows, things are a little more complicated:
         set PATH=%PATH%;\%USERPROFILE%\.cargo\bin
         rustup target add i686-pc-windows-gnu
 
+    (If the last line gives you trouble, try restarting your Command
+    window.)
+
 If you are using Rust regularly on Windows but normally build for the
 Visual Studio target (`x86_64-pc-windows-msvc`), then you may have to
 run the following two commands to successfully build this R package on
@@ -165,7 +168,7 @@ FAQ
     microbenchmark::microbenchmark(render_markdown(text), times = n)
     #> Unit: milliseconds
     #>                   expr      min       lq     mean   median       uq      max
-    #>  render_markdown(text) 699.2977 716.9569 735.9368 724.2383 734.1424 854.7847
+    #>  render_markdown(text) 686.8674 701.3941 721.3239 706.1497 764.0637 770.4617
     #>  neval
     #>     10
     invisible(dev.off())
@@ -173,8 +176,8 @@ FAQ
     ragg::agg_png(file, width = 1920, height = 1920, res = 288)
     microbenchmark::microbenchmark(render_markdown(text), times = n)
     #> Unit: milliseconds
-    #>                   expr      min       lq    mean   median       uq      max
-    #>  render_markdown(text) 1.698806 1.707026 2.24312 1.765782 1.973735 6.204743
+    #>                   expr      min       lq     mean   median       uq      max
+    #>  render_markdown(text) 1.611935 1.646656 2.201182 1.688756 1.761462 6.798409
     #>  neval
     #>     10
     invisible(dev.off())

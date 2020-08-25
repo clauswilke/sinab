@@ -21,4 +21,5 @@ addons:
       - libmagick++-dev
       - rustc
       - cargo
+      - ttf-mscorefonts-installer
 

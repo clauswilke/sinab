@@ -29,6 +29,9 @@ License: MIT + file LICENSE
 Imports:
   grid,
   testthat
+Suggests:
+  ragg,
+  magick
 LinkingTo: 
   testthat
 SystemRequirements: cargo (Rust build toolchain)

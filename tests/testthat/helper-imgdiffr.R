@@ -1,6 +1,3 @@
-library(magick)
-library(ragg)
-
 write_png <- function(filename, p) {
   # store current device
   cur_dev <- grDevices::dev.cur()
@@ -72,7 +69,6 @@ diff_to_reference <- function(name, expr, fuzz = 0) {
   )
 }
 
-
 expect_img_match <- function(name, expr, fuzz = 0) {
   diff <- diff_to_reference(name, expr, fuzz)
   
@@ -97,25 +93,3 @@ expect_img_match <- function(name, expr, fuzz = 0) {
     testthat::expect(TRUE, "reference image matches")
   }
 }
-
-
-css <- '
-/*body         { font-family: "Helvetica" }*/
-*            { padding: 4px; }
-.class       { color: navy; }
-#id          { background-color: skyblue; }
-[attribute]  { border: solid 1px navy; }
-em           { background-color: lavender; }
-span > em    { font-size: 30px; }
-'
-text <- '
-<p class = "class">The quick <span id = "id">brown fox</span>
-jumps over the <span attribute = "value">lazy dog.</span></p><br>
-<p id = "id">The quick <em>brown fox</em> jumps over the
-<span><em>lazy dog.</em></span></p>
-'
-
-
-create_reference("css selectors", draw_html(text, css = css))
-expect_img_match("css selectors", draw_html(text, css = css))
-print(diff_to_reference("css selectors", draw_html(text, css = css)))

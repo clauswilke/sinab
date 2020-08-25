@@ -20,4 +20,5 @@ addons:
     packages:
       - libmagick++-dev
       - rustc
+      - cargo
 

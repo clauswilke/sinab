@@ -25,7 +25,7 @@ Description: Provides support for rendering a small subset of static 'HTML' and 
     R graphics device. Conversion from 'Markdown' to 'HTML' is also supported. The rendering
     library is entirely written in Rust, and it is built on top of the experimental project
     Victor by Simon Sapin.
-License: MIT + file LICENSE
+License: MIT + file LICENSE | Apache License (>= 2.0)
 URL: https://clauswilke.com/sinab, https://github.com/clauswilke/sinab
 BugReports: https://github.com/clauswilke/sinab/issues
 Imports:

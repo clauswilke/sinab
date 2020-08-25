@@ -3,13 +3,17 @@
 context("CSS properties")
 
 ## This test suite is not reliable on CRAN or CI
-#skip_on_cran()
-#skip_on_ci()
+skip_on_cran()
+skip_on_ci()
+
 # Reference images are not distributed with the package
 skip_if(!file.exists(here::here("tests", "png-refs")), "development only")
 
 # set to true to rebuild all references instead of testing them
 rebuild <- FALSE
+
+# set to true for interactive checking
+show <- FALSE
 
 test_that("CSS selectors", {
   css <- '
@@ -27,5 +31,8 @@ jumps over the <span attribute = "value">lazy dog.</span></p><br>
 <span><em>lazy dog.</em></span></p>
 '
   
-  expect_img_match("css selectors", draw_html(text, css = css), rebuild = rebuild)
+  expect_img_match(
+    "css selectors", draw_html(text, css = css),
+    rebuild = rebuild, show = show
+  )
 })

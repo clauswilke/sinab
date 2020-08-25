@@ -43,14 +43,15 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 On Windows, things are a little more complicated:
 
 - Download `rustup-init.exe` from here: https://win.rustup.rs/
-- Then run the following three commands:  
+- Then run the following three commands in the Windows
+  command prompt (not powershell):  
   ```
   rustup-init.exe -y --default-host x86_64-pc-windows-gnu --default-toolchain stable
   set PATH=%PATH%;\%USERPROFILE%\.cargo\bin
   rustup target add i686-pc-windows-gnu
   ```
   (If the last line gives you trouble, try restarting your
-  Command window.)
+  command prompt window.)
 
 If you are using Rust regularly on Windows but normally build for the Visual Studio target (`x86_64-pc-windows-msvc`), then you may have to run the following two commands to successfully build this R package on your machine:
 

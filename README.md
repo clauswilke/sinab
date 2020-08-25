@@ -46,14 +46,15 @@ On Windows, things are a little more complicated:
 -   Download `rustup-init.exe` from here:
     <a href="https://win.rustup.rs/" class="uri">https://win.rustup.rs/</a>
 
--   Then run the following three commands:
+-   Then run the following three commands in the Windows command prompt
+    (not powershell):
 
         rustup-init.exe -y --default-host x86_64-pc-windows-gnu --default-toolchain stable
         set PATH=%PATH%;\%USERPROFILE%\.cargo\bin
         rustup target add i686-pc-windows-gnu
 
-    (If the last line gives you trouble, try restarting your Command
-    window.)
+    (If the last line gives you trouble, try restarting your command
+    prompt window.)
 
 If you are using Rust regularly on Windows but normally build for the
 Visual Studio target (`x86_64-pc-windows-msvc`), then you may have to

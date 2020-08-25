@@ -93,11 +93,11 @@
 <ul>
 <li><p>Download <code>rustup-init.exe</code> from here: <a href="https://win.rustup.rs/" class="uri">https://win.rustup.rs/</a></p></li>
 <li>
-<p>Then run the following three commands:</p>
+<p>Then run the following three commands in the Windows command prompt (not powershell):</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true"></a>rustup<span class="op">-</span>init.exe <span class="op">-</span>y <span class="op">--</span>default<span class="op">-</span>host x86_<span class="dv">64</span><span class="op">-</span>pc<span class="op">-</span>windows<span class="op">-</span>gnu <span class="op">--</span>default<span class="op">-</span>toolchain stable</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true"></a>set PATH=<span class="op">%PATH%</span>;\<span class="op">%USERPROFILE%</span>\.cargo\bin</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true"></a>rustup target add i686<span class="op">-</span>pc<span class="op">-</span>windows<span class="op">-</span>gnu</span></code></pre></div>
-<p>(If the last line gives you trouble, try restarting your Command window.)</p>
+<p>(If the last line gives you trouble, try restarting your command prompt window.)</p>
 </li>
 </ul>
 <p>If you are using Rust regularly on Windows but normally build for the Visual Studio target (<code>x86_64-pc-windows-msvc</code>), then you may have to run the following two commands to successfully build this R package on your machine:</p>

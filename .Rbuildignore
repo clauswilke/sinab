@@ -9,3 +9,4 @@
 ^pkgdown$
 ^appveyor.yml$
 ^\.travis.yml$
+^tests/png-refs$

@@ -69,7 +69,12 @@ diff_to_reference <- function(name, expr, fuzz = 0) {
   )
 }
 
-expect_img_match <- function(name, expr, fuzz = 0) {
+expect_img_match <- function(name, expr, fuzz = 0, show = FALSE, rebuild = FALSE) {
+  if (isTRUE(rebuild)) {
+    create_reference(name, expr)
+    return()
+  }
+  
   diff <- diff_to_reference(name, expr, fuzz)
   
   if (is.null(diff)) {
@@ -82,6 +87,9 @@ expect_img_match <- function(name, expr, fuzz = 0) {
 
   error <- attributes(diff)$distortion
   if (error > 0) {
+    if (isTRUE(show)) {
+      print(diff)
+    }
     testthat::expect(
       FALSE,
       paste0(

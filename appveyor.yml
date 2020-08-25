@@ -12,7 +12,7 @@ install:
   # set up rust
   - ps: >-
         $Env:PATH += ';C:\msys64\usr\bin'
-  - ps: curl -sSf -o rustup-init.exe https://win.rustup.rs/
+  - appveyor DownloadFile https://win.rustup.rs/
   - ps: rustup-init.exe -y --default-host x86_64-pc-windows-gnu --default-toolchain stable
   - ps: set PATH=%PATH%;C:\Users\appveyor\.cargo\bin
   - ps: rustc -Vv

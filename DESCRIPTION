@@ -26,6 +26,8 @@ Description: Provides support for rendering a small subset of static 'HTML' and 
     library is entirely written in Rust, and it is built on top of the experimental project
     Victor by Simon Sapin.
 License: MIT + file LICENSE
+URL: https://clauswilke.com/sinab, https://github.com/clauswilke/sinab
+BugReports: https://github.com/clauswilke/sinab/issues
 Imports:
   grid,
   testthat

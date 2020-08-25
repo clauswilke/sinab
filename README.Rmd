@@ -135,22 +135,31 @@ Probably not. The goal for Sinab is to render static pages. Interactivity doesn'
 Not at this time.
 
 * **Why is rendering so slow?**  
-The Sinab library itself is actually quite fast. Slowness comes mostly from R graphics devices. In particular, text shaping can be extremely slow. For faster rendering, try one of the graphics devices provided by the ragg library, such as `agg_png()`. The following benchmark highlights the importance of the graphics device. The agg device is 250 times faster than the quartz device! All this extra time is spent text shaping.
+The Sinab library itself is actually quite fast. Slowness comes mostly from R graphics devices. In particular, text shaping can be extremely slow. For faster rendering, try one of the graphics devices provided by the ragg library, such as `agg_png()`. The following benchmark highlights the importance of the graphics device. The agg device is approximately 300 times faster than the quartz device! All this extra time is spent text shaping.
 
-```{r}
-text <- paste(rep("Hello", 50), collapse = " ")
-n <- 10L
+<!-- -->
 
-file <- tempfile(fileext = ".png")
-png(file, width = 1920, height = 1920, res = 288, type = "quartz")
-microbenchmark::microbenchmark(render_markdown(text), times = n)
-invisible(dev.off())
+    text <- paste(rep("Hello", 50), collapse = " ")
+    n <- 100L
 
-ragg::agg_png(file, width = 1920, height = 1920, res = 288)
-microbenchmark::microbenchmark(render_markdown(text), times = n)
-invisible(dev.off())
+    file <- tempfile(fileext = ".png")
+    png(file, width = 1920, height = 1920, res = 288, type = "quartz")
+    microbenchmark::microbenchmark(render_markdown(text), times = n)
+    #> Unit: milliseconds
+    #>                   expr      min       lq     mean   median       uq      max
+    #>  render_markdown(text) 685.3594 704.2026 722.0359 711.3405 720.7934 894.4264
+    #>  neval
+    #>    100
+    invisible(dev.off())
 
-```
+    ragg::agg_png(file, width = 1920, height = 1920, res = 288)
+    microbenchmark::microbenchmark(render_markdown(text), times = n)
+    #> Unit: milliseconds
+    #>                   expr      min       lq     mean   median       uq      max
+    #>  render_markdown(text) 2.097382 2.145262 2.400133 2.207823 2.349058 13.56952
+    #>  neval
+    #>    100
+    invisible(dev.off())
 
 * **Why aren't you supporting links (i.e., the `<a>` tag)?**  
 This is a limitation of the current R graphics device API. There is simply no way to create a link in an R graphics device. Once this feature gets added, it will be easy to support it in Sinab.

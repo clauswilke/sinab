@@ -171,28 +171,28 @@ Probably not. The goal for Sinab is to render static pages. Interactivity doesnâ
 <li><p><strong>Is MathML supported?</strong><br>
 Not at this time.</p></li>
 <li><p><strong>Why is rendering so slow?</strong><br>
-The Sinab library itself is actually quite fast. Slowness comes mostly from R graphics devices. In particular, text shaping can be extremely slow. For faster rendering, try one of the graphics devices provided by the ragg library, such as <code>agg_png()</code>. The following benchmark highlights the importance of the graphics device. The agg device is 250 times faster than the quartz device! All this extra time is spent text shaping.</p></li>
+The Sinab library itself is actually quite fast. Slowness comes mostly from R graphics devices. In particular, text shaping can be extremely slow. For faster rendering, try one of the graphics devices provided by the ragg library, such as <code>agg_png()</code>. The following benchmark highlights the importance of the graphics device. The agg device is approximately 300 times faster than the quartz device! All this extra time is spent text shaping.</p></li>
 </ul>
 <!-- --><div class="sourceCode" id="cb8"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true"></a>text &lt;-<span class="st"> </span><span class="kw">paste</span>(<span class="kw">rep</span>(<span class="st">"Hello"</span>, <span class="dv">50</span>), <span class="dt">collapse =</span> <span class="st">" "</span>)</span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true"></a>n &lt;-<span class="st"> </span>10L</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true"></a>n &lt;-<span class="st"> </span>100L</span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true"></a></span>
 <span id="cb8-4"><a href="#cb8-4" aria-hidden="true"></a>file &lt;-<span class="st"> </span><span class="kw">tempfile</span>(<span class="dt">fileext =</span> <span class="st">".png"</span>)</span>
 <span id="cb8-5"><a href="#cb8-5" aria-hidden="true"></a><span class="kw">png</span>(file, <span class="dt">width =</span> <span class="dv">1920</span>, <span class="dt">height =</span> <span class="dv">1920</span>, <span class="dt">res =</span> <span class="dv">288</span>, <span class="dt">type =</span> <span class="st">"quartz"</span>)</span>
 <span id="cb8-6"><a href="#cb8-6" aria-hidden="true"></a>microbenchmark<span class="op">::</span><span class="kw">microbenchmark</span>(<span class="kw">render_markdown</span>(text), <span class="dt">times =</span> n)</span>
 <span id="cb8-7"><a href="#cb8-7" aria-hidden="true"></a><span class="co">#&gt; Unit: milliseconds</span></span>
 <span id="cb8-8"><a href="#cb8-8" aria-hidden="true"></a><span class="co">#&gt;                   expr      min       lq     mean   median       uq      max</span></span>
-<span id="cb8-9"><a href="#cb8-9" aria-hidden="true"></a><span class="co">#&gt;  render_markdown(text) 686.8674 701.3941 721.3239 706.1497 764.0637 770.4617</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true"></a><span class="co">#&gt;  render_markdown(text) 685.3594 704.2026 722.0359 711.3405 720.7934 894.4264</span></span>
 <span id="cb8-10"><a href="#cb8-10" aria-hidden="true"></a><span class="co">#&gt;  neval</span></span>
-<span id="cb8-11"><a href="#cb8-11" aria-hidden="true"></a><span class="co">#&gt;     10</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true"></a><span class="co">#&gt;    100</span></span>
 <span id="cb8-12"><a href="#cb8-12" aria-hidden="true"></a><span class="kw">invisible</span>(<span class="kw">dev.off</span>())</span>
 <span id="cb8-13"><a href="#cb8-13" aria-hidden="true"></a></span>
 <span id="cb8-14"><a href="#cb8-14" aria-hidden="true"></a>ragg<span class="op">::</span><span class="kw">agg_png</span>(file, <span class="dt">width =</span> <span class="dv">1920</span>, <span class="dt">height =</span> <span class="dv">1920</span>, <span class="dt">res =</span> <span class="dv">288</span>)</span>
 <span id="cb8-15"><a href="#cb8-15" aria-hidden="true"></a>microbenchmark<span class="op">::</span><span class="kw">microbenchmark</span>(<span class="kw">render_markdown</span>(text), <span class="dt">times =</span> n)</span>
 <span id="cb8-16"><a href="#cb8-16" aria-hidden="true"></a><span class="co">#&gt; Unit: milliseconds</span></span>
 <span id="cb8-17"><a href="#cb8-17" aria-hidden="true"></a><span class="co">#&gt;                   expr      min       lq     mean   median       uq      max</span></span>
-<span id="cb8-18"><a href="#cb8-18" aria-hidden="true"></a><span class="co">#&gt;  render_markdown(text) 1.611935 1.646656 2.201182 1.688756 1.761462 6.798409</span></span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true"></a><span class="co">#&gt;  render_markdown(text) 2.097382 2.145262 2.400133 2.207823 2.349058 13.56952</span></span>
 <span id="cb8-19"><a href="#cb8-19" aria-hidden="true"></a><span class="co">#&gt;  neval</span></span>
-<span id="cb8-20"><a href="#cb8-20" aria-hidden="true"></a><span class="co">#&gt;     10</span></span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true"></a><span class="co">#&gt;    100</span></span>
 <span id="cb8-21"><a href="#cb8-21" aria-hidden="true"></a><span class="kw">invisible</span>(<span class="kw">dev.off</span>())</span></code></pre></div>
 <ul>
 <li><p><strong>Why arenâ€™t you supporting links (i.e., the <code>&lt;a&gt;</code> tag)?</strong><br>

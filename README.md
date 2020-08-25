@@ -155,31 +155,31 @@ FAQ
     extremely slow. For faster rendering, try one of the graphics
     devices provided by the ragg library, such as `agg_png()`. The
     following benchmark highlights the importance of the graphics
-    device. The agg device is 250 times faster than the quartz device!
-    All this extra time is spent text shaping.
+    device. The agg device is approximately 300 times faster than the
+    quartz device! All this extra time is spent text shaping.
 
 <!-- -->
 
     text <- paste(rep("Hello", 50), collapse = " ")
-    n <- 10L
+    n <- 100L
 
     file <- tempfile(fileext = ".png")
     png(file, width = 1920, height = 1920, res = 288, type = "quartz")
     microbenchmark::microbenchmark(render_markdown(text), times = n)
     #> Unit: milliseconds
     #>                   expr      min       lq     mean   median       uq      max
-    #>  render_markdown(text) 686.8674 701.3941 721.3239 706.1497 764.0637 770.4617
+    #>  render_markdown(text) 685.3594 704.2026 722.0359 711.3405 720.7934 894.4264
     #>  neval
-    #>     10
+    #>    100
     invisible(dev.off())
 
     ragg::agg_png(file, width = 1920, height = 1920, res = 288)
     microbenchmark::microbenchmark(render_markdown(text), times = n)
     #> Unit: milliseconds
     #>                   expr      min       lq     mean   median       uq      max
-    #>  render_markdown(text) 1.611935 1.646656 2.201182 1.688756 1.761462 6.798409
+    #>  render_markdown(text) 2.097382 2.145262 2.400133 2.207823 2.349058 13.56952
     #>  neval
-    #>     10
+    #>    100
     invisible(dev.off())
 
 -   **Why aren’t you supporting links (i.e., the `<a>` tag)?**  

@@ -10,8 +10,8 @@ init:
 install:
   - ps: Bootstrap
   # set up rust
-  - ps: >-
-        $Env:PATH += ';C:\msys64\usr\bin'
+  #- ps: >-
+  #      $Env:PATH += ';C:\msys64\usr\bin'
   - appveyor DownloadFile -Url https://win.rustup.rs/ -FileName rustup-init.exe
   - rustup-init.exe -y --default-host x86_64-pc-windows-gnu --default-toolchain stable
   - del rustup-init.exe

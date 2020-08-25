@@ -4,6 +4,16 @@
 Sinab is not a browser
 ======================
 
+<!-- badges: start -->
+
+[![Travis build
+status](https://travis-ci.org/clauswilke/sinab.svg?branch=master)](https://travis-ci.org/clauswilke/sinab)
+[![AppVeyor build
+status](https://ci.appveyor.com/api/projects/status/github/clauswilke/sinab?branch=master&svg=true)](https://ci.appveyor.com/project/clauswilke/sinab)
+[![Lifecycle:
+experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://www.tidyverse.org/lifecycle/#experimental)
+<!-- badges: end -->
+
 A basic html rendering engine for R, written in Rust. The purpose is not
 to write a browser, but rather to provide the ability to render simple,
 static html documents to an R graphics device.
@@ -19,11 +29,35 @@ this package:
 
     remotes::install_github("clauswilke/sinab")
 
+To get Rust up and running on your system, follow the instructions
+[provided here.](https://www.rust-lang.org/learn/get-started)
+
+In brief, on macOS or Linux, you simply run the following command in a
+shell:
+
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+
+(On Linux, you can also install `rustc` and `cargo` through your package
+manager of choice, though `rustup` is preferred if you want to do any
+Rust development work yourself.)
+
+On Windows, things are a little more complicated:
+
+-   Download `rustup-init.exe` from here:
+    <a href="https://win.rustup.rs/" class="uri">https://win.rustup.rs/</a>
+
+-   Then run the following three commands. In the second line, replace
+    `username` with your username.
+
+        rustup-init.exe -y --default-host x86_64-pc-windows-gnu --default-toolchain stable
+        set PATH=%PATH%;C:\Users\username\.cargo\bin
+        rustup target add i686-pc-windows-gnu
+
 Examples
 --------
 
-This project is in the early proof-of-concept stage. Expect most things
-to be broken.
+**Note:** This project is in the early proof-of-concept stage. Expect
+most things to be broken.
 
 The main function provided by this package is `html_grob()`, which takes
 as input some Markdown or HTML text and associated CSS and renders it
@@ -117,24 +151,25 @@ FAQ
 <!-- -->
 
     text <- paste(rep("Hello", 50), collapse = " ")
+    n <- 1L
 
     file <- tempfile(fileext = ".png")
     png(file, width = 1920, height = 1920, res = 288, type = "quartz")
-    microbenchmark::microbenchmark(render_markdown(text), times = 10L)
+    microbenchmark::microbenchmark(render_markdown(text), times = n)
     #> Unit: milliseconds
     #>                   expr      min       lq     mean   median       uq      max
-    #>  render_markdown(text) 682.9493 695.6088 716.4719 705.4663 709.5829 813.0615
+    #>  render_markdown(text) 811.9133 811.9133 811.9133 811.9133 811.9133 811.9133
     #>  neval
-    #>     10
+    #>      1
     invisible(dev.off())
 
     ragg::agg_png(file, width = 1920, height = 1920, res = 288)
-    microbenchmark::microbenchmark(render_markdown(text), times = 10L)
+    microbenchmark::microbenchmark(render_markdown(text), times = n)
     #> Unit: milliseconds
     #>                   expr      min       lq     mean   median       uq      max
-    #>  render_markdown(text) 1.938574 2.243822 2.975472 2.345219 2.770318 8.363529
+    #>  render_markdown(text) 7.398708 7.398708 7.398708 7.398708 7.398708 7.398708
     #>  neval
-    #>     10
+    #>      1
     invisible(dev.off())
 
 -   **Why aren’t you supporting links (i.e., the `<a>` tag)?**  

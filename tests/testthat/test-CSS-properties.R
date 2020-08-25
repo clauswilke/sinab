@@ -2,7 +2,9 @@
 
 context("CSS properties")
 
-skip_on_cran() # This test suite is long-running (on cran) and is skipped
+# This test suite is not reliable on CRAN or CI
+skip_on_cran()
+skip_on_ci()
 
 test_that("CSS selectors", {
   css <- '

@@ -1,7 +1,7 @@
 Preamble
 ========
 
-This software is dual-licensed under MIT or Apache 2.0. When using or distributing this code, you can apply either license, at your option. If you submit code to this project for inclusion, you agree to distribute your contribution under both license options.
+This software is dual-licensed under MIT or Apache 2.0. When using or distributing this code, you can apply either license, at your option. If you submit contributions to this project for inclusion, you agree to distribute your contributions under both license options.
 
 
 MIT License

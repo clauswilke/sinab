@@ -11,7 +11,7 @@ env:
 #  - _R_CHECK_FORCE_SUGGESTS_=false
   - _R_CHECK_FORCE_SUGGESTS_=true
 
-# needed to install the magick package
+# various additional packages needed
 addons:
   apt:
     update: true
@@ -23,3 +23,6 @@ addons:
       - cargo
       - ttf-mscorefonts-installer
 
+before_script:
+  # turn on MS core fonts
+  - sudo fc-cache

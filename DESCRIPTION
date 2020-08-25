@@ -31,7 +31,8 @@ Imports:
   testthat
 Suggests:
   ragg,
-  magick
+  magick,
+  here
 LinkingTo: 
   testthat
 SystemRequirements: cargo (Rust build toolchain)

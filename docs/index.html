@@ -77,68 +77,87 @@
 <div id="sinab-is-not-a-browser" class="section level1">
 <div class="page-header"><h1 class="hasAnchor">
 <a href="#sinab-is-not-a-browser" class="anchor"></a>Sinab is not a browser</h1></div>
+<!-- badges: start -->
+
 <p>A basic html rendering engine for R, written in Rust. The purpose is not to write a browser, but rather to provide the ability to render simple, static html documents to an R graphics device.</p>
 <div id="installation" class="section level2">
 <h2 class="hasAnchor">
 <a href="#installation" class="anchor"></a>Installation</h2>
 <p>This package needs to be compiled from source and requires a working Rust toolchain (i.e., <a href="https://doc.rust-lang.org/cargo/getting-started/installation.html">Cargo</a>). If you have Cargo up and running, the following should work to install this package:</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true"></a>remotes<span class="op">::</span><span class="kw">install_github</span>(<span class="st">"clauswilke/sinab"</span>)</span></code></pre></div>
+<p>To get Rust up and running on your system, follow the instructions <a href="https://www.rust-lang.org/learn/get-started">provided here.</a></p>
+<p>In brief, on macOS or Linux, you simply run the following command in a shell:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true"></a>curl <span class="op">--</span>proto <span class="st">'=https'</span> <span class="op">--</span>tlsv1<span class="fl">.2</span> <span class="op">-</span>sSf https<span class="op">:</span><span class="er">//</span>sh.rustup.rs <span class="op">|</span><span class="st"> </span>sh</span></code></pre></div>
+<p>(You can also install <code>rustc</code> and <code>cargo</code> through your package manager of choice, though <code>rustup</code> is preferred if you want to do any Rust development work yourself.)</p>
+<p>On Windows, things are a little more complicated:</p>
+<ul>
+<li><p>Download <code>rustup-init.exe</code> from here: <a href="https://win.rustup.rs/" class="uri">https://win.rustup.rs/</a></p></li>
+<li>
+<p>Then run the following three commands:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true"></a>rustup<span class="op">-</span>init.exe <span class="op">-</span>y <span class="op">--</span>default<span class="op">-</span>host x86_<span class="dv">64</span><span class="op">-</span>pc<span class="op">-</span>windows<span class="op">-</span>gnu <span class="op">--</span>default<span class="op">-</span>toolchain stable</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true"></a>set PATH=<span class="op">%PATH%</span>;\<span class="op">%USERPROFILE%</span>\.cargo\bin</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true"></a>rustup target add i686<span class="op">-</span>pc<span class="op">-</span>windows<span class="op">-</span>gnu</span></code></pre></div>
+</li>
+</ul>
+<p>If you are using Rust regularly on Windows but normally build for the Visual Studio target (<code>x86_64-pc-windows-msvc</code>), then you may have to run the following two commands to successfully build this R package on your machine:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true"></a>rustup target add x86_<span class="dv">64</span><span class="op">-</span>pc<span class="op">-</span>windows<span class="op">-</span>gnu</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true"></a>rustup target add i686<span class="op">-</span>pc<span class="op">-</span>windows<span class="op">-</span>gnu</span></code></pre></div>
 </div>
 <div id="examples" class="section level2">
 <h2 class="hasAnchor">
 <a href="#examples" class="anchor"></a>Examples</h2>
-<p>This project is in the early proof-of-concept stage. Expect most things to be broken.</p>
+<p><strong>Note:</strong> This project is in the early proof-of-concept stage. Expect most things to be broken.</p>
 <p>The main function provided by this package is <code><a href="reference/html_grob.html">html_grob()</a></code>, which takes as input some Markdown or HTML text and associated CSS and renders it using the grid graphics system. The convenience function <code><a href="reference/html_grob.html">draw_html()</a></code> uses <code><a href="reference/html_grob.html">html_grob()</a></code> to generate the grob and then draws it with <code><a href="https://rdrr.io/r/grid/grid.draw.html">grid::grid.draw()</a></code>.</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true"></a><span class="kw">library</span>(sinab)</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true"></a><span class="kw">library</span>(grid)</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true"></a></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true"></a>mdtext &lt;-<span class="st"> "</span></span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true"></a><span class="st">Here are a few examples of word-wrapped and non-word-wrapped text. First</span></span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true"></a><span class="st">regular text pre-formatted:</span></span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true"></a><span class="st">&lt;pre&gt;</span></span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true"></a><span class="st">The quick brown</span></span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true"></a><span class="st">  fox jumps over</span></span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true"></a><span class="st">    the lazy dog.</span></span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true"></a><span class="st">&lt;/pre&gt;</span></span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true"></a><span class="st">Now some inline code: `x &lt;- 10; y &lt;- 200; z &lt;- 2*x + y;`</span></span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true"></a><span class="st">It gets wrapped.</span></span>
-<span id="cb2-14"><a href="#cb2-14" aria-hidden="true"></a></span>
-<span id="cb2-15"><a href="#cb2-15" aria-hidden="true"></a><span class="st">We can also write block code. Notice how the long comment runs beyond</span></span>
-<span id="cb2-16"><a href="#cb2-16" aria-hidden="true"></a><span class="st">the box limits:</span></span>
-<span id="cb2-17"><a href="#cb2-17" aria-hidden="true"></a></span>
-<span id="cb2-18"><a href="#cb2-18" aria-hidden="true"></a><span class="st">    x &lt;- 10</span></span>
-<span id="cb2-19"><a href="#cb2-19" aria-hidden="true"></a><span class="st">    y &lt;- 200</span></span>
-<span id="cb2-20"><a href="#cb2-20" aria-hidden="true"></a><span class="st">    z &lt;- 2*x + y;  # and a really really long comment</span></span>
-<span id="cb2-21"><a href="#cb2-21" aria-hidden="true"></a><span class="st">"</span></span>
-<span id="cb2-22"><a href="#cb2-22" aria-hidden="true"></a></span>
-<span id="cb2-23"><a href="#cb2-23" aria-hidden="true"></a>css &lt;-<span class="st"> '</span></span>
-<span id="cb2-24"><a href="#cb2-24" aria-hidden="true"></a><span class="st">pre { background-color: #eee;</span></span>
-<span id="cb2-25"><a href="#cb2-25" aria-hidden="true"></a><span class="st">      padding: 6px;</span></span>
-<span id="cb2-26"><a href="#cb2-26" aria-hidden="true"></a><span class="st">      border-left: 5px solid #888; }</span></span>
-<span id="cb2-27"><a href="#cb2-27" aria-hidden="true"></a><span class="st">p   { background-color: #def;</span></span>
-<span id="cb2-28"><a href="#cb2-28" aria-hidden="true"></a><span class="st">      margin: 16px 0px 4px 0px;</span></span>
-<span id="cb2-29"><a href="#cb2-29" aria-hidden="true"></a><span class="st">      padding: 4px; }</span></span>
-<span id="cb2-30"><a href="#cb2-30" aria-hidden="true"></a><span class="st">code { border: 1px solid #aaa; </span></span>
-<span id="cb2-31"><a href="#cb2-31" aria-hidden="true"></a><span class="st">       padding: 2px; }</span></span>
-<span id="cb2-32"><a href="#cb2-32" aria-hidden="true"></a><span class="st">pre code { border: none;</span></span>
-<span id="cb2-33"><a href="#cb2-33" aria-hidden="true"></a><span class="st">           padding: 0px; }</span></span>
-<span id="cb2-34"><a href="#cb2-34" aria-hidden="true"></a><span class="st">'</span></span>
-<span id="cb2-35"><a href="#cb2-35" aria-hidden="true"></a></span>
-<span id="cb2-36"><a href="#cb2-36" aria-hidden="true"></a><span class="co"># can also use `html_grob()` to obtain a grid grob for later drawing</span></span>
-<span id="cb2-37"><a href="#cb2-37" aria-hidden="true"></a><span class="kw">draw_html</span>(</span>
-<span id="cb2-38"><a href="#cb2-38" aria-hidden="true"></a>  mdtext, <span class="dt">css =</span> css,</span>
-<span id="cb2-39"><a href="#cb2-39" aria-hidden="true"></a>  <span class="dt">x =</span> <span class="kw">unit</span>(<span class="fl">0.1</span>, <span class="st">"npc"</span>), <span class="dt">y =</span> <span class="kw">unit</span>(<span class="dv">1</span>, <span class="st">"npc"</span>), <span class="dt">width =</span> <span class="kw">unit</span>(<span class="dv">4</span>, <span class="st">"inches"</span>),</span>
-<span id="cb2-40"><a href="#cb2-40" aria-hidden="true"></a>)</span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true"></a><span class="kw">library</span>(sinab)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true"></a><span class="kw">library</span>(grid)</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true"></a></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true"></a>mdtext &lt;-<span class="st"> "</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true"></a><span class="st">Here are a few examples of word-wrapped and non-word-wrapped text. First</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true"></a><span class="st">regular text pre-formatted:</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true"></a><span class="st">&lt;pre&gt;</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true"></a><span class="st">The quick brown</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true"></a><span class="st">  fox jumps over</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true"></a><span class="st">    the lazy dog.</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true"></a><span class="st">&lt;/pre&gt;</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true"></a><span class="st">Now some inline code: `x &lt;- 10; y &lt;- 200; z &lt;- 2*x + y;`</span></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true"></a><span class="st">It gets wrapped.</span></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true"></a></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true"></a><span class="st">We can also write block code. Notice how the long comment runs beyond</span></span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true"></a><span class="st">the box limits:</span></span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true"></a></span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true"></a><span class="st">    x &lt;- 10</span></span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true"></a><span class="st">    y &lt;- 200</span></span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true"></a><span class="st">    z &lt;- 2*x + y;  # and a really really long comment</span></span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true"></a><span class="st">"</span></span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true"></a></span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true"></a>css &lt;-<span class="st"> '</span></span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true"></a><span class="st">pre { background-color: #eee;</span></span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true"></a><span class="st">      padding: 6px;</span></span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true"></a><span class="st">      border-left: 5px solid #888; }</span></span>
+<span id="cb5-27"><a href="#cb5-27" aria-hidden="true"></a><span class="st">p   { background-color: #def;</span></span>
+<span id="cb5-28"><a href="#cb5-28" aria-hidden="true"></a><span class="st">      margin: 16px 0px 4px 0px;</span></span>
+<span id="cb5-29"><a href="#cb5-29" aria-hidden="true"></a><span class="st">      padding: 4px; }</span></span>
+<span id="cb5-30"><a href="#cb5-30" aria-hidden="true"></a><span class="st">code { border: 1px solid #aaa; </span></span>
+<span id="cb5-31"><a href="#cb5-31" aria-hidden="true"></a><span class="st">       padding: 2px; }</span></span>
+<span id="cb5-32"><a href="#cb5-32" aria-hidden="true"></a><span class="st">pre code { border: none;</span></span>
+<span id="cb5-33"><a href="#cb5-33" aria-hidden="true"></a><span class="st">           padding: 0px; }</span></span>
+<span id="cb5-34"><a href="#cb5-34" aria-hidden="true"></a><span class="st">'</span></span>
+<span id="cb5-35"><a href="#cb5-35" aria-hidden="true"></a></span>
+<span id="cb5-36"><a href="#cb5-36" aria-hidden="true"></a><span class="co"># can also use `html_grob()` to obtain a grid grob for later drawing</span></span>
+<span id="cb5-37"><a href="#cb5-37" aria-hidden="true"></a><span class="kw">draw_html</span>(</span>
+<span id="cb5-38"><a href="#cb5-38" aria-hidden="true"></a>  mdtext, <span class="dt">css =</span> css,</span>
+<span id="cb5-39"><a href="#cb5-39" aria-hidden="true"></a>  <span class="dt">x =</span> <span class="kw">unit</span>(<span class="fl">0.1</span>, <span class="st">"npc"</span>), <span class="dt">y =</span> <span class="kw">unit</span>(<span class="dv">1</span>, <span class="st">"npc"</span>), <span class="dt">width =</span> <span class="kw">unit</span>(<span class="dv">4</span>, <span class="st">"inches"</span>),</span>
+<span id="cb5-40"><a href="#cb5-40" aria-hidden="true"></a>)</span></code></pre></div>
 <p><img src="reference/figures/README-unnamed-chunk-3-1.png" width="100%"></p>
 <p>If the grob width is specified as a relative unit, then the grob is reactive and reflows as the graphics window is resized. (Try this example interactively.)</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true"></a><span class="kw">draw_html</span>(</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true"></a>  mdtext, <span class="dt">css =</span> css,</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true"></a>  <span class="dt">x =</span> <span class="kw">unit</span>(<span class="fl">0.1</span>, <span class="st">"npc"</span>), <span class="dt">y =</span> <span class="kw">unit</span>(<span class="dv">1</span>, <span class="st">"npc"</span>), <span class="dt">width =</span> <span class="kw">unit</span>(<span class="fl">0.8</span>, <span class="st">"npc"</span>),</span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true"></a>)</span></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true"></a><span class="kw">draw_html</span>(</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true"></a>  mdtext, <span class="dt">css =</span> css,</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true"></a>  <span class="dt">x =</span> <span class="kw">unit</span>(<span class="fl">0.1</span>, <span class="st">"npc"</span>), <span class="dt">y =</span> <span class="kw">unit</span>(<span class="dv">1</span>, <span class="st">"npc"</span>), <span class="dt">width =</span> <span class="kw">unit</span>(<span class="fl">0.8</span>, <span class="st">"npc"</span>),</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true"></a>)</span></code></pre></div>
 <p><img src="reference/figures/README-unnamed-chunk-4-1.png" width="100%"></p>
 <p>Simple markdown-to-html conversion is also implemented:</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true"></a><span class="kw">md_to_html</span>(<span class="st">"This is *a* **test**."</span>)</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true"></a><span class="co">#&gt; [1] "&lt;p&gt;This is &lt;em&gt;a&lt;/em&gt; &lt;strong&gt;test&lt;/strong&gt;.&lt;/p&gt;\n"</span></span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true"></a><span class="kw">md_to_html</span>(<span class="st">"This is *a* **test**."</span>)</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true"></a><span class="co">#&gt; [1] "&lt;p&gt;This is &lt;em&gt;a&lt;/em&gt; &lt;strong&gt;test&lt;/strong&gt;.&lt;/p&gt;\n"</span></span></code></pre></div>
 </div>
 <div id="faq" class="section level2">
 <h2 class="hasAnchor">
@@ -153,24 +172,27 @@ Not at this time.</p></li>
 <li><p><strong>Why is rendering so slow?</strong><br>
 The Sinab library itself is actually quite fast. Slowness comes mostly from R graphics devices. In particular, text shaping can be extremely slow. For faster rendering, try one of the graphics devices provided by the ragg library, such as <code>agg_png()</code>. The following benchmark highlights the importance of the graphics device. The agg device is 250 times faster than the quartz device! All this extra time is spent text shaping.</p></li>
 </ul>
-<!-- --><div class="sourceCode" id="cb5"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true"></a>text &lt;-<span class="st"> </span><span class="kw">paste</span>(<span class="kw">rep</span>(<span class="st">"Hello"</span>, <span class="dv">50</span>), <span class="dt">collapse =</span> <span class="st">" "</span>)</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true"></a></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true"></a>file &lt;-<span class="st"> </span><span class="kw">tempfile</span>(<span class="dt">fileext =</span> <span class="st">".png"</span>)</span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true"></a><span class="kw">png</span>(file, <span class="dt">width =</span> <span class="dv">1920</span>, <span class="dt">height =</span> <span class="dv">1920</span>, <span class="dt">res =</span> <span class="dv">288</span>, <span class="dt">type =</span> <span class="st">"quartz"</span>)</span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true"></a>microbenchmark<span class="op">::</span><span class="kw">microbenchmark</span>(<span class="kw">render_markdown</span>(text), <span class="dt">times =</span> 10L)</span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true"></a><span class="co">#&gt; Unit: milliseconds</span></span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true"></a><span class="co">#&gt;                   expr      min       lq     mean  median       uq    max neval</span></span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true"></a><span class="co">#&gt;  render_markdown(text) 714.2249 782.3504 1117.376 842.621 1119.572 2991.8    10</span></span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true"></a><span class="kw">invisible</span>(<span class="kw">dev.off</span>())</span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true"></a></span>
-<span id="cb5-11"><a href="#cb5-11" aria-hidden="true"></a>ragg<span class="op">::</span><span class="kw">agg_png</span>(file, <span class="dt">width =</span> <span class="dv">1920</span>, <span class="dt">height =</span> <span class="dv">1920</span>, <span class="dt">res =</span> <span class="dv">288</span>)</span>
-<span id="cb5-12"><a href="#cb5-12" aria-hidden="true"></a>microbenchmark<span class="op">::</span><span class="kw">microbenchmark</span>(<span class="kw">render_markdown</span>(text), <span class="dt">times =</span> 10L)</span>
-<span id="cb5-13"><a href="#cb5-13" aria-hidden="true"></a><span class="co">#&gt; Unit: milliseconds</span></span>
-<span id="cb5-14"><a href="#cb5-14" aria-hidden="true"></a><span class="co">#&gt;                   expr      min       lq     mean  median       uq      max</span></span>
-<span id="cb5-15"><a href="#cb5-15" aria-hidden="true"></a><span class="co">#&gt;  render_markdown(text) 1.757393 1.965449 7.200562 2.12594 2.375721 53.15111</span></span>
-<span id="cb5-16"><a href="#cb5-16" aria-hidden="true"></a><span class="co">#&gt;  neval</span></span>
-<span id="cb5-17"><a href="#cb5-17" aria-hidden="true"></a><span class="co">#&gt;     10</span></span>
-<span id="cb5-18"><a href="#cb5-18" aria-hidden="true"></a><span class="kw">invisible</span>(<span class="kw">dev.off</span>())</span></code></pre></div>
+<!-- --><div class="sourceCode" id="cb8"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true"></a>text &lt;-<span class="st"> </span><span class="kw">paste</span>(<span class="kw">rep</span>(<span class="st">"Hello"</span>, <span class="dv">50</span>), <span class="dt">collapse =</span> <span class="st">" "</span>)</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true"></a>n &lt;-<span class="st"> </span>10L</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true"></a></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true"></a>file &lt;-<span class="st"> </span><span class="kw">tempfile</span>(<span class="dt">fileext =</span> <span class="st">".png"</span>)</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true"></a><span class="kw">png</span>(file, <span class="dt">width =</span> <span class="dv">1920</span>, <span class="dt">height =</span> <span class="dv">1920</span>, <span class="dt">res =</span> <span class="dv">288</span>, <span class="dt">type =</span> <span class="st">"quartz"</span>)</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true"></a>microbenchmark<span class="op">::</span><span class="kw">microbenchmark</span>(<span class="kw">render_markdown</span>(text), <span class="dt">times =</span> n)</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true"></a><span class="co">#&gt; Unit: milliseconds</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true"></a><span class="co">#&gt;                   expr      min       lq     mean   median       uq      max</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true"></a><span class="co">#&gt;  render_markdown(text) 699.2977 716.9569 735.9368 724.2383 734.1424 854.7847</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true"></a><span class="co">#&gt;  neval</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true"></a><span class="co">#&gt;     10</span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true"></a><span class="kw">invisible</span>(<span class="kw">dev.off</span>())</span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true"></a></span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true"></a>ragg<span class="op">::</span><span class="kw">agg_png</span>(file, <span class="dt">width =</span> <span class="dv">1920</span>, <span class="dt">height =</span> <span class="dv">1920</span>, <span class="dt">res =</span> <span class="dv">288</span>)</span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true"></a>microbenchmark<span class="op">::</span><span class="kw">microbenchmark</span>(<span class="kw">render_markdown</span>(text), <span class="dt">times =</span> n)</span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true"></a><span class="co">#&gt; Unit: milliseconds</span></span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true"></a><span class="co">#&gt;                   expr      min       lq    mean   median       uq      max</span></span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true"></a><span class="co">#&gt;  render_markdown(text) 1.698806 1.707026 2.24312 1.765782 1.973735 6.204743</span></span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true"></a><span class="co">#&gt;  neval</span></span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true"></a><span class="co">#&gt;     10</span></span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true"></a><span class="kw">invisible</span>(<span class="kw">dev.off</span>())</span></code></pre></div>
 <ul>
 <li><p><strong>Why aren’t you supporting links (i.e., the <code>&lt;a&gt;</code> tag)?</strong><br>
 This is a limitation of the current R graphics device API. There is simply no way to create a link in an R graphics device. Once this feature gets added, it will be easy to support it in Sinab.</p></li>
@@ -207,7 +229,15 @@ Sinab uses the color names defined by CSS, which in some cases are different fro
 </ul>
 </div>
 
-  </div>
+  <div class="dev-status">
+<h2>Dev status</h2>
+<ul class="list-unstyled">
+<li><a href="https://travis-ci.org/clauswilke/sinab"><img src="https://travis-ci.org/clauswilke/sinab.svg?branch=master" alt="Travis build status"></a></li>
+<li><a href="https://ci.appveyor.com/project/clauswilke/sinab"><img src="https://ci.appveyor.com/api/projects/status/github/clauswilke/sinab?branch=master&amp;svg=true" alt="AppVeyor build status"></a></li>
+<li><a href="https://www.tidyverse.org/lifecycle/#experimental"><img src="https://img.shields.io/badge/lifecycle-experimental-orange.svg" alt="Lifecycle: experimental"></a></li>
+</ul>
+</div>
+</div>
 </div>
 
 

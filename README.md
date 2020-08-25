@@ -37,21 +37,28 @@ shell:
 
     curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 
-(On Linux, you can also install `rustc` and `cargo` through your package
-manager of choice, though `rustup` is preferred if you want to do any
-Rust development work yourself.)
+(You can also install `rustc` and `cargo` through your package manager
+of choice, though `rustup` is preferred if you want to do any Rust
+development work yourself.)
 
 On Windows, things are a little more complicated:
 
 -   Download `rustup-init.exe` from here:
     <a href="https://win.rustup.rs/" class="uri">https://win.rustup.rs/</a>
 
--   Then run the following three commands. In the second line, replace
-    `username` with your username.
+-   Then run the following three commands:
 
         rustup-init.exe -y --default-host x86_64-pc-windows-gnu --default-toolchain stable
-        set PATH=%PATH%;C:\Users\username\.cargo\bin
+        set PATH=%PATH%;\%USERPROFILE%\.cargo\bin
         rustup target add i686-pc-windows-gnu
+
+If you are using Rust regularly on Windows but normally build for the
+Visual Studio target (`x86_64-pc-windows-msvc`), then you may have to
+run the following two commands to successfully build this R package on
+your machine:
+
+    rustup target add x86_64-pc-windows-gnu
+    rustup target add i686-pc-windows-gnu
 
 Examples
 --------
@@ -151,25 +158,25 @@ FAQ
 <!-- -->
 
     text <- paste(rep("Hello", 50), collapse = " ")
-    n <- 1L
+    n <- 10L
 
     file <- tempfile(fileext = ".png")
     png(file, width = 1920, height = 1920, res = 288, type = "quartz")
     microbenchmark::microbenchmark(render_markdown(text), times = n)
     #> Unit: milliseconds
     #>                   expr      min       lq     mean   median       uq      max
-    #>  render_markdown(text) 811.9133 811.9133 811.9133 811.9133 811.9133 811.9133
+    #>  render_markdown(text) 699.2977 716.9569 735.9368 724.2383 734.1424 854.7847
     #>  neval
-    #>      1
+    #>     10
     invisible(dev.off())
 
     ragg::agg_png(file, width = 1920, height = 1920, res = 288)
     microbenchmark::microbenchmark(render_markdown(text), times = n)
     #> Unit: milliseconds
-    #>                   expr      min       lq     mean   median       uq      max
-    #>  render_markdown(text) 7.398708 7.398708 7.398708 7.398708 7.398708 7.398708
+    #>                   expr      min       lq    mean   median       uq      max
+    #>  render_markdown(text) 1.698806 1.707026 2.24312 1.765782 1.973735 6.204743
     #>  neval
-    #>      1
+    #>     10
     invisible(dev.off())
 
 -   **Why aren’t you supporting links (i.e., the `<a>` tag)?**  

@@ -47,7 +47,7 @@ On Windows, things are a little more complicated:
   replace `username` with your username.  
   ```
   rustup-init.exe -y --default-host x86_64-pc-windows-gnu --default-toolchain stable
-  set PATH=%PATH%;C:\Users\username\.cargo\bin
+  set PATH=%PATH%;\%USERPROFILE%\.cargo\bin
   rustup target add i686-pc-windows-gnu
   ```
 

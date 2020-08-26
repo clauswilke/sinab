@@ -10,12 +10,9 @@ init:
 install:
   - ps: Bootstrap
   # set up rust
-  #- ps: >-
-  #      $Env:PATH += ';C:\msys64\usr\bin'
   - appveyor DownloadFile -Url https://win.rustup.rs/ -FileName rustup-init.exe
   - rustup-init.exe -y --default-host x86_64-pc-windows-gnu --default-toolchain stable
   - del rustup-init.exe
-  #- set PATH=%PATH%;C:\Users\appveyor\.cargo\bin
   - set PATH=%PATH%;%USERPROFILE%\.cargo\bin
   # add 32 bit target. other available target options are
   # x86_64-pc-windows-msvc, i686-pc-windows-msvc, but not

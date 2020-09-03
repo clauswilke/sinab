@@ -82,7 +82,7 @@
       <h1 data-toc-skip>Supported CSS properties</h1>
                         <h4 class="author">Claus O. Wilke</h4>
             
-            <h4 class="date">2020-08-25</h4>
+            <h4 class="date">2020-09-03</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/clauswilke/sinab/blob/master/vignettes/supported_CSS.Rmd"><code>vignettes/supported_CSS.Rmd</code></a></small>
       <div class="hidden name"><code>supported_CSS.Rmd</code></div>
@@ -118,6 +118,8 @@ jumps over the &lt;span attribute = "value"&gt;lazy dog.&lt;/span&gt;&lt;/p&gt;&
 <h2 class="hasAnchor">
 <a href="#css-wide-keywords" class="anchor"></a>CSS-wide keywords</h2>
 <p>The keywords <code>initial</code> and <code>inherit</code> are supported for all CSS properties. <code>initial</code> resets the property to its initial value, and <code>inherit</code> inherits it from the parent element.</p>
+<p><em>Note: The CSS-wide keywords are not explicitly listed in the following descriptions of any other CSS properties.</em></p>
+<p><strong>Example:</strong></p>
 <div class="sourceCode" id="cb2"><html><body><pre class="r"><span class="no">css</span> <span class="kw">&lt;-</span> <span class="st">'
 body { background-color: #aaa; }
 div {
@@ -148,7 +150,7 @@ elit.&lt;p&gt;This is a nested paragraph.&lt;/p&gt;&lt;/div&gt;
 <a href="#css-property-color" class="anchor"></a>CSS property <code>color</code>
 </h3>
 <p><strong>Supported syntax:</strong></p>
-<p><code>color: <em>color</em>|initial|inherit;</code></p>
+<p><code>color: <em>color</em>;</code></p>
 <p><strong>Property values:</strong></p>
 <table class="table">
 <colgroup>
@@ -159,21 +161,11 @@ elit.&lt;p&gt;This is a nested paragraph.&lt;/p&gt;&lt;/div&gt;
 <th align="left">Value</th>
 <th align="left">Description</th>
 </tr></thead>
-<tbody>
-<tr class="odd">
+<tbody><tr class="odd">
 <td align="left"><em><code>color</code></em></td>
 <td align="left">Specifies the text color. Color can be specified via names (<code>red</code>), via hex RGB, RGBA, or RGB shorthand formats, and via the functions <code><a href="https://rdrr.io/r/grDevices/rgb.html">rgb()</a></code> and <code>hsl()</code>.<br><strong>Note:</strong> CSS color names differ in some cases from R color names. Example: <code>green</code>
 </td>
-</tr>
-<tr class="even">
-<td align="left"><code>initial</code></td>
-<td align="left">Sets the property to its default value.</td>
-</tr>
-<tr class="odd">
-<td align="left"><code>inherit</code></td>
-<td align="left">Inherits the propterty from the parent element.</td>
-</tr>
-</tbody>
+</tr></tbody>
 </table>
 <p><strong>Example:</strong></p>
 <div class="sourceCode" id="cb3"><html><body><pre class="r"><span class="no">css</span> <span class="kw">&lt;-</span> <span class="st">'
@@ -194,7 +186,7 @@ elit.&lt;p&gt;This is a nested paragraph.&lt;/p&gt;&lt;/div&gt;
 <a href="#css-property-background-color" class="anchor"></a>CSS property <code>background-color</code>
 </h3>
 <p><strong>Supported syntax:</strong></p>
-<p><code>background-color: <em>color</em>|initial|inherit;</code></p>
+<p><code>background-color: <em>color</em>;</code></p>
 <p><strong>Property values:</strong></p>
 <table class="table">
 <colgroup>
@@ -205,20 +197,10 @@ elit.&lt;p&gt;This is a nested paragraph.&lt;/p&gt;&lt;/div&gt;
 <th align="left">Value</th>
 <th align="left">Description</th>
 </tr></thead>
-<tbody>
-<tr class="odd">
+<tbody><tr class="odd">
 <td align="left"><em><code>color</code></em></td>
 <td align="left">Specifies the background color.</td>
-</tr>
-<tr class="even">
-<td align="left"><code>initial</code></td>
-<td align="left">Sets the property to its default value.</td>
-</tr>
-<tr class="odd">
-<td align="left"><code>inherit</code></td>
-<td align="left">Inherits the propterty from the parent element.</td>
-</tr>
-</tbody>
+</tr></tbody>
 </table>
 <p><strong>Example:</strong></p>
 <div class="sourceCode" id="cb4"><html><body><pre class="r"><span class="no">css</span> <span class="kw">&lt;-</span> <span class="st">'
@@ -234,8 +216,49 @@ span  { background-color: cornsilk; }
 <div id="margins" class="section level2">
 <h2 class="hasAnchor">
 <a href="#margins" class="anchor"></a>Margins</h2>
-<p>Standard CSS margins are supported, including specification via longhand and shorthand forms. Margins collapse across block formatting contexts. Detailed documentation is forthcoming.</p>
-<p><strong>Example:</strong></p>
+<p>Standard CSS margins are supported, including specification via longhand and shorthand forms. Margins collapse across block formatting contexts.</p>
+<p><strong>Supported syntax:</strong></p>
+<pre>
+<code>margin-top:    <em>length</em>|<em>% value</em>|auto;</code>
+<code>margin-right:  <em>length</em>|<em>% value</em>|auto;</code>
+<code>margin-bottom: <em>length</em>|<em>% value</em>|auto;</code>
+<code>margin-left:   <em>length</em>|<em>% value</em>|auto;</code>
+</pre>
+<p><strong>Property values:</strong></p>
+<table class="table">
+<colgroup>
+<col width="25%">
+<col width="65%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">Value</th>
+<th align="left">Description</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left"><em><code>length</code></em></td>
+<td align="left">An absolute or relative length specifying the margin size.</td>
+</tr>
+<tr class="even">
+<td align="left"><em><code>% value</code></em></td>
+<td align="left">Sets the margin as a percent of the <em>width</em> of the containing element.</td>
+</tr>
+<tr class="odd">
+<td align="left"><code>auto</code></td>
+<td align="left">Sets the margin to a suitable value chosen by the layout engine.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Shorthand forms:</strong></p>
+<p>The four margin values can be set all at once by specifying <code>margin:</code> followed by one to four values:</p>
+<ul>
+<li>When <strong>one</strong> value is provided, <strong>all four</strong> margins are set to this value.</li>
+<li>When <strong>two</strong> values are provided, they set the <strong>vertical</strong> and <strong>horizontal</strong> margins, in that order. (I.e., the first value sets top and bottom, the second right and left.)</li>
+<li>When <strong>three</strong> values are provided, the first sets the <strong>top</strong>, the second <strong>left and right</strong>, and the third the <strong>bottom</strong>.</li>
+<li>When <strong>four</strong> values are provided, they set the <strong>top</strong>, <strong>right</strong>, <strong>bottom</strong>, and <strong>left</strong> margins, in this order.</li>
+</ul>
+<p><strong>Examples:</strong></p>
+<p>Example using <code>margin</code> shorthand, <code>margin-top</code> and <code>margin-bottom</code> longhands, and collapsing of margins between block elements.</p>
 <div class="sourceCode" id="cb5"><html><body><pre class="r"><span class="no">css</span> <span class="kw">&lt;-</span> <span class="st">'
 div   { margin: 40px; background-color: #eee; }
 p     { margin-top: 50px; margin-bottom: 0px;
@@ -248,13 +271,58 @@ p     { margin-top: 50px; margin-bottom: 0px;
 '</span>
 <span class="fu"><a href="../reference/html_grob.html">draw_html</a></span>(<span class="no">text</span>, <span class="kw">css</span> <span class="kw">=</span> <span class="no">css</span>)</pre></body></html></div>
 <p><img src="supported_CSS_files/figure-html/CSS-margins-1.png" width="288"></p>
+<p>Setting horizontal margins to <code>auto</code> centers a block inside an enclosing larger block.</p>
+<div class="sourceCode" id="cb6"><html><body><pre class="r"><span class="no">css</span> <span class="kw">&lt;-</span> <span class="st">'
+div { background-color: #eee; }
+.inner {
+  margin: 0 auto;
+  width: 50%;
+  height: 1in;
+  background-color: skyblue;
+}
+'</span>
+<span class="no">text</span> <span class="kw">&lt;-</span> <span class="st">'
+&lt;div&gt;&lt;div class = "inner"&gt;Hello world!&lt;/div&gt;&lt;/div&gt;
+'</span>
+<span class="fu"><a href="../reference/html_grob.html">draw_html</a></span>(<span class="no">text</span>, <span class="kw">css</span> <span class="kw">=</span> <span class="no">css</span>)</pre></body></html></div>
+<p><img src="supported_CSS_files/figure-html/CSS-margins-auto-1.png" width="288"></p>
 </div>
 <div id="padding" class="section level2">
 <h2 class="hasAnchor">
 <a href="#padding" class="anchor"></a>Padding</h2>
-<p>Standard CSS padding is supported, including specification via longhand and shorthand forms. Detailed documentation is forthcoming.</p>
+<p>Standard CSS padding is supported, including specification via longhand and shorthand forms.</p>
+<p><strong>Supported syntax:</strong></p>
+<pre>
+<code>padding-top:    <em>length</em>|<em>% value</em>;</code>
+<code>padding-right:  <em>length</em>|<em>% value</em>;</code>
+<code>padding-bottom: <em>length</em>|<em>% value</em>;</code>
+<code>padding-left:   <em>length</em>|<em>% value</em>;</code>
+</pre>
+<p><strong>Property values:</strong></p>
+<table class="table">
+<colgroup>
+<col width="25%">
+<col width="65%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">Value</th>
+<th align="left">Description</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left"><em><code>length</code></em></td>
+<td align="left">An absolute or relative length specifying the amount of padding.</td>
+</tr>
+<tr class="even">
+<td align="left"><em><code>% value</code></em></td>
+<td align="left">Sets the amount of padding as a percent of the <em>width</em> of the containing element.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Shorthand forms:</strong></p>
+<p>The four padding values can be set all at once by specifying <code>padding:</code> followed by one to four values. See <a href="#margins">margins</a> for details.</p>
 <p><strong>Example:</strong></p>
-<div class="sourceCode" id="cb6"><html><body><pre class="r"><span class="no">css</span> <span class="kw">&lt;-</span> <span class="st">'
+<div class="sourceCode" id="cb7"><html><body><pre class="r"><span class="no">css</span> <span class="kw">&lt;-</span> <span class="st">'
 div   { padding: 20px; background-color: #eee; }
 p     { padding-top: 10px; padding-bottom: 40px;
         background-color: powderblue; }
@@ -271,7 +339,7 @@ p     { padding-top: 10px; padding-bottom: 40px;
 <a href="#borders" class="anchor"></a>Borders</h2>
 <p>Standard CSS borders are supported, including specification via longhand and shorthand forms. As of this writing, only solid, dashed, and dotted border styles are available. Detailed documentation is forthcoming.</p>
 <p><strong>Example:</strong></p>
-<div class="sourceCode" id="cb7"><html><body><pre class="r"><span class="no">css</span> <span class="kw">&lt;-</span> <span class="st">'
+<div class="sourceCode" id="cb8"><html><body><pre class="r"><span class="no">css</span> <span class="kw">&lt;-</span> <span class="st">'
 p { 
   border-left: 5px solid gray;
   padding: 5px;
@@ -298,7 +366,7 @@ The quick brown fox.&lt;/p&gt;
 <a href="#css-property-font-family" class="anchor"></a>CSS property <code>font-family</code>
 </h3>
 <p><strong>Supported syntax:</strong></p>
-<p><code>font-family: <em>family-name</em>|sans|serif|monospace|initial|inherit;</code></p>
+<p><code>font-family: <em>family-name</em>|sans-serif|serif|monospace;</code></p>
 <p><strong>Property values:</strong></p>
 <table class="table">
 <colgroup>
@@ -315,7 +383,7 @@ The quick brown fox.&lt;/p&gt;
 <td align="left">A character string representing the font family. Note that lists of alternative fonts are not supported at this time.</td>
 </tr>
 <tr class="even">
-<td align="left"><code>sans</code></td>
+<td align="left"><code>sans-serif</code></td>
 <td align="left">Generic sans serif font.</td>
 </tr>
 <tr class="odd">
@@ -326,17 +394,10 @@ The quick brown fox.&lt;/p&gt;
 <td align="left"><code>monospace</code></td>
 <td align="left">Generic fixed-width font.</td>
 </tr>
-<tr class="odd">
-<td align="left"><code>initial</code></td>
-<td align="left">Sets the property to its default value.</td>
-</tr>
-<tr class="even">
-<td align="left"><code>inherit</code></td>
-<td align="left">Inherits the propterty from the parent element.</td>
-</tr>
 </tbody>
 </table>
-<div class="sourceCode" id="cb8"><html><body><pre class="r"><span class="no">css</span> <span class="kw">&lt;-</span> <span class="st">'
+<p><strong>Example:</strong></p>
+<div class="sourceCode" id="cb9"><html><body><pre class="r"><span class="no">css</span> <span class="kw">&lt;-</span> <span class="st">'
 .palatino { font-family: "Palatino"; }
 .mono     { font-family: monospace; }
 '</span>
@@ -352,7 +413,7 @@ The quick brown fox.&lt;/p&gt;
 <a href="#css-property-font-size" class="anchor"></a>CSS property <code>font-size</code>
 </h3>
 <p><strong>Supported syntax:</strong></p>
-<p><code>font-size: <em>length</em>|initial|inherit;</code></p>
+<p><code>font-size: <em>length</em>;</code></p>
 <p><strong>Property values:</strong></p>
 <table class="table">
 <colgroup>
@@ -363,22 +424,13 @@ The quick brown fox.&lt;/p&gt;
 <th align="left">Value</th>
 <th align="left">Description</th>
 </tr></thead>
-<tbody>
-<tr class="odd">
+<tbody><tr class="odd">
 <td align="left"><em><code>length</code></em></td>
 <td align="left">A length specifying the font size. This can be absolute (<code>16px</code>) or relative (<code>1.5em</code>).</td>
-</tr>
-<tr class="even">
-<td align="left"><code>initial</code></td>
-<td align="left">Sets the property to its default value.</td>
-</tr>
-<tr class="odd">
-<td align="left"><code>inherit</code></td>
-<td align="left">Inherits the propterty from the parent element.</td>
-</tr>
-</tbody>
+</tr></tbody>
 </table>
-<div class="sourceCode" id="cb9"><html><body><pre class="r"><span class="no">css</span> <span class="kw">&lt;-</span> <span class="st">'
+<p><strong>Example:</strong></p>
+<div class="sourceCode" id="cb10"><html><body><pre class="r"><span class="no">css</span> <span class="kw">&lt;-</span> <span class="st">'
 p       { font-size: 24px; }
 .larger { font-size: 1.5em; }
 '</span>
@@ -393,7 +445,7 @@ p       { font-size: 24px; }
 <a href="#css-property-font-style" class="anchor"></a>CSS property <code>font-style</code>
 </h3>
 <p><strong>Supported syntax:</strong></p>
-<p><code>font-style: normal|italic|oblique|initial|inherit;</code></p>
+<p><code>font-style: normal|italic|oblique;</code></p>
 <p><strong>Property values:</strong></p>
 <table class="table">
 <colgroup>
@@ -417,17 +469,10 @@ p       { font-size: 24px; }
 <td align="left"><code>oblique</code></td>
 <td align="left">Displays an italic font. Oblique is not supported at this time.</td>
 </tr>
-<tr class="even">
-<td align="left"><code>initial</code></td>
-<td align="left">Sets the property to its default value.</td>
-</tr>
-<tr class="odd">
-<td align="left"><code>inherit</code></td>
-<td align="left">Inherits the propterty from the parent element.</td>
-</tr>
 </tbody>
 </table>
-<div class="sourceCode" id="cb10"><html><body><pre class="r"><span class="no">css</span> <span class="kw">&lt;-</span> <span class="st">'
+<p><strong>Example:</strong></p>
+<div class="sourceCode" id="cb11"><html><body><pre class="r"><span class="no">css</span> <span class="kw">&lt;-</span> <span class="st">'
 .italic   { font-style: italic; }
 .oblique  { font-style: oblique; }
 '</span>
@@ -443,7 +488,7 @@ p       { font-size: 24px; }
 <a href="#css-property-font-weight" class="anchor"></a>CSS property <code>font-weight</code>
 </h3>
 <p><strong>Supported syntax:</strong></p>
-<p><code>font-weight: normal|bold|initial|inherit;</code></p>
+<p><code>font-weight: normal|bold;</code></p>
 <p><strong>Property values:</strong></p>
 <table class="table">
 <colgroup>
@@ -463,17 +508,10 @@ p       { font-size: 24px; }
 <td align="left"><code>bold</code></td>
 <td align="left">Sets the font weight to bold.</td>
 </tr>
-<tr class="odd">
-<td align="left"><code>initial</code></td>
-<td align="left">Sets the property to its default value.</td>
-</tr>
-<tr class="even">
-<td align="left"><code>inherit</code></td>
-<td align="left">Inherits the propterty from the parent element.</td>
-</tr>
 </tbody>
 </table>
-<div class="sourceCode" id="cb11"><html><body><pre class="r"><span class="no">css</span> <span class="kw">&lt;-</span> <span class="st">'
+<p><strong>Example:</strong></p>
+<div class="sourceCode" id="cb12"><html><body><pre class="r"><span class="no">css</span> <span class="kw">&lt;-</span> <span class="st">'
 .normal  { font-weight: normal; }
 .bold    { font-weight: bold; }
 '</span>
@@ -493,7 +531,7 @@ p       { font-size: 24px; }
 <a href="#css-property-line-height" class="anchor"></a>CSS property <code>line-height</code>
 </h3>
 <p><strong>Supported syntax:</strong></p>
-<p><code>line-height: normal|<em>number</em>|<em>length</em>|<em>% value</em>|initial|inherit;</code></p>
+<p><code>line-height: normal|<em>number</em>|<em>length</em>|<em>% value</em>;</code></p>
 <p><strong>Property values:</strong></p>
 <table class="table">
 <colgroup>
@@ -521,17 +559,10 @@ p       { font-size: 24px; }
 <td align="left"><em><code>% value</code></em></td>
 <td align="left">Sets the line height as a percent of the current font size.</td>
 </tr>
-<tr class="odd">
-<td align="left"><code>initial</code></td>
-<td align="left">Sets the property to its default value.</td>
-</tr>
-<tr class="even">
-<td align="left"><code>inherit</code></td>
-<td align="left">Inherits the propterty from the parent element.</td>
-</tr>
 </tbody>
 </table>
-<div class="sourceCode" id="cb12"><html><body><pre class="r"><span class="no">css</span> <span class="kw">&lt;-</span> <span class="st">'
+<p><strong>Example:</strong></p>
+<div class="sourceCode" id="cb13"><html><body><pre class="r"><span class="no">css</span> <span class="kw">&lt;-</span> <span class="st">'
 p        { line-height: normal; }
 .double  { line-height: 2em; }
 '</span>
@@ -551,7 +582,7 @@ aliqua.&lt;/p&gt;
 <a href="#css-property-text-align" class="anchor"></a>CSS property <code>text-align</code>
 </h3>
 <p><strong>Supported syntax:</strong></p>
-<p><code>text-align: left|right|center|<em>% value</em>|initial|inherit;</code></p>
+<p><code>text-align: left|right|center|<em>% value</em>;</code></p>
 <p><strong>Property values:</strong></p>
 <table class="table">
 <colgroup>
@@ -579,18 +610,10 @@ aliqua.&lt;/p&gt;
 <td align="left"><em><code>% value</code></em></td>
 <td align="left">Aligns the text to the enclosing box by percent. <code>0%</code> is equivalent to <code>left</code>, <code>50%</code> is equivalent to <code>center</code>, <code>100%</code> is equivalent to <code>right</code>. This is a Sinab CSS extensions needed to mirror the behavior of <code>hjust</code> and <code>vjust</code> in R.</td>
 </tr>
-<tr class="odd">
-<td align="left"><code>initial</code></td>
-<td align="left">Sets the property to its default value.</td>
-</tr>
-<tr class="even">
-<td align="left"><code>inherit</code></td>
-<td align="left">Inherits the propterty from the parent element.</td>
-</tr>
 </tbody>
 </table>
 <p><strong>Example:</strong></p>
-<div class="sourceCode" id="cb13"><html><body><pre class="r"><span class="no">css</span> <span class="kw">&lt;-</span> <span class="st">'
+<div class="sourceCode" id="cb14"><html><body><pre class="r"><span class="no">css</span> <span class="kw">&lt;-</span> <span class="st">'
 p        { margin: 20px 40px; background-color: #eee; }
 .left    { text-align: left; }
 .center  { text-align: center; }
@@ -611,7 +634,7 @@ p        { margin: 20px 40px; background-color: #eee; }
 <a href="#css-property-vertical-align" class="anchor"></a>CSS property <code>vertical-align</code>
 </h3>
 <p><strong>Supported syntax:</strong></p>
-<p><code>vertical-align: baseline|<em>length</em>|<em>% value</em>|sub|super|middle|initial|inherit;</code></p>
+<p><code>vertical-align: baseline|<em>length</em>|<em>% value</em>|sub|super|middle;</code></p>
 <p><strong>Property values:</strong></p>
 <table class="table">
 <colgroup>
@@ -647,18 +670,10 @@ p        { margin: 20px 40px; background-color: #eee; }
 <td align="left"><code>middle</code></td>
 <td align="left">Aligns the vertical midpoint of the box with the baseline of the parent box plus half the x-height of the parent.</td>
 </tr>
-<tr class="odd">
-<td align="left"><code>initial</code></td>
-<td align="left">Sets the property to its default value.</td>
-</tr>
-<tr class="even">
-<td align="left"><code>inherit</code></td>
-<td align="left">Inherits the propterty from the parent element.</td>
-</tr>
 </tbody>
 </table>
 <p><strong>Example:</strong></p>
-<div class="sourceCode" id="cb14"><html><body><pre class="r"><span class="no">css</span> <span class="kw">&lt;-</span> <span class="st">'
+<div class="sourceCode" id="cb15"><html><body><pre class="r"><span class="no">css</span> <span class="kw">&lt;-</span> <span class="st">'
 .sub           { background-color: #80808040; }
 .sub &gt; span    { vertical-align: sub; background-color: inherit; }
 .super         { background-color: #00800030; }
@@ -682,7 +697,7 @@ p              { line-height: 1.4; }
 <a href="#css-property-white-space" class="anchor"></a>CSS property <code>white-space</code>
 </h3>
 <p><strong>Supported syntax:</strong></p>
-<p><code>white-space: normal|nowrap|pre|initial|inherit;</code></p>
+<p><code>white-space: normal|nowrap|pre;</code></p>
 <p><strong>Property values:</strong></p>
 <table class="table">
 <colgroup>
@@ -706,18 +721,10 @@ p              { line-height: 1.4; }
 <td align="left"><code>pre</code></td>
 <td align="left">White space doesn’t collapse, text doesn’t wrap.</td>
 </tr>
-<tr class="even">
-<td align="left"><code>initial</code></td>
-<td align="left">Sets the property to its default value.</td>
-</tr>
-<tr class="odd">
-<td align="left"><code>inherit</code></td>
-<td align="left">Inherits the propterty from the parent element.</td>
-</tr>
 </tbody>
 </table>
 <p><strong>Example:</strong></p>
-<div class="sourceCode" id="cb15"><html><body><pre class="r"><span class="no">css</span> <span class="kw">&lt;-</span> <span class="st">'
+<div class="sourceCode" id="cb16"><html><body><pre class="r"><span class="no">css</span> <span class="kw">&lt;-</span> <span class="st">'
 p        { background-color: #eee; margin: 10px; }
 .nowrap  { white-space: nowrap; }
 .pre     { white-space: pre; }

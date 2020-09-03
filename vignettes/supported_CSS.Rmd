@@ -53,6 +53,10 @@ draw_html(text, css = css)
 
 The keywords `initial` and `inherit` are supported for all CSS properties. `initial` resets the property to its initial value, and `inherit` inherits it from the parent element.
 
+*Note: The CSS-wide keywords are not explicitly listed in the following descriptions of any other CSS properties.*
+
+**Example:**
+
 ```{r CSS-wide-keywords, fig.height = 1.5 }
 css <- '
 body { background-color: #aaa; }
@@ -82,7 +86,7 @@ draw_html(text, css = css)
 
 **Supported syntax:**
 
-<code>color: <em>color</em>|initial|inherit;</code>
+<code>color: <em>color</em>;</code>
 
 **Property values:**
 
@@ -94,11 +98,6 @@ Value             Description
                   shorthand formats, and via the functions `rgb()`
                   and `hsl()`.<br>**Note:** CSS color names differ
                   in some cases from R color names. Example: `green`
-
-`initial`         Sets the property to its default value.
-
-`inherit`         Inherits the propterty from the parent
-                  element.
 -------------------------------------------------------------
 
 **Example:**
@@ -122,7 +121,7 @@ draw_html(text, css = css)
 
 **Supported syntax:**
 
-<code>background-color: <em>color</em>|initial|inherit;</code>
+<code>background-color: <em>color</em>;</code>
 
 **Property values:**
 
@@ -130,11 +129,6 @@ draw_html(text, css = css)
 Value             Description
 ----------------- ----------------------------------------------
 *`color`*         Specifies the background color.
-
-`initial`         Sets the property to its default value.
-
-`inherit`         Inherits the propterty from the parent
-                  element.
 -------------------------------------------------------------
 
 **Example:**
@@ -152,9 +146,44 @@ draw_html(text, css = css)
 
 ## Margins
 
-Standard CSS margins are supported, including specification via longhand and shorthand forms. Margins collapse across block formatting contexts. Detailed documentation is forthcoming.
+Standard CSS margins are supported, including specification via longhand and shorthand forms. Margins collapse across block formatting contexts.
 
-**Example:**
+**Supported syntax:**
+
+<pre>
+<code>margin-top:    <em>length</em>|<em>% value</em>|auto;</code>
+<code>margin-right:  <em>length</em>|<em>% value</em>|auto;</code>
+<code>margin-bottom: <em>length</em>|<em>% value</em>|auto;</code>
+<code>margin-left:   <em>length</em>|<em>% value</em>|auto;</code>
+</pre>
+
+**Property values:**
+
+----------------------------------------------------------------
+Value             Description
+----------------- ----------------------------------------------
+*`length`*        An absolute or relative length specifying the
+                  margin size.
+                  
+*`% value`*       Sets the margin as a percent of the *width* of
+                  the containing element.
+
+`auto`            Sets the margin to a suitable value chosen by
+                  the layout engine.
+-------------------------------------------------------------
+
+**Shorthand forms:**
+
+The four margin values can be set all at once by specifying `margin:` followed by one to four values:
+
+- When **one** value is provided, **all four** margins are set to this value.
+- When **two** values are provided, they set the **vertical** and **horizontal** margins, in that order. (I.e., the first value sets top and bottom, the second right and left.)
+- When **three** values are provided, the first sets the **top**, the second **left and right**, and the third the **bottom**.
+- When **four** values are provided, they set the **top**, **right**, **bottom**, and **left** margins, in this order.
+
+**Examples:**
+
+Example using `margin` shorthand, `margin-top` and `margin-bottom` longhands, and collapsing of margins between block elements.
 
 ```{r CSS-margins, fig.height = 2.4}
 css <- '
@@ -170,12 +199,52 @@ text <- '
 draw_html(text, css = css)
 ```
 
+Setting horizontal margins to `auto` centers a block inside an enclosing larger block. 
 
+```{r CSS-margins-auto, fig.height = 1.2}
+css <- '
+div { background-color: #eee; }
+.inner {
+  margin: 0 auto;
+  width: 50%;
+  height: 1in;
+  background-color: skyblue;
+}
+'
+text <- '
+<div><div class = "inner">Hello world!</div></div>
+'
+draw_html(text, css = css)
+```
 
 ## Padding
 
-Standard CSS padding is supported, including specification via longhand and shorthand forms. Detailed documentation is forthcoming.
+Standard CSS padding is supported, including specification via longhand and shorthand forms.
 
+**Supported syntax:**
+
+<pre>
+<code>padding-top:    <em>length</em>|<em>% value</em>;</code>
+<code>padding-right:  <em>length</em>|<em>% value</em>;</code>
+<code>padding-bottom: <em>length</em>|<em>% value</em>;</code>
+<code>padding-left:   <em>length</em>|<em>% value</em>;</code>
+</pre>
+
+**Property values:**
+
+----------------------------------------------------------------
+Value             Description
+----------------- ----------------------------------------------
+*`length`*        An absolute or relative length specifying the
+                  amount of padding.
+                  
+*`% value`*       Sets the amount of padding as a percent of the
+                  *width* of the containing element.
+-------------------------------------------------------------
+
+**Shorthand forms:**
+
+The four padding values can be set all at once by specifying `padding:` followed by one to four values. See [margins](#margins) for details.
 
 **Example:**
 
@@ -221,14 +290,13 @@ draw_html(text, css = css)
 ```
 
 
-
 ## Fonts
 
 ### CSS property `font-family`
 
 **Supported syntax:**
 
-<code>font-family: <em>family-name</em>|sans|serif|monospace|initial|inherit;</code>
+<code>font-family: <em>family-name</em>|sans-serif|serif|monospace;</code>
 
 **Property values:**
 
@@ -239,17 +307,14 @@ Value             Description
                   Note that lists of alternative fonts are not
                   supported at this time.
 
-`sans`            Generic sans serif font.
+`sans-serif`      Generic sans serif font.
 
 `serif`           Generic serifed font.
 
 `monospace`       Generic fixed-width font.
-
-`initial`         Sets the property to its default value.
-
-`inherit`         Inherits the propterty from the parent
-                  element.
 -------------------------------------------------------------
+
+**Example:**
 
 ```{r CSS-property-font-family, fig.height = 1.5}
 css <- '
@@ -268,7 +333,7 @@ draw_html(text, css = css)
 
 **Supported syntax:**
 
-<code>font-size: <em>length</em>|initial|inherit;</code>
+<code>font-size: <em>length</em>;</code>
 
 **Property values:**
 
@@ -277,12 +342,9 @@ Value             Description
 ----------------- ----------------------------------------------
 *`length`*        A length specifying the font size. This can be
                   absolute (`16px`) or relative (`1.5em`).
-
-`initial`         Sets the property to its default value.
-
-`inherit`         Inherits the propterty from the parent
-                  element.
 -------------------------------------------------------------
+
+**Example:**
 
 ```{r CSS-property-font-size, fig.height = 1.4}
 css <- '
@@ -295,13 +357,11 @@ text <- '
 draw_html(text, css = css)
 ```
 
-
-
 ### CSS property `font-style`
 
 **Supported syntax:**
 
-<code>font-style: normal|italic|oblique|initial|inherit;</code>
+<code>font-style: normal|italic|oblique;</code>
 
 **Property values:**
 
@@ -314,12 +374,9 @@ Value             Description
 
 `oblique`         Displays an italic font. Oblique is not supported
                   at this time.
-                  
-`initial`         Sets the property to its default value.
-
-`inherit`         Inherits the propterty from the parent
-                  element.
 -------------------------------------------------------------
+
+**Example:**
 
 ```{r CSS-property-font-style, fig.height = 1}
 css <- '
@@ -337,7 +394,7 @@ draw_html(text, css = css)
 
 **Supported syntax:**
 
-<code>font-weight: normal|bold|initial|inherit;</code>
+<code>font-weight: normal|bold;</code>
 
 **Property values:**
 
@@ -347,12 +404,9 @@ Value             Description
 `normal`          Displays font with default weight.
 
 `bold`            Sets the font weight to bold.
-
-`initial`         Sets the property to its default value.
-
-`inherit`         Inherits the propterty from the parent
-                  element.
 -------------------------------------------------------------
+
+**Example:**
 
 ```{r CSS-property-font-weight, fig.height = 1}
 css <- '
@@ -372,7 +426,7 @@ draw_html(text, css = css)
 
 **Supported syntax:**
 
-<code>line-height: normal|<em>number</em>|<em>length</em>|<em>% value</em>|initial|inherit;</code>
+<code>line-height: normal|<em>number</em>|<em>length</em>|<em>% value</em>;</code>
 
 **Property values:**
 
@@ -389,12 +443,9 @@ Value             Description
                   
 *`% value`*       Sets the line height as a percent of the
                   current font size.
-
-`initial`         Sets the property to its default value.
-
-`inherit`         Inherits the propterty from the parent
-                  element.
 -------------------------------------------------------------
+
+**Example:**
 
 ```{r CSS-property-line-height, fig.width = 5, fig.height = 3}
 css <- '
@@ -418,7 +469,7 @@ draw_html(text, css = css)
 
 **Supported syntax:**
 
-<code>text-align: left|right|center|<em>% value</em>|initial|inherit;</code>
+<code>text-align: left|right|center|<em>% value</em>;</code>
 
 **Property values:**
 
@@ -437,12 +488,6 @@ Value          Description
                to `right`. This is a Sinab CSS extensions
                needed to mirror the behavior of `hjust` and
                `vjust` in R.
-               
-
-`initial`      Sets the property to its default value.
-
-`inherit`      Inherits the propterty from the parent
-               element.
 -------------------------------------------------------------
 
 **Example:**
@@ -469,7 +514,7 @@ draw_html(text, css = css)
 
 **Supported syntax:**
 
-<code>vertical-align: baseline|<em>length</em>|<em>% value</em>|sub|super|middle|initial|inherit;</code>
+<code>vertical-align: baseline|<em>length</em>|<em>% value</em>|sub|super|middle;</code>
 
 **Property values:**
 
@@ -491,11 +536,6 @@ Value          Description
 `middle`       Aligns the vertical midpoint of the box with
                the baseline of the parent box plus half the
                x-height of the parent.
-
-`initial`      Sets the property to its default value.
-
-`inherit`      Inherits the propterty from the parent
-               element.
 -------------------------------------------------------------
 
 **Example:**
@@ -525,7 +565,7 @@ draw_html(text, css = css)
 
 **Supported syntax:**
 
-<code>white-space: normal|nowrap|pre|initial|inherit;</code>
+<code>white-space: normal|nowrap|pre;</code>
 
 **Property values:**
 
@@ -538,11 +578,6 @@ Value          Description
 `nowrap`       White space collapses, but text doesn't wrap.
 
 `pre`          White space doesn't collapse, text doesn't wrap.
-
-`initial`      Sets the property to its default value.
-
-`inherit`      Inherits the propterty from the parent
-               element.
 -------------------------------------------------------------
 
 **Example:**

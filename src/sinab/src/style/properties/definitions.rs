@@ -79,31 +79,31 @@ properties! {
     }
 
     @shorthands {
-        "margin" => FourSides<SpecifiedLengthOrPercentageOrAuto> {
+        "margin" => FourSides::<SpecifiedLengthOrPercentageOrAuto> {
             top: margin_top,
             left: margin_left,
             bottom: margin_bottom,
             right: margin_right,
         }
-        "padding" => FourSides<SpecifiedLengthOrPercentage> {
+        "padding" => FourSides::<SpecifiedLengthOrPercentage> {
             top: padding_top,
             left: padding_left,
             bottom: padding_bottom,
             right: padding_right,
         }
-        "border-style" => FourSides<LineStyle> {
+        "border-style" => FourSides::<LineStyle> {
             top: border_top_style,
             left: border_left_style,
             bottom: border_bottom_style,
             right: border_right_style,
         }
-        "border-color" => FourSides<Color> {
+        "border-color" => FourSides::<Color> {
             top: border_top_color,
             left: border_left_color,
             bottom: border_bottom_color,
             right: border_right_color,
         }
-        "border-width" => FourSides<SpecifiedLineWidth> {
+        "border-width" => FourSides::<SpecifiedLineWidth> {
             top: border_top_width,
             left: border_left_width,
             bottom: border_bottom_width,

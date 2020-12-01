@@ -6,8 +6,8 @@ Sinab is not a browser
 
 <!-- badges: start -->
 
-[![Travis build
-status](https://travis-ci.org/clauswilke/sinab.svg?branch=master)](https://travis-ci.org/clauswilke/sinab)
+[![R build
+status](https://github.com/clauswilke/sinab/workflows/R-CMD-check/badge.svg)](https://github.com/clauswilke/sinab/actions)
 [![AppVeyor build
 status](https://ci.appveyor.com/api/projects/status/github/clauswilke/sinab?branch=master&svg=true)](https://ci.appveyor.com/project/clauswilke/sinab)
 [![Lifecycle:

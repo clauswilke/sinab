@@ -1,6 +1,6 @@
 TARGET = $(subst 64,x86_64,$(subst 32,i686,$(WIN)))-pc-windows-gnu
 LIBDIR = sinab/target/$(TARGET)/debug
-STATLIB = $(LIBDIR)/sinab.lib
+STATLIB = $(LIBDIR)/libsinab.a
 PKG_LIBS = -L$(LIBDIR) -lsinab -lws2_32 -ladvapi32 -luserenv
 
 all: C_clean

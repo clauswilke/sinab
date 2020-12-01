@@ -9,5 +9,6 @@
 ^pkgdown$
 ^appveyor.yml$
 ^\.travis.yml$
+^\.github$
 ^tests/png-refs$
 ^LICENSE\.md$

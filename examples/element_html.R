@@ -69,5 +69,20 @@ mpg %>%
     strip.text = element_html(css = css)
   )
 
+css <- '
+p { text-align: center; padding-top: 2px;}
+p.setosa { text-align: left;}
+'
+
+iris %>%
+  mutate(
+    # set class attribute to species
+    facet_label = glue('<p class = "{Species}">{Species}</p>')
+  ) %>%
+  ggplot(aes(x = Petal.Width, y = Sepal.Length)) +
+  facet_grid(. ~ facet_label) +
+  geom_point() +
+  theme(strip.text = element_html(css = css))
+
 
 
